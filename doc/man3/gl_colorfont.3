@@ -1,0 +1,45 @@
+.TH gl_colorfont 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_colorfont \- change the color of a font
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_colorfont(int " fw ", int " fh ", int " c ", void *" fp );
+
+.SH DESCRIPTION
+Set all nonzero pixels in the expanded font
+.I fp
+with 256 characters of size
+.IR fw " and " fh
+each to color
+.IR c .
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_colorfont (3),
+.BR gl_expandfont (3),
+.BR gl_font8x8 (3),
+.BR gl_setfontcolors (3),
+.BR gl_write (3),
+.BR gl_writen (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

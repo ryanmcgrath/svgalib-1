@@ -1,0 +1,43 @@
+.TH gl_setscreenoffset 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setscreenoffset \- set a memory offset for copyscreen
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_setscreenoffset(int " o );
+
+.SH DESCRIPTION
+Set the offset in pixels into video memory for
+.BR copyscreen (3)
+and
+.BR copyboxtocontext (3),
+.BR copyboxfromcontext (3)
+and thus
+allows for page-flipping. Must be a
+multiple of the scanline width in bytes. It is reset to
+zero after the completion of
+.BR copyscreen (3).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR gl_copyboxfromcontext (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_copyscreen (3),
+.BR gl_enablepageflipping (3).
+
+.SH AUTHOR
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

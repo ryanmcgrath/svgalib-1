@@ -1,0 +1,401 @@
+.TH vgagl 7 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vgagl \- a fast framebuffer-level graphics library based ion svgalib
+.SH TABLE OF CONTENTS
+
+.BR 0. " Introduction"
+.br
+.BR 1. " How to use vgagl"
+.br
+.BR 2. " Description of vgagl functions"
+.br
+.BR 3. " Macros defined in vgagl.h"
+
+.SH 0. INTRODUCTION
+
+This is a fast framebuffer-level graphics library for linear 1, 2, 3 and 4
+byte-per-pixel modes (256-color, hicolor, truecolor). It uses a limited
+number of functions from svgalib (libvga) for low-level hardware
+communication (the library is included in the svgalib shared image).
+
+In particular,
+.BR svgalib (7)
+maps the 64K VGA frame buffer window, and this library
+directly addresses the buffer. For SVGA modes that use more than 64K of
+screen memory, SVGA paging is required when writing to the physical screen;
+this is done automatically for most functions (at a certain cost).
+
+Alternatively, any number of virtual screens of any type in system memory can
+be used, which can then be copied to the physical screen. There is also
+support for 4 bytes per pixel framebuffers (and copying them to a 3 bytes per
+pixel context), and limited planar 256 color mode support (copyscreen,
+aligned putbox).
+
+The planar 256 color modes (available on all VGA cards) can now be used
+with a virtual screen, which is copied to the physical screen (with optional
+page-flipping).
+
+Bitmaps are raw, with one (or more) bytes per pixel (like pixmaps in X),
+stored in row-major order. They are usually manipulated with the getbox
+and putbox functions.
+
+.B vgagl
+does also make use of the graphic cards accelerator
+(if it is supported)
+in some situations.
+
+A graphics context is just a structure that holds the size of the associated
+graphics screen, how it is organized, clipping status etc. You can define a
+custom virtual (system memory) graphics context of any size with the
+setcontextvirtual function. All operations work on the current context.
+
+Any questions, bug-reports, additions, suggestions etc. are welcome.
+
+.SH 1. HOW TO USE VGAGL
+Programs that use
+.B vgagl
+must
+.BR "#include <vgagl.h>" .
+Linking must be done with
+.BR "-lvgagl -lvga" .
+
+Functions in the
+.B vgagl
+library have the prefix
+.BR gl_* .
+To initialize
+.BR vgagl ,
+the graphics context must be set. Example:
+
+.RS
+.B vga_setmode(G320x200x256);
+.br
+.B gl_setcontextvga(G320x200x256);
+.RE
+
+In this example, the context is set to the physical screen. The context can
+be saved (only the screen type, not the contents) into a variable, e.g.
+
+.RS
+.B GraphicsContext physicalscreen;
+.br
+.B gl_getcontext(&physicalscreen).
+.RE
+
+To define a virtual screen in system memory, use
+.BR gl_setcontextvgavirtual (3):
+
+.RS
+.B gl_setcontextvgavirtual(G320x200x256)
+.RE
+
+which allocates space for a screen identical to 320x200x256 graphics mode,
+and makes this virtual screen the current graphics context.
+
+The virtual screen can now be copied to the physical screen as follows:
+
+.RS
+.B gl_copyscreen(&physicalscreen);
+.RE
+
+Note that with a virtual screen in system memory, it is possible to add
+fast X-Window support to a program, using MITSHM to copy the framebuffer
+to the screen window.
+
+.SH 2. DESCRIPTION OF VGAGL FUNCTIONS
+.PD 0
+.SS Context management
+.TP
+.BR gl_getcontext "(3), " currentcontext (3)
+get the current graphics contents..
+.TP
+.BR gl_setcontext (3)
+set a previously saved context.
+.TP
+.BR gl_setcontextvga (3)
+set the context to the physical screen.
+.TP
+.BR gl_setcontextvgavirtual (3)
+set the context to a virtual mode.
+.TP
+.BR gl_setcontextvirtual (3)
+define a virtual context.
+.TP
+.BR gl_allocatecontext (3)
+allocate a graphics context.
+.TP
+.BR gl_freecontext (3)
+free a virtual screen.
+.TP
+.BR gl_setcontextwidth "(3), " gl_setcontextheight (3)
+set the dimension of a context.
+
+.SS Drawing primitives
+.TP
+.BR gl_clearscreen (3)
+clear the screen.
+.TP
+.BR gl_rgbcolor (3)
+return pixel value corresponding to an rgb color.
+.TP
+.BR gl_setpixel "(3), " gl_setpixelrgb (3)
+draw a pixel.
+.TP
+.BR gl_getpixel (3)
+return the color of a pixel.
+.TP
+.BR gl_getpixelrgb (3)
+store color components of a pixel.
+.TP
+.BR gl_hline (3)
+draw a horizontal line.
+.TP
+.BR gl_line (3)
+draw a line.
+.TP
+.BR gl_circle (3)
+draw a circle.
+.TP
+.BR gl_fillbox (3)
+fill a rectangular area.
+
+.SS Copying of screen buffers and page flipping
+.TP
+.BR gl_copyscreen (3)
+copy the screen contents of contexts.
+.TP
+.BR gl_setscreenoffset (3)
+set a memory offset for copyscreen.
+.TP
+.BR gl_setdisplaystart (3)
+set the start of the screen are displayed.
+.TP
+.BR gl_enablepageflipping (3)
+enables automatic page flipping.
+
+.SS Clipping
+.TP
+.BR gl_disableclipping (3)
+disables clipping.
+.TP
+.BR gl_enableclipping (3)
+enables clipping.
+.TP
+.BR gl_setclippingwindow (3)
+set the clipping window.
+
+.SS Text drawing primitives
+.TP
+.BR gl_setfont (3)
+set the text font to be used.
+.TP
+.BR gl_setfontcolors (3)
+set the font colors.
+.TP
+.BR gl_expandfont (3)
+expand a packed pixel font.
+.TP
+.BR gl_colorfont (3)
+change the color of a font.
+.TP
+.BR gl_setwritemode (3)
+set the font writemode flags.
+.TP
+.BR gl_write "(3), " gl_writen (3)
+write a text string.
+.TP
+.BR gl_printf (3)
+formatted output to the graphics screen.
+.TP
+.BR gl_font8x8 (3)
+a packed 8x8 pixel font.
+
+.SS Pix- and Bitmap drawing
+.TP
+.BR gl_getbox (3)
+copy a rectangular pixmap from the screen to a buffer.
+.TP
+.BR gl_copybox (3)
+copy a rectangular screen area.
+.TP
+.BR gl_copyboxfromcontext (3)
+copy rectangular area from another context.
+.TP
+.BR gl_copyboxtocontext (3)
+copy a rectangular area to another context.
+.TP
+.BR gl_putbox (3)
+copy a pixmap to a rectangular area.
+.TP
+.BR gl_putboxpart (3)
+copy a partial pixmap to a rectangular area.
+.TP
+.BR gl_putboxmask (3)
+copy a masked  pixmap to a rectangular area.
+.TP
+.BR gl_putboxmaskcompiled (3)
+copy a compiled masked pixmap to a rectangular area.
+.TP
+.BR gl_compileboxmask (3)
+compress a masked bitmap.
+.TP
+.BR gl_compiledboxmasksize (3)
+compute the size of a compiled masked box.
+.TP
+.BR gl_scalebox (3)
+scale a pixmap.
+
+.SS Palette handling
+.TP
+.BR gl_getpalettecolor "(3), " gl_getpalettecolors "(3), " gl_getpalette (3)
+read the color palette.
+.TP
+.BR gl_setpalettecolor "(3), " gl_setpalettecolors "(3), " gl_setpalette (3)
+set the color palette.
+.TP
+.BR gl_setrgbpalette (3)
+set a 256-color RGB palette.
+
+.SS Triangle primitives from threeDkit
+.TP
+.BR gl_striangle (3)
+draw a solid colored triangle.
+.TP
+.BR gl_triangle (3)
+draw a triangle with interpolated colors.
+.TP
+.BR gl_swtriangle (3)
+draw a solid pixmap mapped on a triangle.
+.TP
+.BR gl_wtriangle (3)
+draw a shadowed pixmap mapped on a triangle.
+.TP
+.BR gl_trisetcolorlookup "(3), " gl_trigetcolorlookup (3)
+manages a color lookup table for shadowing.
+.TP
+.BR gl_trisetdrawpoint (3)
+set a triangle drawing function.
+.PD
+.SH 3. MACROS DEFINED IN VGAGL.H:
+.TP
+.B WIDTH
+The width in pixels of the current graphics context.
+.TP
+.B HEIGHT
+Height in pixels.
+.TP
+.B BYTESPERPIXEL
+Number of bytes per pixel (1, 2, 3 or 4).
+.TP
+.B BYTEWIDTH
+Width of a scanline in bytes.
+.TP
+.B COLORS
+Number of colors.
+.TP
+.B BITSPERPIXEL
+Number of significant color bits.
+.TP
+.B VBUF
+Address of the framebuffer.
+.TP
+.B __clip
+Clipping flag.
+
+.PD 0
+.TP
+.B __clipx1
+.TP
+.B __clipy1
+Top-left corner of clipping window.
+.PD
+
+.PD 0
+.TP
+.B __clipx2
+.TP
+.B __clipy2
+.PD
+Bottom-right corner of clipping window.
+
+.SH BUGS
+For three bytes per pixel (true color) modes, it is possible that
+pixels cross a SVGA segment boundary. This should be correctly
+handled	by most functions, but you never know. It can be avoided by using a logical
+scanline length that is a divisor of 65536 (a power of 2), like 1024
+(as opposed to 960) for 320x200 and 2048 (1920) for 640x480. For
+800x600, this is impractical (4096 as opposed to 2400 doesn't fit in
+2MB). Alternatively, avoid those functions by using a virtual screen.
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR libvga.config (5),
+.BR testgl (6),
+.BR threedkit (7),
+.BR currentcontext (3),
+.BR gl_allocatecontext (3),
+.BR gl_circle (3),
+.BR gl_clearscreen (3),
+.BR gl_colorfont (3),
+.BR gl_compileboxmask (3),
+.BR gl_compiledboxmasksize (3),
+.BR gl_copybox (3),
+.BR gl_copyboxfromcontext (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_copyscreen (3),
+.BR gl_disableclipping (3),
+.BR gl_enableclipping (3),
+.BR gl_enablepageflipping (3),
+.BR gl_expandfont (3),
+.BR gl_fillbox (3),
+.BR gl_font8x8 (3),
+.BR gl_freecontext (3),
+.BR gl_getbox (3),
+.BR gl_getcontext (3),
+.BR gl_getpalette (3),
+.BR gl_getpalettecolor (3),
+.BR gl_getpalettecolors (3),
+.BR gl_getpixel (3),
+.BR gl_getpixelrgb (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_putbox (3),
+.BR gl_putboxmask (3),
+.BR gl_putboxmaskcompiled (3),
+.BR gl_putboxpart (3),
+.BR gl_rgbcolor (3),
+.BR gl_scalebox (3),
+.BR gl_setclippingwindow (3),
+.BR gl_setcontext (3),
+.BR gl_setcontextheight (3),
+.BR gl_setcontextvga (3),
+.BR gl_setcontextvgavirtual (3),
+.BR gl_setcontextvirtual (3),
+.BR gl_setcontextwidth (3),
+.BR gl_setdisplaystart (3),
+.BR gl_setfont (3),
+.BR gl_setfontcolors (3),
+.BR gl_setpalette (3),
+.BR gl_setpalettecolor (3),
+.BR gl_setpalettecolors (3),
+.BR gl_setpixel (3),
+.BR gl_setpixelrgb (3),
+.BR gl_setrgbpalette (3),
+.BR gl_setscreenoffset (3),
+.BR gl_setwritemode (3),
+.BR gl_striangle (3),
+.BR gl_swtriangle (3),
+.BR gl_triangle (3),
+.BR gl_trigetcolorlookup (3),
+.BR gl_trisetcolorlookup (3),
+.BR gl_trisetdrawpoint (3),
+.BR gl_write (3),
+.BR gl_writen (3),
+.BR gl_wtriangle (3).
+
+.SH AUTHOR
+There are many authors of svgalib. This page was edited by
+Michael Weller <eowmob@exp-math.uni-essen.de>.
+The original documentation and most of
+.B vgagl
+was done by Harm Hanemaayer <H.Hanemaayer@inter.nl.net> though.

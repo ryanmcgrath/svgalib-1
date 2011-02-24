@@ -1,0 +1,19 @@
+This is a modified version of lrmi-0.9 package.
+The original is available at http://sourceforge.net/projects/lrmi
+
+
+Programs included are:
+
+vbetest - show available modes, and test a mode.
+
+vbegetmodeinfo - show information about a vbe mode.
+
+mode3 - set mode using vesa bios. It can usually restore text mode after
+        svgalib leaves a non-working text-mode.
+
+vga_reset - call real mode c000:0003, which should be the video card's
+	initialization routine. Should work in some cases when mode3 fails to
+	restore text mode.
+
+get-edid - Use vbe call to get monitor's edid information.
+

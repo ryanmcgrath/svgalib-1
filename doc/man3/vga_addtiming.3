@@ -1,0 +1,27 @@
+.TH vga_addtiming 3 "7 April 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_addtiming \- add a timing line to svgalib user timing list
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_addtiming(int pixelClock, int HDisplay, int HSyncStart, int HSyncEnd, int HTotal, \
+int VDisplay, int VSyncStart, intVSyncEnd, int VTotal, int flags);
+
+
+.SH DESCRIPTION
+Adds the given line of mode timing to the table of user timing, as if the
+line is in the config file. For a description of the parameters' meaning, see 
+.BR libvga.config (5)
+. 
+
+.SH SEE ALSO
+
+.BR vga_addmode (3)
+.BR vga_guesstiming (3)
+.BR addmodetest (6)
+.BR libvga.config (5)
+
+.SH AUTHOR
+
+This manual page was written by Matan Ziv-Av

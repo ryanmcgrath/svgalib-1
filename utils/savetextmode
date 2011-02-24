@@ -1,0 +1,4 @@
+#!/bin/sh
+rm -f /etc/vga/textregs /etc/vga/fontdata
+restoretextmode -w /etc/vga/textregs
+restorefont -w /etc/vga/fontdata

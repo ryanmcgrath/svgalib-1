@@ -1,0 +1,36 @@
+.TH vga_disabledriverreport 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_disabledriverreport \- makes svgalib not emit any startup messages
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_disabledriverreport(void);"
+
+.SH DESCRIPTION
+Usually svgalib prints the name of the hardware detected or forced to the screen during
+startup. This and other informational messages are suppressed when
+.B vga_disabledriverreport()
+was called.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_init (3),
+.BR vga_setmode (3),
+.BR vga_setchipset (3),
+.BR vga_setchipsetandfeatures (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

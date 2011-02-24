@@ -1,0 +1,1266 @@
+.TH svgalib 7 "16 December 1999" "Svgalib 1.4.1" "Svgalib User Manual"
+.SH NAME
+svgalib \- a low level graphics library for linux
+.SH TABLE OF CONTENTS
+
+.BR 0. " Introduction"
+.br
+.BR 1. " Installation"
+.br
+.BR 2. " How to use svgalib"
+.br
+.BR 3. " Description of svgalib functions"
+.br
+.BR 4. " Overview of supported SVGA chipsets and modes"
+.br
+.BR 5. " Detailed comments on certain device drivers"
+.br
+.BR 6. " Goals"
+.br
+.BR 7. " References (location of latest version, apps etc.)"
+.br
+.BR 8. " Known bugs"
+
+.SH 0. INTRODUCTION
+
+This is a low level graphics library for Linux, originally based on VGAlib 1.2 by
+Tommy Frandsen. VGAlib supported a number of standard VGA graphics modes, as
+well as Tseng ET4000 high resolution 256-color modes. As of now, support for many
+more chipsets has been added. See section
+.B 4 Overview of supported SVGA chipsets and modes
+
+It supports transparent virtual console switching, that is, you can switch
+consoles to and from text and graphics mode consoles using alt-[function
+key]. Also, svgalib corrects most of VGAlib's textmode corruption behaviour
+by catching
+.BR SIGSEGV ", " SIGFPE ", " SIGILL ,
+and other fatal signals and ensuring that a program is running
+in the currently visible virtual console before setting a graphics mode.
+
+Note right here that
+.BR SIGUSR1 " and " SIGUSR2
+are used to manage console switching internally in
+.BR svgalib .
+You can not use them in your programs. If your program needs to use one of
+those signals, svgalib can be compiled to use other signals, by editing
+libvga.h
+
+This version includes code to hunt for a free virtual console on its own in
+case you are not starting the program from one (but instead over a network or
+modem login, from within
+.BR screen (1)
+or an
+.BR xterm (1)).
+Provided there is a free
+console, this succeeds if you are root or if the svgalib calling user own
+the current console. This is to avoid people not using the console being able
+to fiddle with it.
+On graceful exit the program returns to the console from which it was started.
+Otherwise it remains in text mode at the VC which svgalib allocated to allow
+you to see any error messages. In any case, any I/O the svgalib makes in
+text mode (after calling
+.BR vga_init (3))
+will also take place at this new console.
+
+Alas, some games misuse their suid root privilege and run as full root
+process. svgalib cannot detect this and allows Joe Blow User to open a new
+VC on the console. If this annoys you,
+.B ROOT_VC_SHORTCUT
+in
+.I Makefile.cfg
+allows
+you to disable allocating a new VC for root (except when he owns the current
+console) when you compile svgalib. This is the default.
+
+When the library is used by a program at run-time, first the chipset is
+detected and the appropriate driver is used. This means that a graphics
+program will work on any card that is supported by svgalib, if the mode it
+uses is supported by the chipset driver for that card. The library is
+upwardly compatible with VGAlib.
+
+The set of drawing functions provided by svgalib itself is limited (unchanged
+from VGAlib) and unoptimized; you can however use
+.BR vga_setpage (3)
+and
+.BR vga_getgraphmem (3)
+(which points to the 64K VGA framebuffer) in a program or graphics library.
+A fast external framebuffer graphics library for linear and banked 1, 2, 3
+and 4 bytes per pixel modes is included (it also indirectly supports planar
+VGA modes). It is documented in
+.BR vgagl (7).
+
+One obvious application of the library is a picture viewer. Several are
+available, along with animation viewers. See the
+.B 7. References
+at the end of this document.
+
+I have added a simple VGA textmode font restoration utility
+.RB ( restorefont (1)) 
+which may help if you suffer from XFree86 textmode font corruption. It can
+also be used to change the textmode font. It comes with some other textmode utilities:
+.BR restoretextmode (1)
+(which saves/restores textmode registers),
+.BR restorepalette (1),
+and the script
+.BR textmode (1).
+If you run the
+.BR savetextmode (1)
+script to save textmode information to
+.IR /tmp ,
+you'll be able to restore textmode by running the
+.BR textmode (1)
+script.
+
+.SH 1. INSTALLATION
+Installation is easy in general but there are many options and things
+you should keep in mind. This document however assumes that
+.B svgalib
+is already installed.
+
+If you need information on installation see
+.I 0-INSTALL
+which comes with the svgalib distribution.
+
+However, even after installation of the library you might need to configure
+svgalib using the file
+.IR /etc/vga/libvga.config .
+Checkout section
+.B 4 Overview of supported SVGA chipsets and modes
+and
+.BR libvga.config (5)
+for information.
+
+.SH 2. HOW TO USE SVGALIB
+
+For basic svgalib usage (no mouse, no raw keyboard) add
+.B #include <vga.h>
+at the beginning your program.
+Use
+.BR vga_init (3)
+as your first
+.B svgalib
+call. This will give up root privileges right
+after initialization, making setuid-root binaries relatively safe.
+
+The function
+.BR vga_getdefaultmode (3)
+checks the environment variable
+.B SVGALIB_DEFAULT_MODE
+for a default mode, and returns the corresponding mode number. The
+environment string can either be a mode number or a mode name as in
+.RB ( "G640x480x2" ", " "G640x480x16" ", " "G640x480x256 ", "
+.BR G640x480x32K ", " G640x480x64K ", " G640x480x16M ).
+As an example, to set the default
+graphics mode to 640x480, 256 colors, use:
+
+.B export SVGALIB_DEFAULT_MODE=G640x480x256
+
+on the
+.BR bash(1)
+command line. If a program needs just a linear VGA/SVGA resolution (as required by
+.BR vgagl (7)),
+only modes where
+.B bytesperpixel
+in the
+.B vga_modeinfo
+structure returned by
+.BR vga_getmodeinfo (3)
+is greater or equal to 1 should be accepted (this is 0 for tweaked
+planar 256-color VGA modes).
+
+Use
+.BI vga_setmode( graphicsmode )
+to set a graphics mode. Use
+.B vga_setmode(TEXT)
+to restore textmode before program exit.
+
+Programs that use svgalib must
+.BR #include<vga.h> ;
+if they also use the external graphics library
+.BR vgagl (7),
+you must also
+.BR #include<vgagl.h> .
+Linking must be done
+with
+.B -lvga
+(and
+.BR -lvgagl " before " -lvga ,
+if
+.BR vgagl (7)
+is used). You can save binary space by removing the unused chipset drivers in
+.I Makefile.cfg
+if you only use specific chipsets. However this reduces the flexibility of svgalib
+and has a significant effect only when you use the static libraries. You should better
+use the shared libraries and these will load only the really used parts anyway.
+
+Functions in the
+.BR vgagl (7)
+library have the prefix
+.BR gl_ .
+Please see
+.BR vgagl (7)
+for details.
+
+There are demos with sources available which will also help to get you started, in
+recomended order of interest:
+.BR vgatest (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR bg_test (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR fun (6),
+.BR spin (6),
+.BR testlinear (6),
+.BR lineart (6),
+.BR testgl (6),
+.BR accel (6),
+.BR testaccel (6),
+.BR plane "(6), and "
+.BR wrapdemo (6).
+
+Debugging your programs will turn out to be rather difficult, because the svgalib
+application can not restore textmode when it returns to the debugger.
+
+Happy are the users with a serial terminal, X-station, or another way to log into the machine
+from network. These can use
+
+.BI "textmode </dev/tty" N
+
+on the console where the program runs and continue.
+
+However, the
+.BR vga_flip (3)
+function allows you to switch to textmode by entering a call to it blindly into your debugger
+when your program stops in graphics mode.
+.BR vga_flip (3)
+is not very robust though. You shall not call it when svgalib is not yet initialized or
+in textmode.
+
+Before continuing your program, you must then call
+.BR vga_flip (3)
+again to return to graphics mode. If the program will not make any screen accesses or svgalib
+calls before it returns to the debugger, you can omit that, of course.
+
+This will only work if your program and the debugger run in the same virtual linux console.
+
+.SH 3. DESCRIPTION OF SVGALIB FUNCTIONS
+Each function has it's own section 3 manual page. For a list of
+.BR vgagl " functions see " vgagl (7).
+
+.PD 0
+.SS Initialization
+.TP
+.BR vga_init (3)
+- initialize svgalib library.
+.TP
+.BR vga_disabledriverreport (3)
+- makes svgalib not emit any startup messages.
+.TP
+.BR vga_claimvideomemory (3)
+- declare the amount of video memory used.
+.TP
+.BR vga_safety_fork (3)
+- start a parallel process to restore the console at a crash.
+.TP
+.BR vga_setchipset (3)
+- force chipset.
+.TP
+.BR vga_setchipsetandfeatures (3)
+- force chipset and optional parameters.
+
+.SS Inquire hardware configuration
+.TP
+.BR vga_getmousetype (3)
+- returns the mouse type configured.
+.TP
+.BR vga_getcurrentchipset (3)
+- returns the current SVGA chipset.
+.TP
+.BR vga_getmonitortype (3)
+- returns the monitor type configured.
+
+.SS Setting video modes
+.TP
+.BR vga_setmode (3)
+- sets a video mode.
+.TP
+.BR vga_setdisplaystart (3)
+- set the display start address.
+.TP
+.BR vga_setlogicalwidth (3)
+- set the logical scanline width.
+.TP
+.BR vga_setlinearaddressing (3)
+- switch to linear addressing mode.
+.TP
+.BR vga_setmodeX (3)
+- try to set Mode X-like memory organization .
+.TP
+.BR vga_ext_set (3)
+- set and query several extended features.
+.TP
+.BR vga_screenoff "(3), " vga_screenon (3)
+- turn generation of the video signal on or off.
+
+.SS Get video mode information
+.TP
+.BR vga_getxdim "(3), " vga_getydim "(3), " vga_getcolors (3)
+- return the current screen resolution.
+.TP
+.BR vga_white (3)
+- return the color white in the current screen resolution.
+.TP
+.BR vga_getcurrentmode (3)
+- returns the current video mode.
+.TP
+.BR vga_hasmode (3)
+- returns if a video mode is supported.
+.TP
+.BR vga_getmodeinfo (3)
+- returns pointer to mode information structure for a mode.
+.TP
+.BR vga_getdefaultmode (3)
+- returns the default graphics mode number.
+.TP
+.BR vga_lastmodenumber (3)
+- returns the last video mode number.
+.TP
+.BR vga_getmodename (3)
+- return a name for the given video mode.
+.TP
+.BR vga_getmodenumber (3)
+- return a number for the given video mode.
+
+.SS Drawing primitives
+.TP
+.BR vga_clear (3)
+- clear the screen.
+.TP
+.BR vga_setcolor (3)
+- set the current color.
+.TP
+.BR vga_setrgbcolor (3)
+- set the current color.
+.TP
+.BR vga_setegacolor (3)
+- set the current color.
+.TP
+.BR vga_drawpixel (3)
+- draw a pixel on the screen.
+.TP
+.BR vga_drawscanline (3)
+- draw a horizontal line of pixels.
+.TP
+.BR vga_drawscansegment (3)
+- draw a horizontal line of pixels.
+.TP
+.BR vga_drawline (3)
+- draw a line on the screen.
+.TP
+.BR vga_getpixel (3)
+- get a pixels value from the screen.
+.TP
+.BR vga_getscansegment (3)
+- get a list of consecutive pixel values.
+.TP
+.BR vga_waitretrace (3)
+- wait for vertical retrace.
+
+.SS Basic (non raw) keyboard I/O
+.TP
+.BR vga_getch (3)
+- wait for a key.
+.TP
+.BR vga_getkey (3)
+- read a character from the keyboard without waiting.
+.TP
+.BR vga_waitevent (3)
+- wait for various I/O events.
+
+.SS Direct VGA memory access
+.TP
+.BR vga_setpage (3)
+- set the 64K SVGA page number.
+.TP
+.BR vga_setreadpage (3)
+- set the 64K SVGA page number.
+.TP
+.BR vga_setwritepage (3)
+- set the 64K SVGA page number.
+.TP
+.BR vga_getgraphmem (3)
+- returns the address of the VGA memory.
+.TP
+.BR vga_copytoplanar256 (3)
+- copy linear pixmap into Mode X video memory.
+.TP
+.BR vga_copytoplanar16 (3)
+- copy linear pixmap into VGA 16 color mode video memory.
+.TP
+.BR vga_copytoplane (3)
+- copy linear pixmap to some planes of VGA 16 color mode video memory.
+
+.SS Manage color lookup tables
+.TP
+.BR vga_setpalette (3)
+- set a color in the color lookup table.
+.TP
+.BR vga_getpalette (3)
+- get a color in the color lookup table.
+.TP
+.BR vga_setpalvec (3)
+- sets colors in the color lookup table.
+.TP
+.BR vga_getpalvec (3)
+- gets colors from the color lookup table.
+
+.SS Mouse handling
+.TP
+.BR vga_setmousesupport (3)
+- enable mouse support.
+.TP
+.BR mouse_init "(3), " mouse_init_return_fd (3)
+- specifically initialize a mouse.
+.TP
+.BR mouse_close (3)
+- explicitly close a mouse.
+.TP
+.BR mouse_update (3)
+- updates the mouse state.
+.TP
+.BR mouse_waitforupdate (3)
+- wait for an mouse update.
+.TP
+.BR mouse_setscale (3)
+- sets a mouse scale factor.
+.TP
+.BR mouse_setwrap (3)
+- set what happens at the mouse boundaries.
+.TP
+.BR mouse_setxrange "(3), " mouse_setyrange (3)
+- define the boundaries for the mouse cursor.
+.TP
+.BR mouse_getx "(3), " mouse_gety "(3), " mouse_getbutton (3)
+- query the mouse state.
+.TP
+.BR mouse_setposition (3)
+- set the current mouse position.
+.TP
+.BR mouse_getposition_6d "(3), " mouse_setposition_6d "(3), " mouse_setrange_6d (3)
+- provide an interface to 3d mice.
+.TP
+.BR mouse_seteventhandler "(3), " mouse_setdefaulteventhandler (3)
+- set a mouse event handler.
+
+.SS Raw keyboard handling
+.TP
+.BR keyboard_init "(3), " keyboard_init_return_fd (3)
+- initialize the keyboard to raw mode.
+.TP
+.BR keyboard_close (3)
+- return the keyboard to normal operation from raw mode.
+.TP
+.BR keyboard_update "(3), " keyboard_waitforupdate (3)
+- process raw keyboard events.
+.TP
+.BR keyboard_translatekeys (3)
+- modify scancode mappings in raw keyboard mode.
+.TP
+.BR keyboard_keypressed (3)
+- check if a key is pressed when in raw keyboard mode.
+.TP
+.BR keyboard_getstate (3)
+- get a pointer to a buffer holding the state of all keys in raw keyboard mode.
+.TP
+.BR keyboard_clearstate (3)
+- reset the state of all keys when in raw keyboard mode.
+.TP
+.BR keyboard_seteventhandler "(3), " keyboard_setdefaulteventhandler (3)
+- define an event handler for keyboard events in raw mode.
+
+.SS Joystick handling
+.TP
+.BR joystick_init (3)
+- initialize and calibrate joysticks.
+.TP
+.BR joystick_close (3)
+- close a joystick device.
+.TP
+.BR joystick_update (3)
+- query and process joystick state changes.
+.TP
+.BR joystick_sethandler "(3), " joystick_setdefaulthandler (3)
+- define own joystick even handler.
+.TP
+.BR joystick_getnumaxes "(3), " joystick_getnumbuttons (3)
+- query the capabilities of a joystick.
+.TP
+.BR joystick_getaxis "(3), " joystick_getbutton (3)
+- query the state of a joystick.
+.TP
+.BR joystick_button1|2|3|4 "(3), " joystick_getb1|2|3|4 "(3), " joystick_x|y|z "(3), " joystick_getx|y|z (3)
+- convenience macros to query the joystick position.
+
+.SS Accelerator interface (new style)
+.TP
+.BR vga_accel (3)
+- calls the graphics accelerator.
+
+.SS Accelerator interface (old style)
+.TP
+.BR vga_bitblt (3)
+- copy pixmap on screen using an accelerator.
+.TP
+.BR vga_fillblt (3)
+- fill rectangular area in video memory with a single color.
+.TP
+.BR vga_hlinelistblt (3)
+- draw horizontal scan lines.
+.TP
+.BR vga_imageblt (3)
+- copy a rectangular pixmap from system memory to video memory.
+.TP
+.BR vga_blitwait (3)
+- wait for any accelerator operation to finish.
+
+.SS Controlling VC switches
+.TP
+.BR vga_lockvc (3)
+- disables virtual console switching for safety.
+.TP
+.BR vga_unlockvc (3)
+- re-enables virtual console switching.
+.TP
+.BR vga_oktowrite (3)
+- indicates whether the program has direct access to the SVGA.
+.TP
+.BR vga_runinbackground (3)
+- enable running of the program while there is no VGA access.
+.TP
+.BR vga_runinbackground_version (3)
+- returns the version of the current background support.
+
+.SS Debugging aids
+.TP
+.BR vga_dumpregs (3)
+- dump the contents of the SVGA registers.
+.TP
+.BR vga_gettextfont "(3), " vga_puttextfont (3)
+- get/set the font used in text mode.
+.TP
+.BR vga_gettextmoderegs "(3), " vga_settextmoderegs (3)
+- get/set the vga state used in text mode.
+.TP
+.BR vga_flip (3)
+- toggle between text and graphics mode.
+.TP
+.BR vga_setflipchar (3)
+- set the character causing a vga_flip().
+.PD
+.PP
+
+.SH 4. OVERVIEW OF SUPPORTED SVGA CHIPSETS AND MODES
+.SS VGA and compatibles
+
+320x200x256, and the series of 16-color and non-standard
+planar 256 color modes supported by VGAlib, as well as
+720x348x2.
+
+.SS ALI2301
+
+Supports 640x480x256, 800x600x256, 1024x768x256 SVGA modes
+
+.SS AT3D (AT25)
+
+Also known as Promotion at25. Popular as the 2D part of a voodoo rush card. As of this
+writing there are a few known problems with this driver. Read below.
+
+.SS ARK Logic ARK1000PV/2000PV
+
+Full support, limited RAMDAC support. Only ARK1000PV
+tested. Supports Clocks and Ramdac lines in config file.
+
+.SS ATI SVGA (VGA Wonder and friends)
+
+This is no real driver. I do not support any new modes.
+However it saves additional card setup and thus allows use
+of the plain VGA modes even when you are using non standard
+text modes. It is possible to enforce use of this driver
+even on ATI Mach32 but not very useful.
+
+.SS ATI Mach32
+
+The driver by Michael Weller supports all ATI BIOS-defined
+modes and more... It hits the best out of your card.
+Some modes may not have nice default timings but it uses
+the ATI's EEPROM for custom config or allows to specify modes
+in
+.BR libvga.config (5).
+Some problems may occur with quite some
+third party cards (usually on board) Mach32 based controllers
+as they do not completely conform to the Mach32 data sheets.
+Check out
+.BR svgalib.mach32 (7)
+(and
+.BR libvga.config (5)).
+
+.SS ATI Mach64 (rage)
+
+A driver for ATi Mach64 based cards with internal DAC.
+
+.SS Chips and Technologies chipsets 65525, 65535, 65546, 65548, 65550, and 65554 (usually in laptops).
+
+This server was written using the SVGALIB patch from Sergio
+and Angelo Masci as a starting point. This version of the code
+resembled the XFree server code that was used up to XFree
+3.1.2. As such it was incapable of programming the clocks,
+using linear addressing, Hi-Color, True-Color modes or the
+hardware acceleration. All of these features have since been
+added to the code.
+The 64200 and 64300 chips are unsupported, however these
+chips are very similar to the 6554x chips which are supported.
+
+.SS Cirrus Logic GD542x/3x
+
+All the modes, including 256 color, 32K/64K color,
+16M color (3 bytes per pixel) and 32-bit pixel 16M color
+modes (5434). Some bitblt functions are supported.
+The driver doesn't work with mode dumps, but uses a SVGA
+abstraction with mode timings like the X drivers.
+
+.SS Genoa(?) GVGA6400 cards.
+
+Supported.
+
+.SS Hercules Stingray 64/Video
+
+Is supported as an ARK2000PV
+
+.SS NV3 driver for the Riva128.
+
+This driver was written by Matan Ziv-Av and is derived
+from the XFree86 driver by David J. Mckay. It lacks 24bit modes (can the
+card do them at all?), acceleration support and pageflipping in
+threeDKit is broken.
+
+.SS Oak Technologies OTI-037/67/77/87
+
+Driver by Christopher Wiles; includes 32K color modes
+for OTI-087.
+
+.SS S3
+
+The driver is not complete, but should work on a number of
+cards/RAMDACs, and 640x480x256 should work on most card. The
+best support is for a 801/805 with AT&T20C490-compatible
+RAMDAC, and S3-864 + SDAC.  All 256/32K/64K/16M works for
+them (within the bounds of video memory & ramdac
+restrictions).
+
+The supported cards include S3 Virge and S3 Trio64 cards.
+
+None of the acceleration function is supported yet.
+
+The chip level code should work with the 964/868/968, but
+most likely the card they come on would use an unsupported
+ramdac/clock chip.  Support for these chips is slowly being
+added.
+
+Clocks and Ramdac lines in
+.BR libvga.config (5)
+supported.
+
+The maximum pixel clock (in MHz) of the ramdac can be
+set using a
+.B Dacspeed
+line in the config file. A reasonable default
+is assumed if the
+.B Dacspeed
+line is omitted.
+.B Clocks
+should be the same as in XFree86. Supported
+ramdac IDs:
+.BR Sierra32K ", " SC15025 ", " SDAC ", " GenDAC ", " ATT20C490 ", " ATT20C498 ", " IBMRGB52x .
+
+Example:
+.br
+.B Clocks 25.175 28.3 40 70 50 75 36 44.9 0 118 77 31.5 110 65 72 93.5
+.br
+.B Ramdac att20c490
+.br
+.B DacSpeed 85
+
+Also supported, at least in combination with the
+SC15025/26A ramdac, is the ICD 2061A clock chip.
+Since it cannot be autodetected you need to define it
+in the config file using a
+.B Clockchip
+line. As there is
+no way to read the current settings out of the 2061, you
+have the option to specify the frequency used when switching
+back to text mode as second argument in the
+.B Clockchip
+line. 
+
+This is especially required if your text mode is an 132
+column mode, since these modes use a clock from the clock
+chip, while 80 column modes use a fixed clock of 25 MHz.
+The text mode frequency defaults to 40 MHz, if omitted.
+
+Example:
+.br
+.B ClockChip icd2061a 40.0
+
+.SS Trident TVGA 8900C/9000 (and possibly also 8800CS/8900A/B) and also TVGA 9440
+
+Derived from tvgalib by Toomas Losin. TVGA 9440 support by ARK <ark@lhq.com, root@ark.dyn.ml.or>.
+
+Supports 640x480x256, 800x600x256, 1024x768x256 (interlaced and non-interlaced)
+Might be useful to add 16-color modes (for those equipped with a 512K TVGA9000)
+for the 8900 and 9000 cards.
+
+320x200x{32K, 64K, 16M}, 640x480x{256, 32K, 64K,
+16M}, 800x600x{256, 32K, 64K, 16M}, 1024x768x{16, 256}, 800x600x{16, 256, 32K,
+64K} modes are supported for the TVGA 9440.
+
+Autodetection can be forced with a:
+
+.RS
+.B chipset TVGA
+.I memory flags
+.RE
+
+line in the config file.
+
+.I memory
+is the amount of VGA memory in KB,
+.I flags
+is composed of three bits:
+.RS
+.TP
+.B bit2 = false, bit1 = false
+force 8900.
+.TP
+.B bit2 = false, bit1 = true
+force 9440.
+.TP
+.B bit2 = true, bit1 = false
+force 9680.
+.TP
+.B bit0 = true
+force noninterlaced.
+.TP
+.B bit0 = false
+force interlaced which only matters on 8900's with at least 1M
+since there is no 512K interlaced mode on the 8900 or any of the other cards.
+.RH
+
+.SS Tseng ET4000/ET4000W32(i/p)
+
+Derived from VGAlib; not the same register values.
+ET4000 register values are not compatible; see
+.BR svgalib.et4000 (7).
+
+Make sure the colors are right in hicolor mode; the vgatest
+program should draw the same color bars for 256 and hicolor
+modes (the DAC type is defined at compilation in
+.I et4000.regs
+or the dynamic
+registers file).
+ET4000/W32 based cards usually have an AT&T or Sierra 
+15025/6 DAC. With recent W32p based cards, you might have
+some luck with the AT&T DAC type.
+If the high resolution modes don't work, you can try
+dumping the registers in DOS using the program in the
+.I et4000/
+directory and putting them in a file
+.RI ( /etc/vga/libvga.et4000
+is parsed at runtime if
+.B DYNAMIC
+is defined in
+.IR Makefile.cfg
+at compilation (this is default)).
+
+Supported modes are
+640x480x256, 800x600x256, 1024x768x256,
+640x480x32K, 800x600x32K, 640x480x16M, etc.
+
+Reports of ET4000/W32i/p functionality are welcome.
+
+There may be a problem with the way the hicolor DAC register
+is handled; dumped registers may use one of two timing
+methods, with the value written to the register for a
+particular DAC for a hicolor mode (in vgahico.c) being
+correct for just one of the these methods. As a consequence
+some dumped resolutions may work while others don't.
+
+.SS Tseng ET6000
+
+Most modes of which the card is capable are supported.  The 8 15
+16 24 and 32 bit modes are supported.
+
+The ET6000 has a built in DAC and there is no problem coming from
+that area. The ET6000 is capable of acceleration, but this as well as
+sprites are not yet implemented in the driver. 
+
+The driver now uses modelines in libvga.config for user defined modes.
+It is sometimes useful to add a modeline for a resolution which does
+not display well.  For example, the G400x600 is too far to the right
+of the screen using standard modes.  This is corrected by including
+in 
+.B libvga.config 
+the line
+
+Modeline "400x600@72"  25.000 400  440  488  520   600  639  644  666
+
+More examples are given below.
+
+This driver was provided by Don Secrest.
+
+.SS VESA
+
+Please read README.vesa and README.lrmi in doc subdirectory of the standard
+distribution.
+
+Go figure! I turned off autodetection in the release,
+as a broken bios will be called too, maybe crashing the machine. Enforce
+.B VESA
+mode by putting a
+.B chipset VESA
+in the end of your
+.IR libvga.config (5).
+
+Note that it will leave protected mode and call the cards bios opening the door to
+many hazards.
+
+.SH 5. DETAILED COMMENTS ON CERTAIN DEVICE DRIVERS
+This section contains detailed information by the authors on certain
+chipsets.
+
+.SS AT3D (AT25)
+Also known as Promotion at25. Popular as the 2D part of a voodoo rush
+card.
+   
+I have written a driver for this chipset, based on the XF86 driver for
+this chipset.
+   
+The programs that work with this driver include all the programs in
+the demos directory, zgv and dvisvga (tmview).
+   
+I believe it should be easy to make it work on AT24, AT6422.
+   
+.SS ATI Mach32
+Please see
+.BR svgalib.mach32 (7).
+
+.SS ATI Mach64
+The rage.c driver works only on mach64 based cards with internal DAC.
+The driver might misdetect the base frequency the card uses, so if when setting
+any svgalib modes the screen blanks, or complains about out of bound freqencies,
+or the display is unsynced, then try adding the option
+.BR RageDoubleClock
+to the config file.
+ 
+.SS Chips and Technologies chipsets 65525, 65535, 65546, 65548, 65550, and 65554 (usually in laptops).
+Please see
+.BR svgalib.chips (7).
+
+.SS Tseng ET4000/ET4000W32(i/p)
+Please see
+.BR svgalib.et4000 (7).
+
+.SS Tseng ET6000
+I have only 2 Mbytes of memory on my ET6000 card, so I am not able to
+get all possible modes running. I haven't even tried to do all of the
+modes which I am capable of doing, but I am confident that I can
+manage more modes when I have time. I have enough modes working to
+make the card useful, so I felt it was worth while to add the driver
+to svgalib now.
+
+Linear graphics is working on this card, both with and without
+BACKGROUND enabled, and vga_runinbackground works.
+
+I decided it was best to quit working on more modes and try to get
+acceleration and sprites working.
+
+My et6000 card is on a PCI bus.  The card will run on a vesa bus, but
+since I don't have one on my machine I couldn't develop vesa bus
+handling.  I quit if the bus is a vesa bus.
+
+I check for an et6000 card, which can be unequivocally identified. The
+et4000 driver does not properly identify et4000 cards. It thinks the
+et6000 card is an et4000, but can only run it in vga modes.
+
+I have found the following four modelines to be useful in
+.B libvga.config
+or in
+.B ~/.svgalibrc
+for proper display of some modes.
+
+.br
+Modeline "512x384@79" 25.175 512 560 592 640  384 428 436 494
+.br
+Modeline "400x300@72" 25.000 400 456 472 520  300 319 332 350 DOUBLESCAN
+.br
+Modeline "512x480@71" 25.175 512 584 600 656  480 500 510 550
+.br
+Modeline "400x600@72" 25.000 400 440 488 520  600 639 644 666
+
+Don Secrest <secrest@uiuc.edu> Aug 21, 1999
+
+
+.SS Oak Technologies OTI-037/67/77/87
+First a few comments of me (Michael Weller <eowmob@exp-math.uni-essen.de>):
+
+As of this writing (1.2.8) fixes were made to the oak driver by
+Frodo Looijaard <frodol@dds.nl> to reenable OTI-067 support. It is unknown
+right now if they might have broken OTI-087 support. The author of the '87
+support Christopher Wiles <wileyc@moscow.com> owns no longer an OTI-087 card and
+can thus no longer give optimal support to this driver. Thus you might be
+better off contacting me or Frodo for questions. If you are a knowledgable
+OTI-087 user and experience problems you are welcome to provide fixes.
+No user of a OTI-087 is currently
+known to me, so if you are able to fix problems with the driver please do so
+(and contact me) as noone else can.
+
+Michael.
+
+Now back to the original Oak information:
+
+The original OTI driver, which supported the OTI-067/77 at 640x480x256, 
+has been augmented with the following features:
+
+.TP
+.B 1)
+Supported resolutions/colors have been expanded to 640x480x32K,
+800x600x256/32K, 1024x768x256, and 1280x1024x16.
+.TP
+.B 2)
+The OTI-087 (all variants) is now supported.  Video memory is 
+correctly recognized.
+.PP
+
+The driver as it exists now is somewhat schizoid.  As the '87 
+incorporates a completely different set of extended registers, I found it 
+necessary to split its routines from the others.  Further, I did not have 
+access to either a '67 or a '77 for testing the new resolutions.  If 
+using them causes your monitor/video card to fry, your dog to bite you, 
+and so forth, I warned you.  The driver works on my '87, and that's all I 
+guarantee.  Period.
+
+Heh.  Now, if someone wants to try them out ... let me know if they work.
+
+New from last release:
+
+32K modes now work for 640x480 and 800x600.  I found that the Sierra DAC 
+information in VGADOC3.ZIP is, well, wrong.  But, then again, the 
+information for the '87 was wrong also.
+
+64K modes
+.B do not
+work.  I can't even get Oak's BIOS to enter those modes.
+
+I have included a 1280x1024x16 mode, but I haven't tested it.  My monitor 
+can't handle that resolution.  According to the documentation, with 2 
+megs the '87 should be able to do an interlaced 1280x1024x256 ... again, 
+I couldn't get the BIOS to do the mode.  I haven't 2 megs anyway, so 
+there it sits.
+
+I have included routines for entering and leaving linear mode.  They 
+.B should
+work, but they don't.  It looks like a pointer to the frame 
+buffer is not being passed to SVGALIB.  I've been fighting with this one 
+for a month.  If anyone wants to play with this, let me know if it can be 
+make to work.  I've got exams that I need to pass.
+
+Tidbit: I pulled the extended register info out of the video BIOS.  When 
+the information thus obtained failed to work, I procured the OTI-087 data 
+book.  It appears that Oak's video BIOS sets various modes incorrectly 
+(e.g. setting 8-bit color as 4, wrong dot clock frequencies, etc.).  Sort 
+of makes me wonder ...
+
+Christopher M. Wiles (a0017097@wsuaix.csc.wsu.edu)
+.br
+12 September 1994
+
+.SH 6. GOALS
+
+I think the ability to use a VGA/SVGA graphics resolution in one
+virtual	console, and being able to switch to any other virtual console
+and back makes a fairly useful implementation of graphics modes in
+the Linux console.
+
+Programs that use
+.B svgalib
+must be setuid root. I don't know how
+desirable it is to have this changed; direct port access can hardly
+be done without. Root privileges can now be given up right after
+initialization. I noticed some unimplemented stuff in the kernel
+header files that may be useful, although doing all register I/O via
+the kernel would incur a significant context-switching overhead. An
+alternative might be to have a pseudo
+.I /dev/vga
+device that yields
+the required permissions when opened, the device being readable by
+programs in group vga.
+
+It is important that textmode is restored properly and reliably; it
+is fairly reliable at the moment, but fast console switching back
+and forth between two consoles running graphics can give problems.
+Wild virtual console switching also sometimes corrupts the contents
+of the textmode screen buffer (not the textmode registers or font).
+Also if a program crashes it may write into the area where the saved
+textmode registers are stored, causing textmode not be restored
+correctly. It would be a good idea to somehow store this information
+in a 'safe' area (say a kernel buffer). Note that the
+.BR vga_safety_fork (3)
+thing has the same idea.
+
+Currently, programs that are in graphics mode are suspended while
+not in the current virtual console. Would it be a good idea to let
+them run in the background, virtualizing framebuffer actions (this
+should not be too hard for linear banked SVGA modes)? It would be
+nice to have, say, a raytracer with a real-time display run in the
+background (although just using a separate real-time viewing
+program is much more elegant).
+
+Anyone wanting to rewrite it all in a cleaner way (something with
+loadable kernel modules shouldn't hurt performance with linear
+framebuffer/vgagl type applications) is encouraged.
+
+Also, if anyone feels really strongly about a low-resource and
+truecolor supporting graphical window environment with cut-and-paste,
+I believe it would be surprisingly little work to come up with a
+simple but very useful client-server system with shmem, the most
+useful applications being fairly trivial to write (e.g. shell
+window,	bitmap viewer).	And many X apps would port trivially.
+
+This is old information, please be sure to read
+.BR svgalib.faq (7)
+if you are interested in further goals.
+
+.SH 7. REFERENCES
+
+The latest version of svgalib can be found on
+.IR sunsite.unc.edu " in " /pub/Linux/libs/graphics
+or
+.IR tsx-11.mit.edu " in " /pub/linux/sources/libs
+as
+.IR svgalib-X.X.X.tar.gz .
+As of this writing the latest version is
+.IR svgalib-1.4.1.tar.gz .
+There are countless mirrors of these ftp servers in the world. Certainly
+a server close to you will carry it.
+
+The original VGAlib is on
+.IR tsx-11.mit.edu ", " pub/linux/sources/libs/vgalib12.tar.Z .
+.I tvgalib-1.0.tar.Z
+is in the same directory.
+
+SLS has long been distributing an old version of VGAlib.
+Slackware keeps a fairly up-to-date version of svgalib, but it
+may be installed in different directories from what svgalib likes
+to do by default. The current svgalib install tries to remove most
+of this. It also removes
+.IR /usr/bin/setmclk " and " /usr/bin/convfont ,
+which is a security risk if setuid-root. Actually the recent makefiles try to do
+a really good job to cleanup the mess which some distributions make.
+
+If you want to recompile the a.out shared library, you will need the
+DLL 'tools' package (found on
+.IR tsx-11.mit.edu ", " GCC " dir)."
+To make it work with recent ELF compiler's you actually need to hand patch it. You
+should probably not try to compile it. Compiling the ELF library is deadly simple.
+
+And here is a list of other references which is horribly outdated.
+There are many more svgalib applications as well as the directories might have changed.
+However, these will give you a start point and names to hunt for on CD's or in
+ftp archives.
+
+.SS Viewers (in /pub/Linux/apps/graphics/viewers on sunsite.unc.edu):
+
+.PD 0
+.TP
+.B spic
+Picture viewer; JPG/PPM/GIF; truecolor; scrolling.
+.TP
+.B zgv
+Full-featured viewer with nice file selector.
+.TP
+.B see-jpeg
+Shows picture as it is being built up.
+.TP
+.B mpeg-linux
+svgalib port of the Berkeley MPEG decoder (mpeg_play); it also includes an X binary.
+.TP
+.B flip
+FLI/FLC player (supports SVGA-resolution).
+.PD
+.PP
+.SS Games (in /pub/Linux/games on sunsite.unc.edu):
+
+.PD 0
+.TP
+.B bdash
+B*lderdash clone with sound.
+.TP
+.B sasteroids
+Very smooth arcade asteroids game.
+.TP
+.B yatzy
+Neat mouse controlled dice game.
+.TP
+.B vga_cardgames
+Collection of graphical card games.
+.TP
+.B vga_gamespack
+Connect4, othello and mines.
+.TP
+.B wt
+Free state-of-the-art Doom-like engine.
+.TP
+.B Maelstrom
+A very nice asteroids style game port from Mac.
+.TP
+.B Koules
+A game. (I've no idea what it looks like)
+.PD
+.PP
+.SS Docs
+In the vga directory of the
+.B SIMTEL MSDOS
+collection, there is a
+package called
+.I vgadoc3
+which is a collection of VGA/SVGA register
+information.
+
+The XFree86 driver sources distributed with the link-kit may be
+helpful.
+
+.SS Miscellaneous
+
+There's an alternative RAW-mode keyboard library by Russell Marks for
+use with
+.B svgalib
+on
+.IR sunsite.unc.edu .
+
+.BR LIBGRX ,
+the extensive framebuffer library by Csaba Biegl distributed
+with
+.BR DJGPP ,
+has been ported to Linux. Contact Hartmut Schirmer
+(phc27@rz.uni-kiel.d400.de, subject prefix "HARTMUT:"). A more
+up-to-date port by Daniel Jackson (djackson@icomp.intel.com) is on
+.IR sunsite.unc.edu .
+
+The vgalib ghostscript device driver sources can be found on
+.IR sunsite.unc.edu ", " /pub/Linux/apps/graphics .
+Ghostscript patches from Slackware:
+.IR ftp.cdrom.com ", " /pub/linux/misc .
+.B gnuplot
+patches are on
+.IR sunsite.unc.edu .
+
+Mitch D'Souza has written font functions that work in 16 color modes
+and can use VGA textmode (codepage format) fonts; these can be found
+in his
+.B g3fax
+package in
+.IR sunsite.unc.edu .
+These functions may go into a later
+version of
+.BR svgalib .
+
+.SH 8. KNOWN BUGS
+This section is most probably outdated, none of these problems are no longer
+reported.
+
+Using a 132 column textmode may cause graphics modes to fail. Try
+using something like 80x28.
+
+The console switching doesn't preserve some registers that may be
+used to draw in planar VGA modes.
+
+Wild console switching can cause the text screen to be corrupted,
+especially when switching between two graphics consoles.
+
+On ET4000, having run XFree86 may cause high resolution modes to
+fail (this is more XFree86's fault).
+
+The Trident probing routine in the XFree86 server may cause standard
+VGA modes to fail after exiting X on a Cirrus. Try putting a 'Chipset'
+line in your Xconfig to avoid the Trident probe, or use the link kit
+to build a server without the Trident driver. Saving and restoring
+the textmode registers with savetextmode/textmode (restoretextmode)
+should also work. [Note: svgalib now resets the particular extended
+register, but only if the Cirrus driver is used (i.e. the chipset
+is not forced to VGA)] [This is fixed in XFree86 v2.1]
+
+Some Paradise VGA cards may not work even in standard VGA modes. Can
+anyone confirm this?
+
+Piping data into a graphics program has problems. I am not
+sure why. A pity, since zcatting a 5Mb FLC file into flip on a 4Mb
+machine would be fun.
+
+The
+.B tseng3.exe
+DOS program include as source in the svgalib distribution doesn't recognize any modes on
+some ET4000 cards.
+Also ET4000 cards with a Acumos/Cirrus DAC may only work correctly
+in 64K color mode.
+
+.SH FILES
+.IR /etc/vga/libvga.config
+.br
+.IR /etc/vga/libvga.et4000
+
+.SH SEE ALSO
+.BR svgalib.et4000 (7),
+.BR svgalib.chips (7),
+.BR svgalib.mach32 (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR 3d (6),
+.BR accel (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR lineart (5),
+.BR mousetest (6),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6),
+.BR convfont (1),
+.BR dumpreg (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1),
+.BR mach32info (1).
+
+.SH AUTHOR
+There are many authors of svgalib. This page was edited by
+Michael Weller <eowmob@exp-math.uni-essen.de>.
+The original documentation and most of
+.B svgalib
+was done by Harm Hanemaayer <H.Hanemaayer@inter.nl.net> though.

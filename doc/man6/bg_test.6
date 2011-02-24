@@ -1,0 +1,90 @@
+.TH bg_test 6 "8 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+bg_test \- test the background mode of svgalib
+.SH SYNOPSIS
+
+.BI "bg_test [" linear ]
+
+.SH DESCRIPTION
+Tests the enhanced support of recent svgalibs to draw while
+switched to the background. Draws a small centered white box
+then waits until you switch to another vc. Draws some outer
+box frame around it
+.B while
+background, which you can see
+when you switch back to it. For obvious reasons, your version
+of svgalib must have
+.B BACKGROUND
+support enabled (which is the
+default as of this writing).
+When finished, press any key to end
+.BR bg_test .
+
+The demo uses a
+.B G320x200x256
+mode or the one you set with
+.BR SVGALIB_DEFAULT_MODE .
+
+If you specify the
+.I linear
+parameter the demo will use
+.BR vgagl (7)
+and
+.BR vga_setlinearaddressing (3)
+to test linear mode in background.
+
+This demo is part of svgalib and can be found in the
+.I demos/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I demos/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_runinbackground (3),
+.BR threed (6),
+.BR accel (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

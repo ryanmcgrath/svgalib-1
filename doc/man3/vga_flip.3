@@ -1,0 +1,73 @@
+.TH vga_flip 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_flip \- toggle between text and graphics mode
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_flip(void);"
+
+.SH DESCRIPTION
+switches between graphics and text mode without 
+destroying the screen contents. This makes it possible for
+your application to use both text and graphics output.
+
+.BR However ,
+This is an old vgalib function. You should really only use it for debugging as it runs
+extremely unstable because svgalib now does its own virtual console management. If you
+want to perform a similar action,
+save the current screen contents with ordinary memory copy operation to the frame buffer
+or
+.BR gl_getbox (3),
+set
+.BR vga_setmode(TEXT) ,
+then call
+.BR vga_setmode (3) 
+to return to graphics operation and restore the screen contents with memory or
+.BR gl_putbox (3).
+
+One could also use
+.BR vga_drawscansegment (3)
+and
+.BR vga_getscansegment (3)
+calls.
+
+.B However, avoid any calls to vga_flip() in your applications.
+
+The function always returns 0, a fact on which you shouldn't rely.
+
+It might be useful if you are debugging one of your svgalib applications though.
+If your program reaches a breakpoint while
+in graphics mode, you can switch to text mode with the gdb command
+
+.B "print vga_flip()"
+
+and later restore the graphics screen contents with the same command.
+It is useful to define the following alias in gdb:
+
+.B "define flip <Return> print vga_flip() <Return> end <Return>"
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_init (3),
+.BR vga_setflipchar (3),
+.BR vga_drawscanline (3),
+.BR vga_drawscansegment (3),
+.BR vga_getscansegment (3),
+.BR gl_getbox (3),
+.BR gl_putbox (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

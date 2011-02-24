@@ -1,0 +1,876 @@
+.TH svgalib.mach32 7 "1 August 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+svgalib.mach32 \- Information on the Mach32 chipset driver
+
+.SH TABLE OF CONTENTS
+.BR " 0. " "Introduction"
+.br
+.BR " 1. " "Specifying pixel clocks"
+.br
+.BR " 2. " "Copyrights"
+.br
+.BR " 3. " "The mach32info utility"
+.br
+.BR " 4. " "Third party cards"
+.br
+.BR " 5. " "Logical linewidth"
+.br
+.BR " 6. " "Noisy video signals"
+.br
+.BR " 7. " "The configuration EEPROM"
+.br
+.BR " 8. " "EEPROM woes"
+.br
+.BR " 9. " "The Mach32Eeprom command"
+.br
+.BR "10. " "Setup of the memory aperture (linear framebuffer)"
+.br
+.BR "11. " "Accelerator support and other weird features"
+.br
+.BR "12. " "Ramdacs"
+.br
+.BR "13. " "Meaning of the detection message from svgalib"
+.br
+.BR "14. " "Conclusions"
+
+.SH 0. INTRODUCTION
+The driver should allow you to use any of the graph-modes
+your Mach32 card supports. Note that there is no support for
+<8bpp modes and that I won't ever implement that because I don't see
+any reason for doing so. All standard VGA-modes are supported, of course
+(by using the standard VGA driver routines).
+
+If you configured your Mach32 for a memory aperture and it is
+at least as big as the memory of your card (that is, not a 1MB
+memory aperture for a 2MB card) support for linear frame buffer
+access of svgalib is given.
+
+Auto detection of the Mach32 seems not to work on all cards. That's
+really strange since I got the code from the X people. It should be OK
+regardless of my docs. Well, I fixed that (hopefully). Actually
+the bug was found by Daniel Lee Jackson (djackson@ichips.intel.com).
+(Thanks again.. It was so silly... I would have never found it)
+If you still have problems just put a chipset Mach32 in your config file.
+
+.SH 1. SPECIFYING PIXEL CLOCKS
+.B WARNING!
+The Mach32 driver needs to know correct clock frequencies for graceful
+DAC configuration. Wrong clocks may damage your card! However, this version
+contains code for automatic clock detection. Since clock detection is time
+critical, please do it on a completely idle system. Then put the printed
+out
+.B clocks
+line in your
+.BR libvga.config (5)
+file.
+
+The driver tries to do this for you.
+After that, you can restart whatever svgalib program you used and you are
+set. If you already put a
+.B clocks
+line in your config by hand, comment it
+out to have the driver check your clocks.
+
+Since clock probing is time critical, values differ from time to time, you
+may try it multiple times and see which values seem to be most exact. You
+can also compare them with the standard clock chips for Mach32 cards in
+.BR libvga.config (5)).
+
+The clock probing relies on the 7th clock being 44.9MHz as this is what Xfree does.
+If this is not true (and it is not always), probing is hosed. See
+.BR libvga.config (5)
+for a list of the
+.B clocks
+used by common svgalib cards.
+
+.SH 2. COPYRIGHTS
+Some tiny routines are copied from Xfree86. The clock detection code is almost
+just copied. So I repeat the copyright statements for these parts here:
+
+Copyright 1992 by Orest Zborowski <obz@Kodak.com>
+.br
+Copyright 1993 by David Wexelblat <dwex@goblin.org>
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the names of Orest Zborowski and David Wexelblat 
+not be used in advertising or publicity pertaining to distribution of 
+the software without specific, written prior permission. Orest Zborowski
+and David Wexelblat make no representations about the suitability of this 
+software for any purpose. It is provided "as is" without express or 
+implied warranty.
+
+.B Orest Zborowski and David Wexelblat disclaim all warranties with regard 
+.B to this software, including all implied warranties of merchantability and 
+.B fitness, in no event shall Orest Zborowski or David Wexelblat be liable 
+.B for any special, indirect or consequential damages or any damages 
+.B whatsoever resulting from loss of use, data or profits, whether in an 
+.B action of contract, negligence or other tortious action, arising out of 
+.B or in connection with the use or performance of this software.
+
+Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
+.br
+Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
+
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of Thomas Roell not be used in
+advertising or publicity pertaining to distribution of the software without
+specific, written prior permission. Thomas Roell makes no representations
+about the suitability of this software for any purpose. It is provided
+"as is" without express or implied warranty.
+
+.B Thomas Roell, Kevin E. Martin, and Rickard E. Faith disclaim all
+.B warranties with regard to this software, including all implied
+.B warranties of merchantability and fitness, in no event shall the authors
+.B be liable for any special, indirect or consequential damages or any
+.B damages whatsoever resulting from loss of use, data or profits, whether
+.B in an action of contract, negligence or other tortious action, arising
+.B out of or in connection with the use or performance of this software.
+
+Author:  Thomas Roell, roell@informatik.tu-muenchen.de
+
+Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
+.br
+Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
+.br
+Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
+
+And here is my own copyright:
+
+This driver is free software; you can redistribute it and/or
+modify it without any restrictions. This library is distributed
+in the hope that it will be useful, but without any warranty.
+
+Copyright 1994 by Michael Weller
+
+Email addresses as of this writing:
+
+eowmob@exp-math.uni-essen.de mat42b@spi.power.uni-essen.de
+
+.B Michael Weller disclaims all warranties with regard
+.B to this software, including all implied warranties of merchantability and
+.B fitness, in no event shall Michael Weller be liable
+.B for any special, indirect or consequential damages or any damages
+.B whatsoever resulting from loss of use, data or profits, whether in an
+.B action of contract, negligence or other tortious action, arising out of
+.B or in connection with the use or performance of this software.
+
+.SH 3. THE MACH32INFO UTILITY
+The
+.BR mach32info (6)
+utility or demo reads out all configuration registers and the configuration
+EEPROM of your Mach32 card. If 
+there is a problem with the particular card you have, compile
+and run the utility in the
+.I mach32/
+directory of the svgalib distribution and send it's stdout to me
+This might also be useful if you need a lot of options (e.g. clocks on new models?) to
+get it to work so that this can be done automatically in future versions.
+
+.SH 4. THIRD PARTY CARDS
+I got a few reports about AST systems with onboard Mach32.
+They do feature an incompatible EEPROM setup, but I think I got around
+that. Nevertheless the Mach32 chipset driver doesn't work out of the box
+on any AST system I heard of.
+
+Since original ATI Mach32 demos and tools don't work as well, I've to claim
+that the Mach32 on these AST systems does not conform to ATI's Mach32 docs.
+Fortunately, Vernon C. Hoxie <vern@zebra.alphacdc.com> found a work around
+after years (really!) of investigating. AST Mach32 seems to work now. The work around was
+also submitted to Xfree and will be incorporated to allow running it on the
+AST hardware too in recent versions. Please read on the
+.B misc_ctl
+command below.
+
+Dell users should have a look at the
+.BR "vendor" ", " ramdac ", and " svgaclocks
+commands below (if they have problems with the default settings).
+
+.SS Commands to support third party cards
+I had to learn that those cards seem
+to use not only non standard clocks for the Mach32, but also for the included
+SVGA. However, since people often like to use proprietary, non standard VGA
+(read 80x25) textmodes, the Mach32 driver has to set the included SVGA to
+a VGA compatible clock frequency. Otherwise svgalib has problems using plain VGA
+modes. This screws VGA modes up if these clocks have different values on third
+party Mach32 cards.
+
+.TP
+.BI "svgaclocks " n
+with
+.I n
+a number between
+.BR 0 " and " 31
+to select the svga clocks to be used in vga
+modes. The bits of
+.I n
+refer to specific ATI register bits to complicated to
+explain here. Even if I would, I can't tell which clocks they would select
+on your third party card (which is the actual problem)
+
+.B svgaclocks 9
+is the default setting and correct for original ATI cards.
+
+Often
+.B svgaclocks 0
+(Dell cards) works.
+.TP
+.B svgaclocks keep
+is special in that the
+driver will not touch any SVGA timings. This requires the Mach32 SVGA part to
+be in a VGA compatible mode when the svgalib application is started, that is,
+you must use 80x25 (maybe 80x50) console textmodes.
+.PP
+
+As I mentioned already,
+Vernon C. Hoxie <vern@zebra.alphacdc.com> really seems to have located the reason
+for the Mach32 AST problems. Any access to
+.B MISC_CTL
+locks up the card & system. Fortunately
+.B MISC_CTL
+is only used for some DAC fine tuning (actually the setting you can
+fine tune with the
+.B blank
+command) which is only of barely noticable effect to the screen.
+
+The following configuration commands exist to support AST cards:
+
+.TP
+.B misc_ctl keep-off
+Do not dare to touch MISC_CTL.
+.TP
+.B misc_ctl use
+Use it for fine tuning of the Ramdac setup (default).
+.PP
+
+Finally, for your convenience there exist:
+
+.PD 0
+.TP
+.B vendor ati
+.TP
+.B vendor dell
+.TP
+.B vendor ast
+.PD
+These are macros that expand to settings for
+.BR svgaclocks ", " ramdac ", " misc_ctl ", and " mach32eeprom
+that are usually correct for ATI, Dell, AST cards. Be aware
+that they really work like macros. That is, they override any setting
+of
+.BR svgaclocks ", " ramdac ", " misc_ctl ", and " mach32eeprom
+made before them and individual aspects will be changed by a following
+.BR svgaclocks ", " ramdac ", " misc_ctl ", and " mach32eeprom
+command.
+
+Note that the
+.B mach32eeprom ignore
+required for some Dell cards requires
+you to include explicit timings for Mach32 modes other than 640x480x256.
+The
+.I mach32/mach32.std-modes
+file in the svgalib distribution contains recommendations for modes from ATI.
+
+I heard about a bug in some ATI chipsets returning wrong memory amounts
+configs. (But cannot confirm that)
+
+You can enforce correct chipset identification from the configuration file:
+
+.TP
+.BI "chipset Mach32 " "chiptype memory"
+where
+.I chiptype
+is the sum of at exactly one value from each of the following two groups
+
+.PD 0
+.RS
+.TP
+.B 128
+use no memory aperture.
+.TP
+.B 160
+use a 1MB memory aperture.
+.TP
+.B 192
+use a 4MB memory aperture.
+.TP
+.B 0
+choose size for the memory aperture automatically.
+.PD
+.PP
+and
+
+.PD 0
+.TP
+.B 16
+Ramdac is of type 0 (ATI68830)
+.TP
+.B 17
+Ramdac is of type 1 (IMS-G173, SC11486)
+.TP
+.B 18
+Ramdac is of type 2 (ATI68875, TLC34075)
+.TP
+.B 19
+Ramdac is of type 3 (INMOS176, INMOS178)
+.TP
+.B 20
+Ramdac is of type 4 (Bt481, Bt482)
+.TP
+.B 21
+Ramdac is of type 5 (ATI68860)
+.TP
+.B 0
+Ramdac type is queried from Mach32 chip.
+.PD 1
+.RE
+
+.IP
+.I memory
+is the amount of videomemory in KB.
+.PP
+Note that the type of the ramdac can be set more conveniently with the
+.B ramdac
+command.
+
+.SH 5. LOGICAL LINEWIDTH
+At least my VRAM card seems to be very peculiar about logical
+linewidths. From my experience a multiple of 64 pels is needed.
+Your mileage may vary. Use the config file options to adjust it
+and tell me if your card needs a different value. Include the name and
+model number of the card and what the correct numbers should be. This
+is so that I can correct the auto configuration of the driver.
+
+If some svgalib application has problems, note that you can
+force the logical linewidth to the default value from the
+configfile. Probably this will lead to glitches in some 800x600
+resolutions. You can
+.B inhibit
+these resolutions from the configfile
+as well. Apropos glitches, I found no guidelines as to what clockrates
+to use due to memory restrictions. I adjusted the driver, such that
+I get a stable pic in all resolutions. However sometimes the screen
+is disturbed by heavy video memory accesses. If you don't like that,
+reduce the clocks used with the maxclock16 or maxclock24 command, resp.
+This may of course lead to none of the predefined modes being used.
+Then you can try to define your own mode via the define command.
+
+.SH 6. NOISY VIDEO SIGNALS
+If you get some flicker or heavy noise on your screen, some fine tuning may
+be needed. My docs didn't give me hints as to what each card can stand.
+Especially DRAM cards may give problems (I've VRAM). In that case, use the
+fine tuning config commands and send me your results along with the output
+of
+.BR mach32info (6).
+Then I can include them in my next release.
+
+.SS Fine-tuning configuration commands
+
+First you should think about the
+.B maxclock*
+configuration commands to reduce pixel clocks used for each color depth.
+
+Especially important for DRAM cards is the video FIFO depth used to queue
+memory values for writing to the screen. Here is a command to set this
+value for the 8bpp modes:
+
+.TP
+.BI "vfifo8 " number
+where
+.I number is in range
+.BR 0 " - " 15 .
+The default is now 6.
+
+Since vfifo is of some impact to the speed of the card, tell me the
+lowest setting that satisfies your card.
+
+For 16/24/32 modes, there are non-zero values preset from internal tables and
+the EEPROM, however you can enforce minimal vfifo values with:
+.PP
+.BI "vfifo16 " number
+.br
+.BI "vfifo24 " number
+.br
+.BI "vfifo32 " number
+
+.TP
+.BI "blank " number
+where
+.I number
+is
+.BI "4 * " pixel_delay " + " blank_adjust
+where
+.IR pixel_delay " and " blank_adjust
+are in range
+.BR 0 " .. " 3 .
+.I pixel_delay
+delays pixels before they are sent to the DAC and
+.I blank_adjust
+adjusts the blank pulse for type 2 DAC's.
+.B blank
+should be set correctly for each DAC type automatically.
+So use it only as a last resort.
+
+.TP
+.BI "latch " number
+where
+.I number
+is the sum of zero or more of the following numbers:
+.RS
+.TP
+.B 128
+VRAM serial delay latch enable, DRAM latch bits 63 - 0 enable.
+.TP
+.B 4096
+Latch video memory data.
+.TP
+.B 8192
+Memory data delay latch enable for data bits 63 - 0.
+.TP
+.B 16384
+Memory full clock pulse enable.
+.RE
+.IP
+Default is to switch all settings on (they are on on my card by default anyway).
+.PP
+
+Note that these commands may vanish again once they are no longer needed for
+debugging purposes.
+
+There is no 320x200 mode in the EEPROM of the Mach32 at all, however
+I defined one in the default configuration file for you. This is the best
+thing I could get up on my card/screen. Note that it will probably
+have big borders on your screen, and black lines in between the pixel lines.
+This is because of the lack of low clocks < 16MHz on the Mach32 and the
+lack of a line doubling mode as VGA has. The Mach32 is not intended
+for such low resolutions. If you find a better mode or have an idea,
+please let me know. You can also just remove my timings from the
+default configuration file.
+
+.SH 7. THE CONFIGURATION EEPROM
+Ah yes, about the EEPROM, I figured out how to read out the Mach32
+EEPROM. I did it by disassembling the BIOS routine mentioned in the
+docs. I then redid it in C. The driver will use everything it finds
+there.
+
+Use the Mach32 install tools (they should have reached you together with
+your Mach32 VGA card) to setup your card/monitor combo correctly.
+The
+.B monitors
+setting from the config file (or default of 35kHz or something)
+will be obeyed by the driver nevertheless (for safety!).
+
+As you probably know already, accessing the EEPROM causes some screen
+flickering. If this annoys you (or even worse your monitor) have a look
+at the
+.B mach32eeprom
+command described below. This allows you to put the data from the
+EEPROM into a file and which can be read whenever it is required.
+
+Don't even think about changing the contents of the file. (There is
+an easily faked checksum in it.). Anyway the driver ensures (hopefully)
+that no damage can be caused.
+
+Also, if some mode is not well aligned on your screen or you don't like
+it's sync frequency, consider using the Mach32 install utility (setup for
+custom monitor) and set one up interactively. If there is no valid faster
+(higher VSYNC) standard mode given in the EEPROM the driver will use
+that mode. You will find that this is fun compared with calculating video
+timings for
+.IR /etc/XF86Config " or " /etc/vga/libvga.config . 
+
+However the install utility does restrict the maximum pixel depth for
+custom modes sometimes unneeded hard and the driver obeys that.
+(Hmm.. actually it should be smart enough to decide itself which pixel
+depth it can use in that mode.)
+Since the standard modes are usually only slightly shifted to one side
+a file with the configuration commands representing the standard modes is given
+in
+.I mach32/mach32.std-modes
+in the svgalib distribution. You can use these as a starting point.
+
+But here are some real problems:
+
+.SH 8. EEPROM WOES
+I got 2 reports of people having problems with incorrect EEPROM checksums.
+Both had motherboards with onboard Mach32 VGA's from AST. I guessed a checksum
+algorithm from those reports and put this in the code in addition to the
+standard ATI style. Still I got a report of someone whose EEPROM was completely
+empty. If you have problems with checksums send me the output of
+.BR mach32info (6)
+and I'll see what I can do.
+
+By default svgalib writes a complaining message and ignores the contents.
+You can have svgalib ignore the checksum and contents with the configuration command
+
+.B mach32eeprom ignore
+
+Then you can decide to use the partial info that is still in it. Use
+
+.B mach32eeprom ignore usetimings
+
+to use the videomodes that are defined in the EEPROM (if no better modes are
+known by the driver). This is usually safe, because the driver knows
+which modes are safe for your hardware (if
+.BR clocks ", " monitor " and " ramdac
+are configured correctly). You can also allow the driver to use the
+configuration for the linear frame buffer in the EEPROM:
+
+.B mach32eeprom ignore useaperture
+
+or
+
+.B mach32eeprom ignore usetimings useaperture
+
+However I discourage this because the driver will just enable what the EEPROM
+says about the aperture. Use
+.BR mach32info (6)
+to check the address it will choose is safe. It might be
+better to use
+.B setuplinear
+to set up a 4MB aperture at a free address range.
+
+.SH 9. THE MACH32EEPROM COMMAND
+The
+.B mach32eeprom
+allows to work around these problems. Here is the complete description for this
+configuration command.
+
+.TP
+.BI "mach32eeprom " filename
+The
+.I filename
+has to begin with a "/".
+
+Unfortunately reading the EEPROM causes annoying
+screen flickering and is slow.
+To avoid this, specify a
+.I filename
+from which to read the contents of the
+EEPROM.
+
+If the file cannot be read, the EEPROM is read out and the file
+is created. There is a very simple checksum put into this file. Although
+it can easily be fooled, don't change the file except you know
+.B very, very
+well what you are doing.
+
+Also, as long as the file exists, changes in the
+Mach32's EEPROM are ignored. Delete the file to recreate an updated
+version on next use of svgalib. You should ensure that the permissions of
+the file don't allow normal users to change it. (This may happen if umask
+has a bad value when svgalib creates the file).
+
+Example:
+
+.B mach32eeprom /etc/vga/mach32.eeprom
+
+.PP
+
+Due to problems with some boards this command got
+heavily expanded:
+
+.TP
+.BI "mach32eeprom " subcommand1 " [" subcommand2 "...]"
+At least one
+.I subcommand
+is needed. Valid
+.I subcommands
+are:
+
+.RS
+.TP
+.B ignore
+Don't complain about checksum and don't use any EEPROM contents.
+.TP
+.B useaperture
+Use the configuration for the memoryaperture given in the EEPROM.
+.TP
+.B usetimings
+Use videomodes found in the EEPROM of the board.
+.TP
+.B nofile
+Forget about any filename that maybe was already configured.
+Don't read a file, don't create one.
+.TP
+.BI "file " filename
+Newstyle form to specify the
+.IR filename ;
+On contrary to the
+.BI "mach32eeprom " filename
+form it can be mixed with any other
+mach32eeprom subcommand.
+.TP
+.B updatefile
+Don't read the file, always read the EEPROM (except when
+.B ignore
+is given) and create an
+uptodate image of the EEPROM.
+.TP
+.B keepfile
+Disable all previous updatefile commands.
+.TP
+.B compatible
+Fall back to default behavior: If checksum on the EEPROM data is not ok, use nothing of the
+configuration data. If it is ok, configure everything as specified in the EEPROM.
+.RE
+.IP
+The subcommands are intended to be used together and are performed in the order
+specified. For example:
+
+.B mach32eeprom ignore useaperture usetimings
+
+will ignore the checksum of your EEPROM, but use its contents.
+Order is vital! So:
+
+.B mach32eeprom useaperture usetimings ignore
+
+won't use any configuration from your EEPROM. Be careful with the
+.B useaperture
+subcommand. Please see the
+.B EEPROM WOES
+section. Note that any non
+understood
+.I subcommand
+will terminate the
+.B mach32eeprom
+command silently! Use only one
+.I subcommand
+per
+.B mach32eeprom
+command to avoid this.
+
+The
+.B mach32eeprom
+command is usually not allowed in the environment variable
+.BR SVGALIB_CONFIG .
+
+.SH 10. SETUP OF THE MEMORY APERTURE (LINEAR FRAMEBUFFER)
+
+Due to poor design, Xfree86 insists on setting up the aperture itself. It
+doesn't reset the original settings at a VC switch once it runs. You
+should not start X for the first time after a boot as long as an svgalib
+application is running. This will result in pre X values being restored at a VC
+switch by svgalib. If you use svgalib and XF86_Mach32 together, run X first or
+at least do not start it while any svgalib appl. is still running. After X was
+started once you can use svgalib and X in all combinations w/o any problems. Xfree
+uses whatever address is given in
+the
+.B MEM_CFG
+Mach32 register for a 4MB aperture, even if the aperture is not already enabled and
+the value in this register is pointless garbage. This is IMHO
+a dangerous bug as some systems may work only with a 1MB aperture.
+
+However, usage of a correct EEPROM circumvents any such problems. If you
+cannot use that, use
+.B mach32info (6)
+to find the address in
+.B MEM_CFG.
+Then,
+.BR "if it is a senseable setting for your system" ,
+enable a 4MB aperture at that address with
+.BR setuplinear .
+Ensure that no other card or memory uses the address range you choose.
+
+.SH 11. ACCELERATOR SUPPORT AND OTHER WEIRD FEATURES
+This version now has support for all accelerator functions of svgalib.
+However they were intended for use with the cirrus chips. It may happen
+that at runtime they find they cannot emulate the function actually
+requested. Then you should disable the corresponding blit function
+(at least for that application) with the blit config command.
+
+Data transfer between the host and the Mach32 is normally via I/O. This
+proved to be pretty slow. If a big enough aperture is available, a simple
+memory copy is used instead. This is usually much faster. You can change
+which method is used with the blit command. This I/O option affects only
+.BR vga_imageblt (3).
+The other functions are incredible fast.
+
+For type 2 DACS, there is support for 8 bit per color (instead of the normal 6)
+in the RGB triple in the color lookup table of the 256 color modes. This
+can be enabled by an application, if it supports it. The
+.BR testaccel (6)
+demo uses it if supported by your hardware.
+You can use
+.BR vga_ext_set (3)
+to use it from your programs.
+
+.SH 12. RAMDACS
+Mach32 Ramdacs are specified by a type in range 1 .. 5. This type can be
+queried from the Mach32 and then specifies how to set up the ramdac. A list
+of actual hardware chips used for each type exists, but is not of much use. The
+Mach32 will return a type and the ramdac will be completely hardware compatible to
+one of the given type.
+
+Type 1 and 4 Dacs need different clock frequencies for high colormodes.
+For 32K/64K colormodes the frequencies have to be doubled and for
+16M colors (type 4 only) they have to be tripled. I followed the ATI scheme
+and did this internally. However this means that for 32K/64K you can use
+only clocks for which the doubled frequencies can be generated as well.
+
+This is no hard restriction as the 16 clocks of the Mach32 can be divided by 2.
+Thus if you setup some mode yourself try to use one of the divided clocks in
+your timings and I can use the undivided clocks internally.
+
+It is a real restriction for 16M colors. ATI themself only supports 25MHz
+(640x480) here by use of a 75MHz clock. Depending on your clock chip other
+values may be usable as well. Even the doubled/tripled clocks have to be less
+than the magic 80 MHz. However the driver does all this itself. It may just
+happen that some of the predefined or one of your handmade mode-timings
+can't be used because the clock that is used cannot be doubled/tripled.
+Even though there is already some tolerance in the driver you may fix that by
+slighty changing the clock values that you set with the
+.B clocks
+command. But
+note that this will as well affect the ability of the driver to calculate
+video timings and thus it ability to check the monitor and DAC safety
+restrictions.
+
+In addition (in complete contrast to my original ATI docs) RAMDAC 4 does not support
+RGB with blue byte first but only with red first. This required special handling and me
+adding a bunch of functions to all modules of svgalib and vgagl. The added functions are
+of lower performance than the usual functions. However most data has to be completely
+mangled, so I doubt that it can be done much faster. Sorry.
+
+Of course, I might have
+forgotten to port some parts or even confused things. About bugs in the gl and drawing
+libs, please ask Harm.
+But then, I'm able to emulate a BGR ramdac on my card, so I should
+even be able to reproduce your problems.
+
+Recently I hear often about type 6 ramdacs in non ATI Mach32 cards. There exists
+no info about these dacs, thus I cannot support them. The driver assumes unknown
+DACs can stand up to 80MHz in 256 color clut modes and does not touch the
+ramdac (that is, assumes it is in the 256 color mode already)
+
+To get rid of the warning message you can use the
+
+.TP
+.BI "ramdac " n
+configuration command. It allows to explicitly set the type of the dac to
+.I n
+(in range
+.BR 0 " to " 5).
+.B Ramdac 3
+is the most dumbest ramdac possible, s.t. you can use
+it without any fear for your hardware.
+.TP
+.B ramdac dumb
+is equivalent to
+.BR "ramdac 3" .
+.TP
+.B ramdac auto
+switches back to the default autodetection.
+.SH 13. MEANING OF THE DETECTION MESSAGE FROM SVGALIB
+Some programs (which do not switch it off) will show a
+
+.BI "Using Mach32 " version " (" size "M at " adr "M (" how "), " mem "K mem, DAC " dactype )
+
+line. This will show up in
+.BR testlinear (6)
+etc but will probably scroll away when you use
+.BR vgatest (6).
+In this line:
+
+.TP
+.I version
+is the version of the driver (as of my counting, not the svgalib
+version).
+.TP
+.I size
+is the size of the memory aperture. It can be
+.BR 1 " or " 4 " (" 1
+will lead to not using the linear aperture if your card has more than 1MB
+memory, however applications can still use the 1MB aperture and page 
+the video memory through it in 1MB steps).
+.I size
+can also be
+.B no
+if no aperture is setup at all.
+.TP
+.I adr
+is the base address of the aperture in MB.
+.TP
+.I how
+is
+.B autodetect
+if the aperture was setup this way already when the
+program started. It is
+.B setup
+when the the setting was enforced with a
+.B setuplinear
+configuration command. It is
+.B EEPROM
+when no aperture was detected,
+but parameters to set it up were found in the EEPROM.
+.TP
+.I mem
+is the amount of memory the card reported to have.
+.TP
+.I dactype
+is the type of the DAC that was detected.
+
+If a special ramdac type was set with the
+.B ramdac
+command a
+.B (set)
+will be displayed after
+.IR dactype .
+.PP
+
+If
+.IR mem ", " dactype
+and/or the chipset were enforced with
+.B chipset from the configuration file
+or
+.BR vga_setchipsetandfeatures (3)
+a
+.B forced
+will be appended to the line.
+
+.SH 14. CONCLUSIONS
+A final word: I have an ATI ULTRA PRO/2MB/EISA with a Type 2 DAC.
+My monitor is an EIZO F550i-M. Everything I tried works on it like
+a charm. However, I couldn't try it with other machines myself and esp.
+other DAC's. Fortunately the Type 2 DAC is the worst to code. So I
+will probably have gotten the other DAC's right. But please be warned!
+
+I did my very best to code the driver to support the other DAC's by
+just reading the docs.
+.B But i can't give any definitive guarantee for
+.B it to work or even not damaging your hardware. So please be careful!
+
+Note that you will have to set the environment variable
+.B SVGALIB_MACH32
+to
+.B ILLTRYIT
+if your DAC is not type 0, 2, 3 or 4. This will of course change
+if no one with a DAC equal to 1 or 5 has serious problems. If you have
+a different DAC, making patches to support your card will be much more
+helpful instead of just complaining.
+If you have a different DAC that works well tell me as well such that I
+can remove the need for SVGALIB_MACH32 in the next release. Still, even
+now, after years, I got no reports of a Mach32 card with a type 1 or 5
+ramdac. Go figure.
+
+Thank you for your audience and wishes you will enjoy this driver,
+.br
+Michael.
+.SH FILES
+.I /etc/vga/libvga.config
+.br
+.I /etc/vga/mach32.eeprom
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR libvga.config (5),
+.BR mach32info (6).
+
+.SH AUTHOR
+The Mach32 driver and this documentation was written by
+Michael Weller <eowmob@exp-math.uni-essen.de>.

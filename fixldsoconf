@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ `whoami` != root ] ; then exit 0 ; fi
+if grep -q /usr/local/lib /etc/ld.so.conf
+ then
+  echo > /dev/null
+ else
+  echo /usr/local/lib >> /etc/ld.so.conf
+ fi

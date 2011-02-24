@@ -1,0 +1,42 @@
+.TH vga_addtiming 3 "7 April 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_guesstiming \- calculate a timing line for the given resolution
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_guesstiming(int x, int y, int clue, int arg);
+
+.SH DESCRIPTION
+Calculates a timing line for a 
+.BR x*y
+resolution, according to the value of 
+.BR clue.
+
+.SH CALCULATION METHODS
+If 
+.BR clue
+is 0, then the aspect ratio for the requested mode (
+.BR x:y
+) must be 4:3. A mode with the same aspect ratio closest to the requested, while still having a higher resolution
+is found, and then scaled down to the requested mode.
+
+If 
+.BR clue
+is 1, then the aspect ratio for the requested mode (
+.BR x:y
+) must be 4:3. A mode with the same aspect ratio closest to the requested, while still having a lower resolution
+is found, and then scaled down to the requested mode.
+
+.SH BUGS
+No guarantee that a modeline will be created, or that a created modeline will be usefull is given.
+
+.SH SEE ALSO
+
+.BR vga_addmode (3)
+.BR vga_addtiming (3)
+.BR addmodetest (6)
+
+.SH AUTHOR
+
+This manual page was written by Matan Ziv-Av

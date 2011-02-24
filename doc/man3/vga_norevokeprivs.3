@@ -1,0 +1,22 @@
+.TH vga_norevokeprivs 3 "9 September 2004" "Svgalib (>= 1.9.20)" "Svgalib User Manual"
+.SH NAME
+vga_norevokeprivs \- Keep root privileges if run as suid root.
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_norevokeprivs(void);"
+
+.SH DESCRIPTION
+Calling this function prevents svgalib from revoking root privileges and
+returning to the uid of the user running the program. Usually svgalib revokes
+privileges at
+.BR vga_init (3)
+time, so 
+.B vga_norevokeprivs
+needs to be called before 
+.B vga_init .
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.

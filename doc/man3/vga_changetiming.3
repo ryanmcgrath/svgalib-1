@@ -1,0 +1,25 @@
+.TH vga_addtiming 3 "7 April 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_changetiming \- change the current timing parameters.
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_addtiming(int pixelClock, int HDisplay, int HSyncStart, int HSyncEnd, int HTotal, \
+int VDisplay, int VSyncStart, int VSyncEnd, int VTotal, int flags);
+
+
+.SH DESCRIPTION
+Changes the value of the current timing parameters by the given values. No checks are made to see if the new timing are within monitor or card specs.
+See 
+.BR svidtune (6)
+for an example of using this.
+
+.SH SEE ALSO
+
+.BR vga_getcurrenttiming (3)
+.BR svidtune (6)
+
+.SH AUTHOR
+
+This manual page was written by Matan Ziv-Av

@@ -1,0 +1,66 @@
+.TH restoretextmode 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+restoretextmode \- save or restore the SVGA registers for textmode.
+.SH SYNOPSIS
+
+.BI "restoretextmode {-r|-w} " filename
+
+.SH DESCRIPTION
+The state of the SVGA is written to or restored from
+.IR filename
+using the
+.BR vga_gettextmoderegs "(3) and "
+.BR vga_settextmoderegs (3)
+functions.
+
+As of this writing this file is 385 bytes long but this might change with future versions.
+
+Please do not fiddle with the contents of the file except when you know what you do. It
+might even result in hardware damage. Because of that, you should think twice to make
+this command available to all users on your system.
+
+The purpose of this program is usually to recover from a crashed console due to an
+svgalib, Xfree or other program bug. First save the state of the SVGA card when on a
+text console. After the crash restore this state. The
+.BR savetextmode (1)
+and
+.BR textmode (1)
+script makes this procedure very easy.
+
+.SH OPTIONS
+.TP
+.BI "-w " filename
+write the SVGA state to the file
+.IR filename .
+.TP
+.BI "-r " filename
+restore the SVGA state from the file
+.IR filename .
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_gettextmoderegs (3),
+.BR vga_settextmoderegs (3),
+.BR dumpreg (1),
+.BR convfont (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

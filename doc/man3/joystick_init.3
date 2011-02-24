@@ -1,0 +1,152 @@
+.TH joystick_init 3 "14 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+joystick_init \- open a joystick
+.SH SYNOPSIS
+
+.B "#include <vgajoystick.h>"
+.br
+.BI "typedef void (*" __joystick_output ") (const char *" msg );
+
+.BI "int joystick_init(int " joydev ", __joystick_output " jo );
+
+.SH DESCRIPTION
+This function opens a joystick device. A negative value is returned on failure,
+otherwise the joystick was initialized.
+.BR svgalib (7)
+supports several joysticks. The corresponding device node names can be configured in
+.BR libvga.config (5).
+
+The
+.I joydev
+parameter indicates which joystick is to be initialized. As of this writing svgalib
+support up to four joysticks
+.IB joydev " = 0"
+to
+.I joydev
+.BR "= 3" ,
+although I'm not aware of hardware and kernel drivers which handle more than joysticks
+.BR 0 " and " 1 .
+
+It is strongly encouraged that your program allows the user to calibrate the joystick. This is
+controlled by the
+.I jo
+parameter. If it is
+.BR NULL ,
+no calibration is performed. Otherwise, calibration is performed and instructions are printed
+to the user by calling the user supplied
+.I jo
+function. It is the responsibility of this function to print the
+.B NUL
+and
+.B NL
+terminated message pointed to by
+.I msg
+to the user. The message might contain embedded 
+.B NL
+characters and will not extend 256 characters including the terminating
+.BR NUL .
+
+Usually an
+.BI fputs( msg ", stdout);"
+followed by
+.B fflush(stdout);
+will do, but for your convenience you can perform the same by passing
+.B JOY_CALIB_STDOUT
+for
+.IR jo .
+.BR gl_printf (3)
+is well suited for this job as well. However, it needs some font setup first, so we do not
+provide a special
+preprocessor constant.
+
+It is valid to initialize an already initialized joystick. This allows you to recalibrate the
+joystick at any time. The module supports older version 0.* as well as newer version 1.* joystick
+device protocols.
+
+.SH GENERAL CONCEPT
+The joystick module is basically independent from the rest of svgalib. You can easily use it
+in text mode only (but why would you do that?). If used in a graphics mode, however, it will release
+the joystick devices upon a VC switch s.t. several applications can share joysticks. Unfortunately
+this does not work during joystick calibration. Therefore, you should lock the VC with
+.BR vga_lockvc (3)
+while calibrating in graphics mode.
+
+Also, when using joysticks in textmode only, svgalib won't detect VC switches and joysticks cannot
+be shared among applications.
+
+.BR joystick_close (3)
+releases opened joysticks.
+
+.BR joystick_update (3)
+queries the joysticks for position changes. Note that you must busy wait for joystick events.
+At least the older version 0.* joystick devices do not allow to sleep and get informed about
+new joystick events. Basically, this is a PC hardware issue in the first place. Therefore,
+.BR vga_waitevent (3)
+does not know about joysticks. To use it, you must make it timeout after a few ms and actively
+query the joystick for updates.
+
+By default a handler deals with the joystick events. 
+.BR joystick_getaxis "(3) and " joystick_getbutton (3)
+plus several convenience macros
+.BR joystick_button1|2|3|4 ", " joystick_getb1|2|3|4 ", " joystick_x|y|z ", and "
+.B joystick_getx|y|z
+allow to query the current status of the joystick (as it was
+determined during the last
+.B joystick_update()
+call).
+
+The functions
+.BR joystick_getnumaxes "(3) and " joystick_getnumbuttons (3)
+query the number of axes and buttons of a joystick.
+
+Finally, you can (un)register an own handler for the joystick events with
+.BR joystick_sethandler "(3) and " joystick_setdefaulthandler (3)
+
+The simple text demo
+.BR joytest (6)
+and the more complex graphical
+.BR mjoytest (6)
+demo show the use of the joystick package in some more detail.
+
+.SH CAVEATS
+This function is only available in ELF versions of svgalib. Due to backwards
+compatibility issues it cannot be used with shared a.out libs.
+
+Certain game ports seem to be unable to detect missing joysticks properly.
+(This might also be a linux device driver issue). Anyway, is using the
+joystick interface, allow a user of your application to specify the number
+of joysticks to be used as well as to bail out the joystick calibration
+(when he is not able to press a button on a missing joystick).
+
+Usually <Ctrl>-C works, but you should not rely too much on it, as it can
+be disabled. As a general guideline, maybe try to open and calibrate
+joysticks while still in
+textmode. <Ctrl>-C will usually still work then. If this succeeds, you may
+assume a joystick is there for any following recalibrations in graphics mode.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR joystick_close (3),
+.BR joystick_update (3),
+.BR joystick_sethandler (3),
+.BR joystick_setdefaulthandler (3),
+.BR joystick_getnumaxes (3),
+.BR joystick_getnumbuttons (3),
+.BR joystick_getaxis (3),
+.BR joystick_getbutton (3),
+.BR joystick_button1 (3),
+.BR joystick_getb1 (3),
+.BR joystick_x (3),
+.BR joystick_getx (3).
+
+.SH AUTHOR
+
+The svgalib joystick handler was mostly done by Daniel Engstr\\"om <daniel.engstrom@riksnett.no>.
+Multiple joystick, VC switching support and code to glue it into svgalib by Michael Weller
+<eowmob@exp-math.uni-essen.de>. Part of the code is based on code from C. Smith and
+Vojtech Pavlik.

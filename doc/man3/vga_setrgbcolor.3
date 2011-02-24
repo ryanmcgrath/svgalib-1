@@ -1,0 +1,43 @@
+.TH vga_setrgbcolor 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setrgbcolor \- set the current color
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setrgbcolor(int " r ", int " g ", int " b );
+
+.SH DESCRIPTION
+Set the current color to RGB values r, g, and b, each in
+the range 0-255. Does not make sense in 256 or less color modes. Use
+.BR vga_setcolor (3)
+there. The color is used by
+.BR vga_drawpixel (3)
+and
+.BR vga_drawline (3).
+
+The
+.BR fun "(6) and " vgatest (6)
+demos show the basic use of this function.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR fun (6),
+.BR vgatest (6),
+.BR vga_drawpixel (3),
+.BR vga_drawline (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

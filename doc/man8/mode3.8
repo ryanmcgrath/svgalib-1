@@ -1,0 +1,16 @@
+.TH mode3 8 "11 Mar 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+mode3 \- set a vesa mode.
+.SH SYNOPSIS
+
+.BI "mode3 [modenum] "
+
+.SH DESCRIPTION
+The video card is set to vesa mode
+.IR modenum
+(or 3 by default) using the (real mode) vesa bios calls.
+
+.SH BUGS
+Using this program is unsafe, and might (depending on the bios) result in
+a video card in a state that requires a hard reset to restore to normal,
+or even a hung computer.

@@ -1,0 +1,17 @@
+.TH vga_reset 8 2004-01-26 "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_reset \- reset video graphic board
+.SH SYNOPSIS
+.B vga_reset
+.SH DESCRIPTION
+Call real mode c000:0003, which should be the video card's initialization
+routine. Should work in some cases when mode3 fails to restore text mode.
+.SH BUGS
+Using this program is unsafe, and might (depending on the bios) result in
+a video card in a state that requires a hard reset to restore to normal,
+or even a hung computer.
+.SH SEE ALSO
+.BR mode3 (8).
+.SH AUTHOR
+This manual page was written by Guillem Jover <guillem@debian.org>.
+

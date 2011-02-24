@@ -1,0 +1,397 @@
+.TH testaccel 6 "29 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+testaccel \- test the old style blitter functions and vga_ext_set()
+.SH SYNOPSIS
+
+.BI "testaccel [ -nowait ] [ { all | " videomodes "... } ]
+
+.SH DESCRIPTION
+Program to test the old blitter functions in a screen mode. Checks
+the 8-bit wide color lookup tables on Mach32's with type 2 DACs
+as well.
+[I think '6bpp' and '8bpp' are silly names for the 8-bit
+LUT thing -- bpp is bits per pixel, in the framebuffer - HH :-)]
+
+After each test it waits for a key press except when
+.B -nowait
+is
+given.
+
+You can specify names of modes to test on the command line
+or specify
+.B all
+to loop over all svgalib modes.
+
+The program will run on any card, however, most of the tests can
+only be performed on a Mach32.
+
+The subtest are in turn:
+
+.TP
+.B 1 -
+For each 256 color mode the program sees if it is possible to
+enable a special mode with 8 bits per color in the RGB lookup
+table. If so, for example 256 different shades of blue can
+be implemented.
+The program displays as much blue shades as possible in a shade
+from dark (left) to bright (right) and some text in an
+opposite direction on top of it. In case 56 different shades
+are supported, the screen is divided and shows a rough 64 shades
+scale (ordinary vga) on top and the smooth shade below.
+Right now 256 different shades are only possible on a Mach32 with
+RAMDAC of type 2.
+For modes with few pixels only, the program might fail to print
+the text properly and will 'wrap' it around the screen edges.
+.TP
+.B 2 -
+Draws a bouncing 'linux' logo stopping after a fixed amount of
+1 pixel steps. Uses
+.BR vga_bitblt (3)
+on the image plus a one pixel
+outline in border color to move the pixel around the screen.
+The Mach32 is
+.B very
+fast in this discipline.
+.TP
+.B 3 -
+Draws filled rectangles using
+.BR vga_fillblt (3).
+At first a series
+of larger to smaller centered rectangles is drawn to fill the
+screen.
+For 256 or less color modes these will use a sequence of 256
+random colors. For 32K or more color modes it will use colors
+0 up too, however, you'll usually just see a repeating series
+of blues (limitations of monitor/human eye, the blue's differ
+not enough for the eye to see). Then a bunch of random boxes
+in random places is drawn overwriting each other.
+The Mach32 is
+.B very
+fast in this discipline.
+.TP
+.B 4 -
+Draws small fish bitmaps and then larger linux logos in random
+positions using
+.BR vga_imageblt (3).
+They just overlap each other
+The Mach32 is poor in this discipline. If you have a linear
+frame buffer enabled, it is used instead to perform this function
+(even if the program does not use a linear frame buffer otherwise).
+Usually this is twice as fast for Mach32.
+.TP
+.B 5 -
+Use
+.BR vga_hlinelistblt (3)
+o do some simple polygon fills: squares,
+circles, diamonds of random sizes, positions and colors. Again,
+the Mach32 is
+.B very
+fast in this discipline, but somehow slowed
+down by the imperfect prototype of this function. Again,
+the polygons just overlap each other.
+
+The resp. tests will only be performed where supported by the
+hardware. For Mach32 this means only SVGA 256, 32K, 64K color modes.
+The linear frame buffer emulated
+.BR vga_imageblt (3)
+works for all SVGA modes
+though.
+.P
+
+The program prints the number of pixels drawn and the time required
+plus the resulting rate of pixels per second. For Mach32 the rate
+depends on the amount of screen accesses (2 per pixel move for
+.BR vga_bitblt (3),
+1 per pixel move for
+.BR vga_fillblt "(3) and "
+.BR vga_hlinelistblt (3);
+also twice bytes
+are affected for 32K, 64K color modes). On a non VRAM card you'll
+also note the effect of the memory access caused by the generation
+of the video frames (more colors/rez/sync rates => less speed).
+Also, higher modes draw more pixels per call, thus less call and
+setup overhead.
+
+Here are the rates for my card on an almost idle 486 EISA system
+which should be fairly optimal (2MB VRAM EISA Mach32) except maybe
+the linear frame buffer emulated imageblt which might be faster on
+PCI card:
+
+.br
+.B Testing mode  1: G320x200x16...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  2: G640x200x16...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  3: G640x350x16...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  4: G640x480x16...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  5: G320x200x256...
+.br
+.B Warning: Resolution too small, displayed text is
+.br
+.B probably scrambled.
+.br
+.B "  "
+.br
+.B Has support for CLUT width 8 bit
+.br
+.B Testing mode  6: G320x240x256...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  7: G320x400x256...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  8: G360x480x256...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode  9: G640x480x2...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode 10: G640x480x256...
+.br
+.B Has support for CLUT width 8 bit
+.br
+.B Has BitBlt:    176610000 Pixels in 6.49 seconds -> 27.21 Megapels
+.br
+.B Has FillBlt:   217884171 Pixels in 4.55 seconds -> 47.89 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 3.07 seconds -> 5.57 Megapels
+.br
+.B Has HlineLst:   20192124 Pixels in 0.57 seconds -> 35.42 Megapels
+.br
+.B Testing mode 11: G800x600x256...
+.br
+.B Has support for CLUT width 8 bit
+.br
+.B Has BitBlt:    176610000 Pixels in 6.65 seconds -> 26.56 Megapels
+.br
+.B Has FillBlt:   343102613 Pixels in 6.23 seconds -> 55.07 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 3.06 seconds -> 5.58 Megapels
+.br
+.B Has HlineLst:   33166399 Pixels in 0.78 seconds -> 42.52 Megapels
+.br
+.B Testing mode 12: G1024x768x256...
+.br
+.B Has support for CLUT width 8 bit
+.br
+.B Has BitBlt:    176610000 Pixels in 6.88 seconds -> 25.67 Megapels
+.br
+.B Has FillBlt:   603141286 Pixels in 9.78 seconds -> 61.67 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 3.07 seconds -> 5.57 Megapels
+.br
+.B Has HlineLst:   52958845 Pixels in 1.08 seconds -> 49.04 Megapels
+.br
+.B Testing mode 13: G1280x1024x256...
+.br
+.B Has support for CLUT width 8 bit
+.br
+.B Has BitBlt:    176610000 Pixels in 7.10 seconds -> 24.87 Megapels
+.br
+.B Has FillBlt:  1063820849 Pixels in 16.16 seconds -> 65.83 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 3.07 seconds -> 5.57 Megapels
+.br
+.B Has HlineLst:   95798478 Pixels in 1.75 seconds -> 54.74 Megapels
+.br
+.B Testing mode 14: G320x200x32K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 12.30 seconds -> 14.36 Megapels
+.br
+.B Has FillBlt:    41317334 Pixels in 3.61 seconds -> 11.45 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.93 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:    3411068 Pixels in 0.23 seconds -> 14.83 Megapels
+.br
+.B Testing mode 15: G320x200x64K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 12.29 seconds -> 14.37 Megapels
+.br
+.B Has FillBlt:    42351016 Pixels in 4.12 seconds -> 10.28 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.93 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:    3561694 Pixels in 0.23 seconds -> 15.49 Megapels
+.br
+.B Testing mode 16: G320x200x16M...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 8.83 seconds -> 1.93 Megapels
+.br
+.B Testing mode 17: G640x480x32K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 13.38 seconds -> 13.20 Megapels
+.br
+.B Has FillBlt:   217723964 Pixels in 7.95 seconds -> 27.39 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.94 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:   19579110 Pixels in 0.74 seconds -> 26.46 Megapels
+.br
+.B Testing mode 18: G640x480x64K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 13.37 seconds -> 13.21 Megapels
+.br
+.B Has FillBlt:   221608034 Pixels in 8.28 seconds -> 26.76 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.93 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:   21048202 Pixels in 0.79 seconds -> 26.64 Megapels
+.br
+.B Testing mode 19: G640x480x16M...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 8.82 seconds -> 1.94 Megapels
+.br
+.B Testing mode 20: G800x600x32K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 13.97 seconds -> 12.64 Megapels
+.br
+.B Has FillBlt:   357205415 Pixels in 12.22 seconds -> 29.23 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.92 seconds -> 2.89 Megapels
+.br
+.B Has HlineLst:   34391335 Pixels in 1.16 seconds -> 29.65 Megapels
+.br
+.B Testing mode 21: G800x600x64K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 13.97 seconds -> 12.64 Megapels
+.br
+.B Has FillBlt:   348943970 Pixels in 11.87 seconds -> 29.40 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.93 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:   34510200 Pixels in 1.17 seconds -> 29.50 Megapels
+.br
+.B Testing mode 22: G800x600x16M...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 8.83 seconds -> 1.93 Megapels
+.br
+.B Testing mode 23: G1024x768x32K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 14.60 seconds -> 12.10 Megapels
+.br
+.B Has FillBlt:   608000981 Pixels in 18.62 seconds -> 32.65 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.93 seconds -> 2.88 Megapels
+.br
+.B Has HlineLst:   53767429 Pixels in 1.72 seconds -> 31.26 Megapels
+.br
+.B Testing mode 24: G1024x768x64K...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has BitBlt:    176610000 Pixels in 14.60 seconds -> 12.10 Megapels
+.br
+.B Has FillBlt:   601666798 Pixels in 18.80 seconds -> 32.00 Megapels
+.br
+.B Has ImageBlt:   17085000 Pixels in 5.92 seconds -> 2.89 Megapels
+.br
+.B Has HlineLst:   52037798 Pixels in 1.67 seconds -> 31.16 Megapels
+.br
+.B Testing mode 32: G720x348x2...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Testing mode 33: G320x200x16M32...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 11.60 seconds -> 1.47 Megapels
+.br
+.B Testing mode 34: G640x480x16M32...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 11.62 seconds -> 1.47 Megapels
+.br
+.B Testing mode 35: G800x600x16M32...
+.br
+.B Dacwidth test not applicable.
+.br
+.B Has ImageBlt:   17085000 Pixels in 11.62 seconds -> 1.47 Megapels
+
+This demo is part of svgalib and can be found in the
+.I demos/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I demos/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_ext_set (3),
+.BR vga_bitblt (3),
+.BR vga_fillblt (3),
+.BR vga_hlinelistblt (3),
+.BR vga_imageblt.3
+.BR threed (6),
+.BR accel (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. He
+also wrote thise demo and it's documentation.

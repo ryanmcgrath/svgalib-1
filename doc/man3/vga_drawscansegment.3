@@ -1,0 +1,43 @@
+.TH vga_drawscansegment 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_drawscansegment \- draw a horizontal line of pixels
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_drawscansegment(unsigned char *" colors ", int " x ", int " y ", int " length );
+
+.SH DESCRIPTION
+draws a horizontal line of
+.I length pixels
+starting at position
+.BI ( x ", " y ).
+The colors drawn are taken from
+.IB color "[0] .. " color [ length " - 1]."
+Svgalib versions prior to 1.2.10 required
+.IR x ", " y ", and " length
+to be multiples of 8. This is no longer true.
+In high/truecolor modes, the length must be given in bytes, not pixels.
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_clear (3),
+.BR vga_drawpixel (3),
+.BR vga_drawline (3),
+.BR vga_getpixel (3),
+.BR vga_drawscanline (3),
+.BR vga_getscansegment (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

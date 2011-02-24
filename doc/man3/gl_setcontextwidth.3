@@ -1,0 +1,50 @@
+.TH gl_setcontextwidth 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setcontextwidth, gl_setcontextheight \- set the dimension of a context
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_setcontextwidth(int " w );
+.br
+.BI "void gl_setcontextheight(int " h );
+
+.SH DESCRIPTION
+Set the size of the current virtual context, effectively clipping everything to the
+top left corner of
+size
+.RI ( w ", " h ).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR currentcontext (3),
+.BR gl_allocatecontext (3),
+.BR gl_disableclipping (3),
+.BR gl_enableclipping (3),
+.BR gl_freecontext (3),
+.BR gl_getcontext (3),
+.BR gl_setcontext (3),
+.BR gl_setcontextvga (3),
+.BR gl_setcontextvgavirtual (3),
+.BR gl_setcontextvirtual (3),
+.BR gl_setdisplaystart (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,48 @@
+.TH vga_gettextmoderegs 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_gettextmoderegs, vga_settextmoderegs \- get/set the vga state used in text mode
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_gettextmoderegs(void *state);"
+.br
+.BI "void vga_settextmoderegs(void *state);"
+
+.SH DESCRIPTION
+The functions gives access to the buffer where svgalib saves the vga state which is use when
+the kernel displays text on the SVGA.
+This is used by the
+.BR restoretextmode "(1), "
+.BR savetextmode "(1), and "
+.BR textmode "(1)"
+utilities to restore a possibly screwed console.
+
+The buffer currently occupies 385 bytes. It can't do any harm to make it substantially larger
+to allow for future enhancements.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR restorefont (1),
+.BR restoretextmode (1),
+.BR restorepalette (1),
+.BR savetextmode (1),
+.BR textmode (1),
+.BR vga_dumpregs (3),
+.BR vga_gettextfont (3),
+.BR dumpreg (1)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

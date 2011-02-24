@@ -1,0 +1,37 @@
+.TH vga_setcursorimage 3 "23 June 2001" "Svgalib (>= 1.9.6)" "Svgalib User Manual"
+.SH NAME
+vga_setcursorimage \- set the pattern and colors of the mouse cursor 
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setcursorimage(int cur, int format, int c0, int c1, unsigned char *buf);"
+
+.SH DESCRIPTION
+Sets cursor image number
+.B cur
+to be the pattern pointed by 
+.B buf
+with colors
+.B c0
+and
+.B c1.
+The 
+.B format
+parameter decides the format of the input pattern.
+
+.SH NOTES
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR mouse_init (3),
+.BR vga_selectcursor (3),
+.BR vga_initcursor (3),
+.BR vga_setcursorposition (3),
+.BR vga_showcursor (3),
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.
+

@@ -1,0 +1,61 @@
+.TH gl_setpalettecolor 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setpalettecolor, gl_setpalettecolors, gl_setpalette \- set the color palette
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_setpalettecolor(int " c ", int " r ", int " g ", int " b );
+.br
+.BI "void gl_setpalettecolors(int " s ", int " n ", void *" sp );
+.br
+.BI "void gl_setpalette(void *" sp );
+
+.SH DESCRIPTION
+.B gl_setpalettecolor
+sets red, green and blue values (in the range 0 - 63) of 
+color
+.I c
+from the color-lookup-table to
+.IR r ", " g " and " b .  
+
+.B gl_setpalettecolors
+sets RGB values of
+.I n
+colors starting at
+.IR s ,
+which are stored
+as a table of groups of three bytes each at
+.IR sp . 
+
+.B gl_setpalette
+is equivalent to
+.BR "setpalettecolors(0, 256, " sp ).
+
+.BR vga_ext_set (3)
+might change the range of the colors to be set to 0 - 255.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR vga_ext_set (3),
+.BR gl_getpalette (3),
+.BR gl_getpalettecolor (3),
+.BR gl_getpalettecolors (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

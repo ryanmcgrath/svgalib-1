@@ -1,0 +1,58 @@
+.TH vga_copytoplanar16 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_copytoplanar16 \- copy linear pixmap into VGA 16 color mode video memory
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_copytoplanar16(unsigned char *" virtual ", int " pitch ", int " voffset ", int "
+.IB vpitch ", int " w ", int " h );
+
+.SH DESCRIPTION
+Similar to
+.BR vga_copytoplanar256 (3),
+but for 16 color modes (not well tested). Assumes
+pixels stored in consecutive bytes ranging from 0 to 15 in
+the virtual screen.
+
+Copies part of a linear virtual screen in system memory at
+.I *virtual
+to VGA 16 mode video memory.
+.I pitch
+is the logical width of the virtual
+screen (in pixels (which are one byte large)),
+.I voffset
+is the address offset into video memory,
+.I vpitch
+is the logical scanline width of the screen.
+.BI ( w ", " h )
+is the size of the area to copy in pixels
+.RI ( width
+must be multiple of 4).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_accel (3),
+.BR vga_copytoplanar256 (3),
+.BR vga_copytoplane (3),
+.BR vga_drawscanline (3),
+.BR vga_drawscansegment (3),
+.BR vga_getmodeinfo (3),
+.BR vga_setlogicalwidth (3),
+.BR vga_imageblt (3),
+.BR vga_setmodeX (3),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

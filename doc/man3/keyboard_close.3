@@ -1,0 +1,46 @@
+.TH keyboard_close 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+keyboard_close \- return the keyboard to normal operation from raw mode
+.SH SYNOPSIS
+
+.B "#include <vgakeyboard.h>"
+
+.BI "void keyboard_close(void);
+
+.SH DESCRIPTION
+This routine returns the keyboard to normal operation from raw mode. If you used
+one of the
+.B keyboard_init_*()
+routines you should call it prior to leaving your svgalib application as a keyboard in raw mode
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR keytest (6),
+.BR eventtest (6),
+.BR keyboard_seteventhandler (3),
+.BR keyboard_init (3),
+.BR keyboard_init_return_fd (3),
+.BR keyboard_update (3),
+.BR keyboard_waitforupdate (3),
+.BR keyboard_setdefaulteventhandler (3),
+.BR keyboard_getstate (3),
+.BR keyboard_clearstate (3),
+.BR keyboard_translatekeys (3),
+.BR keyboard_keypressed (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

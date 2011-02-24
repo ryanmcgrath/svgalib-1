@@ -1,0 +1,55 @@
+.TH vga_getgraphmem 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_getgraphmem \- returns the address of the VGA memory
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BR "unsigned char *graph_mem;"
+/* This declaration is already in vga.h */
+
+.BI "unsigned char *vga_getgraphmem(void);"
+
+.SH DESCRIPTION
+returns a pointer to the 64K VGA frame buffer window.
+.BR vga_setpage (3),
+.BR vga_setreadpage "(3) and "
+.BR vga_setwritepage (3)
+allow to select which page of the VGA memory shows up at this position.
+.BR vga_setlinearaddressing (3)
+maps all VGA memory at a consecutive memory area (if the hardware supports it).
+In this mode, 
+.BI "vga_getgraphmem()"
+will return the location of this area too. You can also access the global variable
+.BR graph_mem ,
+which will also contain this address.
+
+Most demos, esp.
+.BR vgatest (6)
+show the simple direct use of this function to access screen memory.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgatest (6),
+.BR fun (6),
+.BR testlinear (6),
+.BR vga_setlinearaddressing (3),
+.BR vga_claimvideomemory (3),
+.BR vga_getmodeinfo (3),
+.BR vga_setpage (3),
+.BR vga_setreadpage (3),
+.BR vga_setwritepage (3),
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

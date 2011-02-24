@@ -1,0 +1,60 @@
+Notes for the VESA driver:
+
+The driver's autodetection is disabled by default, so in order to use it,
+the line 
+chipset VESA
+must be added to the config file (usually /etc/vga/libvga.config).
+
+The error:
+Int 0x10 is not in rom (xxxx:xxxx)
+is usually caused by running linux using loadlin, after loading a dos tsr
+that changes the int 10 vector, or after windows 95, that does the same
+thing. The solution, is either to use lilo, or run loadlin after a clean
+dos boot.
+
+
+There is a new config file option that affects the vesa driver:
+VesaText
+If this option is used, the driver sets 80x25 text mode (using vesa bios)
+before setting any standard vga mode.
+
+This option was added in order to enable standard vga modes with the vesa
+driver on Matrox Millenium, but now it has the following effect:
+(read in a fixed width font)
+
+chipset              with VesaText          without VesaText
+
+CL-GD5446              works                leaves a messy font when
+                                            returning to text mode
+
+Riva 128             does not restore           works 
+                     previous used text
+                     font, but reverts to
+                     ROM font.
+
+Matrox
+Millenium             works                 does not set standard vga
+                                            modes properly.
+
+A list of cards known to work with the VESA driver is:
+     * Riva128 (both on a STBV128 and a Viper330)
+     * RivaTNT
+     * Matrox Millenium 2
+     * Matrox Mystique
+     * Matrox Productiva G100
+     * Matrox Millenium G200 
+     * Neomagic Magicgraph 128XD (in a Dell Inspiron laptop)
+     * S3 375 Virge/DX ( A "Trident Video Excel 3D Accelerator" ) 
+     * S3 Trio3D
+     * Cirrus Logic GD5446
+     * Rendition V1000 - Only modes up to 800x600 seem to work
+     * ATI Expression+ PC2TV 2MB (RageII chipset) - tested only modes up
+       to 800x600 resolution 
+     * i740 (Diamond Stealth G460)     
+     * Voodoo Banshee
+     * Alliance Technology AT24
+
+Please note that some of this cards have also failed to work in some
+cases, so it is _very_ configuration dependent.
+
+For Matrox cards, the advice is to upgrade to the latest bios from Matrox.

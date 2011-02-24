@@ -1,0 +1,49 @@
+.TH vga_white 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_white \- return the color white in the current screen resolution
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_white(void);"
+
+.SH DESCRIPTION
+.B vga_white()
+returns the color white in the current screen resolution as it would be set with
+.BR vga_setcolor (3)
+or written directly into the screen.
+
+In high color modes it is always clear how white is set with
+.BR vga_setrgbcolor (3).
+In the other modes you need
+.BR vga_white() .
+
+However, it only knows about the default palette. If you change it with one of the palette
+functions the function will not know about it.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_init (3),
+.BR vga_setmode (3),
+.BR vga_setpalette (3),
+.BR vga_setpalvec (3),
+.BR vga_getpalette (3),
+.BR vga_getpalvec (3),
+.BR vga_setcolor (3),
+.BR vga_setrgbcolor (3),
+.BR vga_setegacolor (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,125 @@
+.TH restorefont 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+restorefont \- save or restore the SVGA font for textmode.
+.SH SYNOPSIS
+
+.BI "restorefont {-r|-w} " filename
+
+.SH DESCRIPTION
+The font used by SVGA when in textmode is written to or restored from
+.IR filename
+using the
+.BR vga_gettextfont "(3) and "
+.BR vga_puttextfont (3)
+functions.
+
+.SH FILE FORMAT
+The VGA font file
+.I filename
+has the following format:
+
+.RS
+.BR Offset:
+.br
+.BR "   0 -   31  " "Character 0"
+.br
+.BR "    ...      " "    ..."
+.br
+.BR "8164 - 8195  " "Character 255"
+.RE
+
+Each row of a character bitmap is stored as a byte (8 pixels).
+The space that is left from the 32-byte buffer for each character
+is ignored, e.g. a 16 line font uses only offsets 0 - 15 of each character.
+
+Linux textmode screen resolutions:
+
+.BR 80x25 "    16 line font  400 scanlines"
+.br
+.BR 80x28 "    14 line font  400 scanlines"
+.br
+.BR 80x50 "     8 line font  400 scanlines"
+
+The font sizes and resolutions of extended textmodes depend on the
+video card type and BIOS:
+
+.BR 132x25 "   14 line font  350 scanlines (ugly)"
+.br
+.BR 132x25 "   16 line font  400 scanlines"
+.br
+.BR 132x43 "    8 line font  350 scanlines (use fix132x43 to fix/improve)"
+.br
+.BR 132x50 "    8 line font  400 scanlines"
+.br
+
+Using a font that has less lines per character than the textmode works, but
+the characters are smaller. Using a font that is bigger than the textmode
+font results in the bottom part of characters being cut off.
+
+The svgalib distribution contains sample fonts with 8, 14 and 16 line characters
+in the files
+.IR utils/font8 ", " utils/font14 ", and " utils/font16 .
+
+The
+.BR convfont
+(1) program can be used to convert fonts straightforwardly stored 
+character-after-character (i.e. each character only uses 8/14/whatever
+bytes), to the 32-byte per character format that
+.B restorefont
+requires.
+
+The purpose of this program is usually to recover from a crashed console due to an
+svgalib, Xfree or other program bug. First save the state of the SVGA card when on a
+text console. After the crash restore this state. The
+.BR savetextmode (1)
+and
+.BR textmode (1)
+script makes this procedure very easy.
+
+The national/fontpak packages, which include kernel patches, allow different
+textmode fonts to be used in different virtual consoles. These have been
+superseded by the kbd package (in the kernel since ages). See the
+.BR setfont (8)
+utility of the kbd package as a starting point.
+
+Recent kernels support up to 2 fonts with 512 chars each. Recent versions
+of svgalib take this into account and extend the size of the datafile accordingly.
+
+.SH OPTIONS
+.TP
+.BI "-w " filename
+write the font to the file
+.IR filename .
+.TP
+.BI "-r " filename
+restore the font from the file
+.IR filename .
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR setfont (8),
+.BR vga_gettextfont (3),
+.BR vga_puttextfont (3),
+.BR dumpreg (1),
+.BR convfont (1),
+.BR fix132x43 (1),
+.BR restoretextmode (1),
+.BR restorepalette (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

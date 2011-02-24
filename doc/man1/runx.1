@@ -1,0 +1,104 @@
+.TH runx 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+runx \- try to overcome problems of Xfree96 restoring textmode using svgalib.
+.SH SYNOPSIS
+
+.BI runx
+
+.SH DESCRIPTION
+If XFree86 corrupts your textmode font, try putting
+.BR restorefont (1)
+in your path and use the shell script
+.B runx
+to run X.
+.B runx
+saves the VGA font data in
+.IR /tmp/fontdata ,
+and restores it when you exit X.
+
+The
+.B runx
+script actually is:
+
+.RS
+.B #!/bin/sh
+.br
+.B echo Saving font in /tmp/fontdata
+.br
+.B restorefont -w /tmp/fontdata
+.br
+.B startx
+.br
+.B echo Restoring font from /tmp/fontdata
+.br
+.B restorefont -r /tmp/fontdata
+.RE
+
+Note that this doesn't help with syncing problems.
+
+A more rigorous alternative is to run the
+.BR savetextmode (1)
+script before running X, and
+.BR textmode (1)
+after. This will restore the textmode registers and the VGA palette in addition to the VGA font.
+
+Assuming that
+.BR savetextmode (1)
+and
+.BR textmode (1)
+are in your
+.BR PATH
+the
+.B runx
+script would then look like:
+
+.RS
+.B #!/bin/sh
+.br
+.B echo Saving SVGA state
+.br
+.B savetextmode
+.br
+.B startx
+.br
+.B echo restoring SVGA state
+.br
+.B textmode
+.RE
+
+.PP
+This utility is part of svgalib and can be found in the
+.I utils/
+subdirectory of the original svgalib distribution. However, it is not installed
+by default, s.t. it is unclear where you can find it if your svgalib was install
+by a linux distribution.
+
+However, this is no big deal as it was printed out above already ;-).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR convfont (1),
+.BR dumpreg (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR fix132x43 (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

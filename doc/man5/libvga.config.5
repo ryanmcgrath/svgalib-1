@@ -1,0 +1,1332 @@
+.TH libvga.config 5 "19 December 1998" "Svgalib 1.3.1" "Svgalib User Manual"
+.SH NAME
+libvga.config, svgalibrc \- the svgalib configuration file
+.SH DESCRIPTION
+The svgalib configuration is usually located in
+.I /etc/vga/libvga.config 
+though one can reconfigure this location when recompiling svgalib.
+
+In the configuration file, everything between a
+.B #
+and the end of the line is ignored. Empty lines are also
+ignored. Since the driver you will use may not know all config options
+here, unknown commands are silently ignored. Please think of that when
+something does not work as you expect. I know this is a nuisance
+because misformed configuration statements do not cause
+errors. Multiple commands are allowed in one line, and commands can
+exceed lines.
+
+Actually, svgalib simply reads a list of whitespace separated tokens
+from the file until it finds one it knows and it then assumes the
+following tokens to be arguments of that command until one is
+encountered which may not be an argument.
+
+New style options are in general case insensitive whereas the old style
+options are case sensitive. The old style options are included to
+allow for old config files still being used. For completeness they
+are documented in the
+.B OBSOLETE COMMANDS
+section. You should not use them anymore.
+
+In addition,
+.BR svgalib (7)
+parses the files
+.I ~/.svgalibrc
+and the file given in the environment variable
+.BR SVGALIB_CONFIG_FILE .
+
+Finally, the contents of the environment variable
+.B SVGALIB_CONFIG
+are parsed like the
+files before.
+
+Configuration commands which control hardware settings that might cause
+harm to your hardware are called
+.BR privileged . 
+By default the
+.B privileged
+commands can only be used in the
+main configuration file
+.I /etc/vga/libvga.config 
+for safety (s.t. a non root user can not cause any harm to your hardware by
+misconfiguring
+.BR svgalib (7)).
+
+Enable them in the other locations as well with the command
+.B overrideenable
+in the main config file.
+.B BEWARE!
+This allows every user to change the monitor and clocks (and
+other configs) and thus damaging the hardware. I
+.B strongly
+discourage the use of
+.B overrideenable
+except for debugging/testing purposes.
+
+.SH REQUIRED CONFIGURATION
+Please do not allow the vastness of options to confuse you. Generally
+svgalib uses well choosen defaults and is able to autodetect
+everything. Thus generally you don't need to specify much. When
+installing svgalib it provides a sample
+.I /etc/vga/libvga.config
+file which contains most of the required configuration. Just edit 
+it to your needs.
+
+Generally you only need to use:
+.TP
+.B mouse
+To specify if you use anything else then a Microsoft compatible mouse.
+.TP
+.B mdev
+If the mouse device file is
+.B not
+.I /dev/mouse
+which is generally a symbolic link to the actual mouse device
+file. You will usually need to use this command if you want to use the
+SpaceTec Spaceball device (which is not your usual mouse).
+
+.TP
+.BR setRTS ", " clearRTS ", " leaveRTS ", " setDTR ", " clearDTR ", and " leaveDTR
+if your mouse needs it to enter your desired mouse protocol.
+.TP
+.BR monitor ", or (better) " HorizSync " and " VertRefresh
+to specify the capabilities of your monitor.
+
+.SS If you use the EGA chipset driver
+.TP
+.BR monotext " or " colortext
+to specify if your EGA card is in monochrome or color configuration.
+.SS If you use the Mach32 chipset driver
+You should consider reading
+.BR svgalib.mach32 (7).
+.TP
+.BI "Clocks " "clock1 clock2 clock3 " ...
+to specify the Mach32 clocks. This is mandatory. However, if you omit it. svgalib
+will autodetect clocks and modify your
+.I /etc/vga/libvga.config
+file and abort. After this, every svgalib application started will find the proper
+.B Clocks
+command.
+.TP
+.B mach32eeprom /etc/vga/mach32.eeprom
+is recommended to avoid slowish reads of the Mach32 EEPROM which will also cause annoying
+screen flickering.
+.SS If you use the Mach64 chipset driver
+.TP
+.B Chipset Mach64
+if you want to use the experimental pre-alpha driver
+.SS If you use the S3 chipset driver
+I don't have much knowledge on the S3, but it seems to me that you need:
+
+.TP
+.BI Clocks " clock1 clock2 " ...
+to specify the clocks (take them from your Xfree86 configuration).
+.PP
+or
+.TP
+.BI "ClockChip icd2061a " number
+if you have an Icd2061a clockchip.
+.TP
+.BI "Ramdac " chipname
+if your Ramdac is not detected properly.
+.TP
+.BI "Dacspeed " speed
+if the default choosen is not right (probably too restrictive).
+.PP
+The remaining options are really only to be used in case of problems
+which you'll not generally encounter.
+.SS If you use the VESA chipset driver
+.TP
+.BR VesaText
+forces the driver to set 80x25 text mode, before any standard vga mode 
+setting. Fixes text mode restoring with many cards, as well as standard 
+VGA modes.
+.TP
+.BR VesaSave
+selects the bitmap to save and restore, using VESA functions. see VESA 
+documentation for bits' meanings. The default is 1110 (=14) which is 
+good for most cards, but some give better results with other numbers.
+ 
+.SH GENERAL OPTIONS (HANDLED BY THE MAIN MODULE)
+.SS Mouse configuration
+.TP
+.BI "mouse " mousetype
+where
+.I mousetype
+is one of:
+.BR Microsoft ", " MouseSystems ", " MMSeries ", " Logitech ", " Busmouse ", " PS2 ", "
+.BR MouseMan ", " gpm ", " Spaceball ", " none ", " IntelliMouse ", or " IMPS2 .
+.I mousetype
+can also be a number
+.RB ( 0 " - " 9 ") for the keywords " Microsoft " - " none .
+
+.B gpm
+allows for (hopefully) peaceful interaction with gpm,
+.B Spaceball
+enables support for the 6-axes Spacetec Spaceball mouse (well, probably more like a
+trackball),
+.B IntelliMouse
+and
+.B IMPS2
+refer to the Microsoft IntelliMouse or Logitech MouseMan+, where
+.B IntelliMouse
+is for serial port and
+.B IMPS2
+for such a mouse on the PS/2 port.
+
+Note that it is not possible to specify the Microsoft IntelliMouse or Logitech MouseMan+
+by a number. This is due to historical and compatibility reasons.
+
+.TP
+.B mouse_override
+This command is only available if 
+.B ALLOW_MOUSE_OVERRIDE
+was set in
+.I Makefile.cfg
+when svgalib was compiled (which is the default).
+
+If given, svgalib ignores
+any mouse type the program specifies but uses the type
+configured with the
+.B mouse
+command.
+
+For example, DOOM does not recognize
+.B MouseMan
+as a valid
+mouse type and defaults the mouse type to
+.BR MouseSystems.
+This command allows to make svgalib ignore whatever DOOM specifies and use
+.B MouseMan
+anyway.
+
+.TP
+.BI "mdev " mousedevice
+Usually
+.I /dev/mouse
+(the default) will be a link to the mouse device.
+However, esp. with the Spacetec Spaceball you may
+want to specify a different device for
+.BR svgalib (7)
+to use:
+
+.BR "mdev /dev/ttyS0 " "# mouse is at /dev/ttyS0"
+
+.PP
+Some multiprotocol mice use the state of RTS and DTR to find out which
+protocol to enable:
+
+.TP
+.B setRTS
+set the RTS wire.
+.TP
+.B clearRTS
+clear the RTS wire.
+.TP
+.B leaveRTS
+leave the RTS wire alone (default) (Wire is usually set)
+.TP
+.B setDTR
+set the DTR wire.
+.TP
+.B clearDTR
+clear the DTR wire.
+.TP
+.B leaveDTR
+leave the DTR wire alone (default) (Wire is usually set)
+
+.PP
+
+For example my mouse can emulate Microsoft and MouseSystems.
+It needs a low RTS to go into MouseSystems mode. Thus I use:
+
+.B mouse MouseSystems clearRTS
+
+Still I could just use
+.B mouse Microsoft
+and use the mouse with that
+protocol.. But then only 2 buttons instead of 3 are supported (not
+that I know many svgalib programs that uses more than 2 buttons.)
+
+Other mice might need
+.B clearDTR
+as well or one set and clear. Try yourself.
+
+Note: Having crtscts handshake enabled on the mouse tty may interfer with this
+options. Do not do that.
+
+Finally, a special goodie for wheel mice:
+
+.TP
+.BI "mouse_fake_kbd_event " upscancode " " downscancode
+sends a fake keyboard event to the program when the
+wheel on a Microsoft IntelliMouse, Logitech MouseMan+, or similar wheel
+mouse is turned.
+
+The up and down scancodes are the scancodes of the keys to simulate when
+the wheel is turned up and down, respectively.
+
+The following can be specified for the scancodes: letters
+.RB ( A - Z "), numbers (" 0 - 9 ),
+.RB "function keys (" F1 - F12 ),
+or any of the following - 
+.BR ESCAPE ", " MINUS ", "
+.BR EQUAL ", " BACKSPACE ", " TAB ", " BRACKET_LEFT ", " BRACKET_RIGHT ", " ENTER ", " LEFTCONTROL ", "
+.BR SEMICOLON ", " APOSTROPHE ", " GRAVE ", " LEFTSHIFT ", " BACKSLASH ", " COMMA ", " PERIOD ", " SLASH ", "
+.BR RIGHTSHIFT ", " KEYPADMULTIPLY ", " LEFTALT ", " SPACE ", " CAPSLOCK ", " NUMLOCK ", " SCROLLLOCK ", "
+.BR KEYPAD7 ", " CURSORUPLEFT ", " KEYPAD8 ", " CURSORUP ", " KEYPAD9 ", " CURSORUPRIGHT ", " KEYPADMINUS ", "
+.BR KEYPAD4 ", " CURSORLEFT ", " KEYPAD5 ", " KEYPAD6 ", " CURSORRIGHT ", " KEYPADPLUS ", " KEYPAD1 ", "
+.BR CURSORDOWNLEFT ", " KEYPAD2 ", " CURSORDOWN ", " KEYPAD3 ", " CURSORDOWNRIGHT ", " KEYPAD0 ", "
+.BR KEYPADPERIOD ", " KEYPADCENTER ", " RIGHTCONTROL ", " CONTROL ", " KEYPADDIVIDE ", "
+.BR PRINTSCREEN ", " RIGHTALT ", " BREAK ", " BREAK_ALTERNATIVE ", " HOME ", " CURSORBLOCKUP ", "
+.BR PAGEUP ", " CURSORBLOCKLEFT ", " CURSORBLOCKRIGHT ", " END ", " CURSORBLOCKDOWN ", " PAGEDOWN ", "
+.BR INSERT .
+
+Note that this option has no effect unless the IntelliMouse or IMPS2 mouse
+type is used (see above). Also note that the simulated keypresses are
+instantaneous, so they cannot be used for functions that require a key to
+be held down for a certain length of time.
+
+This example simulates a press of the left bracket ([) when the wheel is
+turned up and a press of the right bracket (]) when the wheel is turned
+down (good for selecting items in Quake II):
+
+.B mouse_fake_kbd_event BRACKET_LEFT BRACKET_RIGHT
+
+.PP
+.SS
+Mouse acceleration
+
+Svgalib versions 1.3.0 and later use the following commands to control the
+logarithmic
+mouse acceleration:
+.RS
+.TP
+.B mouse_force
+If given, force use of input parameters even if they seem strange.
+.TP
+.BI mouse_maxdelta " <integer>"
+Set max delta BEFORE acceleration.
+.TP
+.BI mouse_accel_maxdelta " <integer>"
+Set max delta AFTER acceleration.
+.TP
+.BI mouse_accel_thresh " <integer>"
+Set acceleration threshold.
+.TP
+.BI mouse_accel_power " <float>"
+Set input variable for power mode.
+.TP
+.BI mouse_accel_mult " <float>"
+Set acceleration factor.
+.TP
+.BR mouse_accel_type " {" 0 | off | normal | power | linear "}"
+Set the type of acceleration. The following strings are valid values:
+.RS
+.TP
+.BR 0 " or " off
+No acceleration.
+.TP
+.B normal
+No acceleration while delta is less than
+.B mouse_accel_thresh
+but multiplied by
+.B mouse_accel_mult
+if more.
+.br
+Originally done by Mike Chapman <mike@paranoia.com>.
+.TP
+.B power
+The acceleration factor is a power function of delta until
+it reaches
+.B mouse_accel_mult
+After that it's a simple
+multiplication. Basically it's like the normal mode but the
+acceleration factor grows as you move your mouse faster and
+faster, not just turns in and out. If the acceleration factor
+reaches
+.B mouse_accel_mult
+it turns into a plain multiplication.
+
+Threshold has the same meaning as in normal mode.
+The one I use for *uaking... :)
+
+It is calculated like this:
+
+if (abs(dx) > 1) /* to prevent losing resolution */
+.br
+  dx = (abs(dx) >=
+.br
+.B "        " mouse_accel_thresh
+) ?
+.br
+       (float)dx *
+.br
+.B "       " mouse_accel_mult
+:
+.br
+       (float)dx *
+.br
+        m_accel_powertable[abs(dx)];
+.TP
+.B
+linear
+The acceleration factor grows linear with the delta until it
+reaches
+.BR mouse_accel_thresh .
+After that it is a simple mutiplication.
+(I know that it can be done with setting
+.B mouse_accel_power
+to 1, but
+it was one minute to implement... and uses no memory... and...)
+
+It is calculated like this:
+
+if (abs(dx) > 1)
+.br
+  dx = (abs(dx) >=
+.br
+.B "        " mouse_accel_thresh
+) ?
+.br
+       (float)dx *
+.br
+.B "       " mouse_accel_mult
+:
+.br
+       (float)dx * abs(dx) *
+.br
+.B "       " mouse_accel_mult
+/
+.br
+.B "       " mouse_accel_thresh
+;
+.RE
+
+The enhanced acceleration was done
+by 101 (Attila Lendvai) <101@kempelen.inf.bme.hu>
+.RE
+
+.SS Joystick configuration
+As of now, svgalib supports up to four joystick devices. You must have joystick support in your
+kernel to support this.
+
+.TP
+.BI "joystick0 " device
+sets the device name to use for joystick 0. The commands
+.BR joystick1 ", " joystick2 " and " joystick3 
+configure the other joysticks. By default the names
+.IR /dev/js0 ", " /dev/js1 ", " /dev/js2 " and " /dev/js3
+are used.
+
+.SS Keyboard configuration
+.TP
+.BI kbd_fake_mouse_event " scancode " [ flag(s) "] " command " [" argument ]
+, as it says, sends a fake mouse event to the program.
+.I Scancode
+is a raw scancode as you can find them in
+.IR <keyboard/vgakeyboard.h> .
+
+.IP
+Supported
+.I flag(s)
+are:
+.RS
+.TP
+.B down
+trigger event when the key is pressed (default).
+.TP
+.B up
+the opposite.
+.TP
+.B both
+trigger in both case, if pressed or released.
+.TP
+.B repeat
+repeat events if the key is kept pressed (off by default).
+.RE
+
+.IP
+Supported commands are:
+.RS
+.TP
+.BR delta [ xyz ]
+send a fake delta event as if you have moved your
+mouse. If the
+.I parameter
+is
+.BR off " or " on
+it will turn off/on the respective mouse axis (requires a
+.IR parameter ,
+of course)
+.TP
+.BR button [ 123 ]
+send a fake event that the mouse button is pressed
+or released as given by the
+.I parameter
+.RB ( pressed " or " released )
+.RE
+
+.IP
+Here are some examples:
+
+This is one I use in *uake: it turns around, looks down a bit and when the
+key is released it does the opposite, so it gets back to the starting state.
+With this one and the help of a rocket you can fly though the whole map :)
+(Scancode 28 is
+.BR <Enter> ):
+
+.B "   " kbd_fake_mouse_event 28 both deltax 8182
+.br
+.B "                           " down deltay -1500
+.br
+.B "                           " up deltay 1500
+
+This one will switch off the y axis of the mouse while the key 
+.B <Right Ctrl>
+is kept pressed.
+
+.B "   " kbd_fake_mouse_event 97 down deltay off
+.br
+.B "                           " up deltay on
+
+This one is the same as if you were pressing the left mouse button. (But
+if you move your mouse then the button state will reset even if you keep
+.B <Right Ctrl>
+down...)
+
+.B "   " kbd_fake_mouse_event 97 down button1 pressed
+.br
+.B "                           " up button1 released
+
+.B
+NOTE:
+This does only work when the keyboard is in raw keyboard mode!
+
+Yet another feature brought to you
+by 101 (Attila Lendvai) <101@kempelen.inf.bme.hu>
+
+.TP
+.B nosigint
+This command disables generation of a
+.B SIGINT
+signal when
+.B <Ctrl-C>
+is pressed.
+
+This works regardless of ordinary or raw keyboard mode (albeit the
+hot key might be different from
+.B <Ctrl-C>
+in the first case).
+
+.B
+Note
+that this is a very dangerous option. Disabling
+.B SIGINT
+will lock you in programs which can only by quit by
+.BR <Ctrl-C> !
+However, there were request for it for
+Quake playing.
+.TP
+.BR sigint " (default)"
+Enables generation of
+.BR SIGINT .
+
+.SS Monitor configuration
+
+.PD 0
+.TP
+.BI "HorizSync " "min_kHz max_kHz"
+.TP
+.BI "VertRefresh " "min_Hz max_Hz"
+.PD
+specifies the range of frequencies acceptable to your monitor.  They
+obsolete the
+.B monitor
+settings below, and this shouldn't be used if
+.BR HorizSync " and " VertRefresh " are defined. Examples:"
+
+.B HorizSync 31.5 35.5
+.br
+.B VertRefresh 50 70
+
+.TP
+.BI monitor " monitor_class"
+where
+.I monitor_class
+is a digit
+.BR 0 " - " 6
+or the maximal horizontal frequency in kHz. Examples:
+
+.BR "monitor 0" " # Max horizontal sync is 31.5 kHz"
+.br
+.BR "monitor 1" " # Max horizontal sync is 35.1 kHz"
+.br
+.BR "monitor 2" " # Max horizontal sync is 35.5 kHz"
+.br
+.BR "monitor 3" " # Max horizontal sync is 37.9 kHz"
+.br
+.BR "monitor 4" " # Max horizontal sync is 48.3 kHz"
+.br
+.BR "monitor 5" " # Max horizontal sync is 56.0 kHz"
+.br
+.BR "monitor 6" " # No restrictions."
+
+For your convenience you may specify the max horizontal sync explicitly. The
+correct class will the be chosen. You may use floats consisting of digits
+and a decimal point for this too:
+
+.BR "monitor 40.0" " # equivalent to monitor 3"
+
+This command is
+.BR privileged .
+
+.SS Mode timings
+It is now possible to define modetimings for some cards (see the info on your card
+in
+.BR svgalib (7)).
+The syntax is:
+
+.TP
+.BI "modeline " "label pxcl HDsp HSS HSE HTot VDsp VSS VSE VTot flags
+.RS
+.TP
+.IR "label  " string
+(ignored by svgalib)
+mainly there to be compatible with XF86Config.
+I use the format "Width x Height @ Vert.Refresh", but that's
+just personal taste...
+.TP
+.IR "pxcl   " float
+the pixel clock in MHz
+
+.PD 0
+.TP
+.IR HDsp
+.TP
+.IR "VDsp   " integer
+size of the visible area (horizontal/vertical)
+.PD
+
+.PD 0
+.TP
+.IR HSS
+.TP
+.IR "VSS    " integer
+Sync start (horizontal/vertical)
+.PD
+
+.PD 0
+.TP
+.IR HSE
+.TP
+.IR "VSE    " integer
+Sync end (horizontal/vertical)
+.PD
+
+.PD 0
+.TP
+.IR HTot
+.TP
+.IR "VTot   " integer
+Total width/height (end of back porch)
+.PD
+
+.TP
+.IB "flags  " "+hsync -hsync +vsync -vsync interlace interlaced" 
+.B doublescan
+Sync polarity, interlace mode
+.RE
+
+Everything should be on one line.
+The values for the horizontal timings must be multiples of eight.
+
+These are prefered over the default timings (if monitor and chipset
+can handle them).
+The format is identical to the one used by XFree86, but the label
+following the modeline keyword is ignored by vgalib.
+
+Here some examples:
+
+.B modeline "640x480@100"  43  640  664  824  848   480  483  490  504
+.br
+.B modeline "800x600@73"   50  800  856  976 1024   600  637  643  666
+.br
+.B modeline "1024x768@75"  85 1024 1048 1376 1400   768  771  780  806
+.br
+
+.B IMPORTANT!
+Not all drivers, that is SVGA cards, use the values. Only
+drivers using timing.c. As of this writing, drivers using this feature are:
+Ark, Cirrus, Chips & Technologies, Et6000, S3.
+
+The Mach32 driver provides a similar feature separately, you have to use
+the
+.B define
+command described below.
+
+ET4000 (and to some extent EGA) allow one to use a binary file
+created by some utility. All other chipset driver use predefined
+timings that are hardcoded in register dumps within the drivers. See
+.BR svgalib.et4000 (7)
+for more information.
+
+.SS Chipset detection
+Usually svgalib does a good job autodetecting your hardware. However,
+if auto detection fails (or you want to fall back to a simpler driver, say VGA,
+as a bug work around), you may force detection of your chipset with
+
+.TP
+.BI "chipset " type
+where
+.I type
+is (currently) one of:
+.BR VGA ", "
+.BR ET4000 ", "
+.BR Cirrus ", "
+.BR TVGA ", "
+.BR Oak ", "
+.BR EGA ", "
+.BR S3 ", "
+.BR ET3000 ", "
+.BR Mach32 ", "
+.BR GVGA6400 ", "
+.BR ARK ", "
+.BR ATI ", "
+.BR ALI ", "
+.BR Mach64 ", "
+.BR C&T ", "
+.BR APM ", "
+.BR NV3 ", "
+.BR ET6000 ", "
+.BR VESA ", "
+.BR MX ", "
+.BR PARADISE ", and "
+.BR RAGE .
+
+You can also specify a number in range
+.B 1 " - " 22
+to specify the
+.IB type "-th"
+chipset type or
+.B 0
+to enforce autodetection.
+
+Warning, incorrect settings may damage your hardware.
+This command is
+.BR privileged .
+
+.TP
+.BI "chipset " "type param1 param2"
+use this form if the size of memory or an additional configuration option is
+misdetected. For example:
+
+.B chipset Mach32 0 2048
+
+Note that always two integers have to be specified. Usually (Mach32)
+the second parameter is the memory amount. Look at the *_init function
+of the specific device driver sources or information on that type
+of cards in
+.BR svgalib (7).
+
+Note that there is a more convenient command
+.B setuplinear
+for enforcing specific memory-aperture configurations for Mach32
+
+This command is
+.BR privileged .
+
+.SS Specific options required for the EGA-driver.
+.TP
+.B monotext
+Card is in monochrome emulation mode
+.TP
+.B colortext
+Card is in color emulation mode
+
+This command is
+.BR privileged .
+
+.SS RAMDAC configuration
+Some chipsets (e.g. S3 and ARK) allow specifying a RAMDAC type. If
+your RAMDAC is not autodetected, you can try specifying it:
+
+.PD 0
+.TP
+.B Ramdac Sierra32K
+.TP
+.B Ramdac SC15025
+.TP
+.B Ramdac SDAC
+S3 SDAC
+.TP
+.B Ramdac GenDAC
+S3 GenDAC
+.TP
+.B Ramdac ATT20C490
+AT&T 20C490, 491, 492 (and compatibles)
+.TP
+.B Ramdac ATT20C498
+AT&T 20C498
+.TP
+.B Ramdac IBMRGB52x
+IBM RGB524, 526, 528 (and compatibles)
+.PD
+.PP
+
+.B BEWARE!
+The Mach32 driver features an own
+.B ramdac
+command (which is usually not required). If you have a Mach32,
+see
+.BR svgalib.mach32 (7).
+
+.TP
+.BI "Dacspeed " speed
+.I speed
+is a floating point number in MHz (like in
+.BR Dacspeed 40.0" )
+specifying the maximal allowable pixel clock of the Ramdac in use. Currently this
+option is only supported by the S3 driver. The Mach32 driver supports
+.BR maxclock8 ", "  maxclock16 ", " maxclock24 ", and " maxclock32
+commands which have a similar effect. Nevertheless, the Mach32 has a very good idea
+on the capabilities of the Ramdac in use. The settings are more intended to specify the
+VGA memory bandwidth.
+
+.SS Pixel clocks
+.TP
+.BI "Clocks " "list of clock values as floats or ints"
+
+Some chipsets need a list of dot clocks for optimum operation.  Some
+includes or supports a programmable clock chip.  You'll need to specify
+them here.
+
+Fixed clocks example: (The following is just an example, get
+the values for your card from
+you X setup)
+
+.B Clocks 25.175 28.3 40 70 50 75 36 44.9 0 118 77 31.5 110 65 72 93.5
+
+.B BEWARE!
+The
+.B Clocks
+command for the Mach32 features only integer clocks. Please round your clocks to
+the next integer data. The Mach32 only uses these values to check monitor 
+requirements and to compare the quality of modes. The rounding errors are of
+no importance there as the difference in the resulting monitor timings is barely
+measurable. See the Mach32 section below.
+.TP
+.B Clockchip ICD2061A
+Configure for a programmable clockchip.
+.B ICD2061A
+is the only one supported right now.
+
+.SS Miscanellous options
+.TP
+.B security revoke-all-privs
+Make sure it is impossible to regain root access
+after
+.BR vga_init (3)
+was called. (default)
+.TP
+.B security compat
+For compatibility to pre 1.2.11, do not close a security hole using saved uids.
+.TP
+.B verbose
+Mach32: show messages while processing all info to build up a mode table.
+.TP
+.B quiet
+Turn verbose messages off (default).
+.TP
+.B nolinear
+Inhibit use of a linear mmaped frame buffer.
+.TP
+.B linear
+Allow (not enforce!) use of a linear mmaped frame buffer.
+.TP
+.B overrideenable
+Allow
+.B privileged
+commands outside the main configuration file.
+
+.SS Common options currently used by Mach32 only
+Options that may be useful for all drivers, but currently are only supported
+by Mach32 (Please read
+.BR svgalib.mach32 (7)
+if you use one):
+
+.TP
+.BI "maxclock16 " maxclk
+The maximum pixel clock to use for 16bpp modes. This is
+used by Mach32 to find out which settings may be used for 16bpp modes.
+the Mach32 default for this is 2000, thus it is effectively switched off.
+.I maxclk
+must be an integer.
+
+.TP
+.BI "maxclock24 " maxclk
+The maximum clock to use for 24bpp modes. (see above)
+Experience showed that the Mach32 default 49 is good for my 2MB VRAM card.
+
+.TP
+.BI "maxclock32 " maxclk
+The same for 32bpp modes (24bpp with one fill byte for
+faster memory access (not fully implemented (esp. for Mach32) yet).
+Mach32 default (good for my VRAM card) is 39.
+
+.TP
+.BI "maxclock8 " maxclk
+Just for completeness the same for 8bpp modes (I doubt anyone needs it), default
+is 2000 to disable this feature.
+
+.P
+The
+.B maxclock
+commands are
+.BR privileged .
+
+.TP
+.BI "clocks " "list of clocks"
+Sets the frequencies of the clocks the chips can
+generate. Exactly 16 values have to be specified for mach32.
+Use 0 to disable a specific clock.
+
+Note that the mach32 can divide clocks by 2. Thus there are actually 32 clocks
+And you can also use the divided clocks in a define command.
+On contrary to Xfree96 or the
+.B clocks
+command above only integers are allowed for Mach32. Simply round them to the nearest
+integer.
+
+This line is mandatory for Mach32. If it is not there it will be auto detected
+and added at the beginning of the config file. The program will then exit and
+when you start it next, everything should be ok.
+
+Common clock values for Mach32:
+.RS
+.TP
+Clock chip 18811-0:
+.B clocks 43 49 92 36 50 56 0 45
+.br
+.B "      " 30 32 110 80 40 45 75 65
+
+.TP
+Clock chip 18811-1:
+due to Xfree86 info valid for: Ultra pro ISA, Ultra pro EISA,
+Ultra pro VLB(68800-3)
+
+.B clocks 100 126 92 36 50 56 0 45
+.br
+.B "      " 135 32 110 80 40 45 75 65
+
+.TP
+Clock chip 1881 (ICS2494):
+due to Xfree86 info valid for: Ultra pro VLB (6880006)
+
+.B clocks 18 22 25 28 36 44 50 56
+.br
+.B "      " 30 32 37 39 40 0 75 65
+.RE
+.IP
+In my own correspondence with ATI they say every Mach32 would have a
+18811-1, so it should be possible just to take the 18811-1 line.
+However I have now reports of third party cards and motherboards with
+on board Mach32 chips, so be careful.
+
+Please read
+.BR svgalib.mach32 (7)
+for additional info on clocks.
+
+The
+.B clocks
+command is
+.BR privileged .
+
+.TP
+.B variablelinelength
+Sometimes a mode cannot be realized with the logical linelength = pixels in
+a row * bytes per pixel. (definitely true for Mach32 800x600). The default behavior
+of Mach32 is to adjust
+.I xbytes
+(see
+.BR vga_getmodeinfo (3))
+in the info table appropriately.
+
+This command enforces this default operation and
+adjusts
+.I xbytes
+appropriately, thus overriding the standard
+svgalib mode. This may yield to problems with ..umm.. not well designed
+applications.
+
+.TP
+.B duplicatelinelength
+Don't touch the standard mode but create an exact
+copy, a dynamic mode, with the adjusted
+.I xbytes
+value.  Expect noise at some
+pixels in 800x600 for more than 256 colors on Mach32 when not using the dynamic
+mode.
+
+.TP
+.B strictlinelength
+Same as above but delete the standard mode thus creating
+the non conforming
+.I xbytes
+modes only as dynamic modes.
+
+.PP
+
+To enforce the standard linelength for non-conforming modes use
+.B setlinelength
+below.
+
+The
+linelength
+commands are
+.BR "not privileged" .
+
+In the following commands a mode is specified with
+.IR horz X vert X colors .
+Valid settings for colors in the mach32 driver are: 256, 32K, 64K, 16M, 16M4.
+16M4 is for the 16M colors with 32bpp modes. These are expected to support
+slightly faster drawing.
+
+Examples:
+.BR 640x480x256 ", " 1024x768x64K ", etc..."
+
+.TP
+.BI "inhibit " mode1 " [" mode2 " " mode3 "...]"
+Switch the specified SVGA-Modes off. For example:
+
+.B inhibit 800x600x32K 800x600x64K 800x600x16M
+
+disallows the maybe toasted mach32 800x600 modes.
+
+The
+.B inhibit
+command is
+.BR "not privileged" .
+
+.TP
+.BI "setlinelength " length " " mode1 " [" mode2 " " mode3 "...]"
+Force the logical line length
+.RI ( xbytes )
+in the given modes to length pixels (not bytes!). See also
+.BR variablelinelength ", " strictlinelength ", and " duplicatelinelength
+above. For example:
+
+.B setlinelength 800 800x600x32K 800x600x64K 800x600x16M
+
+sets the linelength, and thus
+.IR xbytes ,
+for the
+.B 800x600
+modes to the equivalent of 800 pixels. For Mach32 this will give badly
+designed applications an 800x600 with which they can cope. However,
+the Mach32 will generate a noisy video signal in some configurations.
+
+The
+.B setlinelength
+command is
+.BR "not privileged" .
+
+.TP
+.BI "define " mode1 " [" mode2 " " mode3 "...] " "clock horz_timing vert_timing flags"
+where
+.I clock
+is a clock in MHz (as an integer! Has to be known by the driver.
+(one of the set clocks, or the exact half of one)). Only clocks in a
+.B clocks
+command issued before the
+.B define
+can be used.
+
+You may use
+.BI : n
+to specify the
+.IR n -th clock
+.RI ( n " = 0 .. 31"
+for mach32).
+
+.I horz_timing
+is four integers:
+.IR "hdisp h_sync_strt h_sync_wid h_total" .
+
+.I vert_timing
+has the same format but for vertical.
+
+You may specify one or
+more
+.I flags
+out of:
+.BR Interlace ", " +vsync ", " -vsync ", " +hsync ", or " -hsync
+to select
+interlace mode and polarity of sync signals. This format is almost the same
+Xfree uses, s.t. you may use their mode table and the modegen spreadsheet
+package for mode creation. You simple need to round the clock to the next integer,
+add the resolution instead of the timing name for Xfree and replace the
+.B modeline
+keyword with
+.BR define .
+Here is a 1024x768x256 mode as example:
+
+.B define 1024x768x256 80 1024 1024 1184 1312
+.br
+.B "      " 768 768 772 791 +vsync -hsync
+
+or
+
+.B define 1024x768x256 1024x768x32K 1024x768x64K
+.br
+.B "      " :11 1024 1024 1184 1312 768 768 772 791
+
+(yes any whitespace in a command is allowed, even a newline !)
+
+Both commands define the same timings (if the 11-th clock is 80) but
+the first explicitly specifies the polarity of sync signals whereas
+the second declares that these timings are also to be used for
+a 32K and 64K mode.
+
+The
+.B define
+command is
+.BR privileged .
+
+.PP
+There is one really dangerous option (except faking clocks). Please
+use it only if you are sure what you are doing. Wrong setup will
+lead to multiple components accessing your bus at once and thus
+to probable hardware damage:
+
+.TP
+.BI setuplinear " address size"
+Sets up a linear frame buffer at
+.IR address " of size " size
+(both are given in MB). If the values make sense (for example address <16MB for ISA cards)
+the linear aperture is setup. Since the Mach32-driver auto detects configured
+address itself, I strongly discourage use of this command. However I was
+asked for it as some PCI mach32-cards didn't setup the linear aperture correctly.
+
+Please ensure that the address range from
+.IR address " to " address " + " size
+(exclusively) is not used
+in your system. Obey that due to memory remapping for example 16MB Ram may
+exceed the 16MB address limit.
+
+Valid Mach32 values for size are 1 and 4 (only 4 in PCI configurations),
+.IR address " + " size
+have to be below 16MB for ISA, 4GB for multiplexed PCI,
+and 128MB else. Example: (my setup)
+
+.B setuplinear 64 4
+
+for a 4MB linear frame buffer at address 0x4000000.
+
+It is also valid to specify
+.BR "setuplinear 0 0" .
+This will actually disable/de-configure any linear
+frame buffer. Useful to disable mach32 aperture even if it is enabled
+in the EEPROM.
+
+The
+.B setuplinear
+command is
+.BR privileged .
+
+.TP
+.BI "blit " "subcommand1 subcommand2" " ..."
+This is a command to control the Mach32 support for oldstyle accelerator
+functions.
+
+Valid
+.IR subcommand s
+are
+.BR bit ", " fill ", " image ", and " hlinelist .
+They enable support for the
+corresponding blit functions. Preceed them with
+.B no
+to turn them off (no space after
+.B no
+allowed). Use
+.B memimage
+to emulate the
+.B image
+blit using a linearframebuffer, which is usually much faster for Mach32.
+Use
+.B nomemimage
+to never use this emulation. On the Mach32 this emulation can be used in more resolutions than
+the actual imageblit accelerator function.
+Again order is vital! (esp. for the
+.B *image
+commands).
+
+As the Mach32 now has also new style
+.BR vga_accel (3)
+support there are now also the
+.IR subcommand s:
+.BR settrans ", " setrop ", " fillbox ", " screencopy ", "
+.BR drawline ", " putimage ", " drawhlinelist ", " putbitmap ", "
+.BR screencopymono ", " setmode ", " polyline ", " polyhline ", and"
+.BR polyfillmode .
+Which are also supported with a leading
+.BR no .
+They allow to control support for the subfunctions of
+.BR vga_accel (3).
+In addition,
+.B memimage
+emulation applies to
+.B putimage
+as well.
+
+Some examples:
+
+.RS
+.TP
+.B blit image nomemimage
+Use IO-style imageblt where possible. Don't emulate it in any resolution.
+.TP
+.B
+blit image memimage
+Use emulated imageblt where possible.
+.TP
+.B
+blit memimage image
+Use IO-style imageblt where possible, and the emulation where possible in the remaining modes.
+.TP
+.B
+blit noimage
+Disable support for imageblt.
+.RE
+.IP
+
+Mach32 default is:
+
+.B blit bit fill image hlinelist settrans setrop
+.br
+.B "    " fillbox screencopy drawline putimage
+.br
+.B "    " drawhlinelist putbitmap screencopymono
+.br
+.B "    " setmode polyline polyhline polyfillmode
+.br
+.B "    " memimage
+
+The
+.B blit
+command is
+.BR "not privileged" .
+
+.PP
+The Mach32 has also a few intermediate debug options for low level timing adjust.
+They are:
+
+.BI vfifo8 " number"
+.br
+.BI vfifo16 " number"
+.br
+.BI vfifo24 " number"
+.br
+.BI vfifo32 " number"
+.br
+.BI blank " number"
+.br
+.BI latch " number"
+
+There also options which are useful to support broken Mach32 cards or third
+party hardware based on Mach32 which does not follow the ATI specifications
+completely. For example:
+
+.B vendor ati
+.br
+.B misc_ctl keep-off
+.br
+.B svgaclocks 9
+.br
+.B ramdac auto
+
+For details about these options see
+.BR svgalib.mach32 (7).
+All of them are
+.BR "privileged" .
+
+.SH OBSOLETE COMMANDS
+Very old svgalib versions used a different style configuration file. For compatibility,
+svgalib can still parse these old options. Generally the options consist of one
+character (case sensitive) followed by a number. Whitespace characters (space, tab,
+newline) can be used after the characters
+.BR m " and " M
+and the number.
+
+The old svgalib versions actually allowed a new option character to follow a number immediately.
+The current parser requires white space after the numbers.
+
+Of course, you should not use these cryptic forms anymore. The obsolete commands are:
+
+.TP
+.BI m number
+Specify the mouse type like
+.BI mouse " number"
+does.
+.TP
+.BI M class
+Specify the monitor class like
+.BI monitor " class"
+does.
+.TP
+.BI C number
+Force usage of the
+.IR number -th
+chipset driver from the list of supported drivers
+.BR VGA "(1), "
+.BR ET4000 "(2), "
+.BR Cirrus "(3), "
+.BR TVGA "(4), "
+.BR Oak "(5), "
+.BR EGA "(6), "
+.BR S3 "(7), "
+.BR ET3000 "(8), "
+.BR Mach32 "(9), "
+.BR GVGA6400 "(10), "
+.BR ARK "(11), "
+.BR ATI "(12), "
+.BR ALI "(13), "
+.BR Mach64 "(14), "
+.BR C&T "(15), "
+.BR APM "(16), "
+.BR NV3 "(17), "
+.BR ET6000 "(18), "
+.BR VESA "(19), "
+.BR MX "(20), "
+.BR PARADISE "(21), and "
+.BR RAGE (22).
+
+.B C0
+reenables auto detection of the chipset (default).
+
+.TP
+.BI c flag
+When using the EGA chipset driver, the card is in monochrome emulation mode for
+.I flag
+= 0 and in color emulation mode for
+.I flag
+= 1.
+.SH FILES
+.IR /etc/vga/libvga.config
+.br
+.IR /etc/vga/libvga.et4000
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR svgalib.et4000 (7),
+.BR svgalib.chips (7),
+.BR svgalib.mach32 (7),
+
+.SH AUTHOR
+The newstyle configuration file was first implemented and
+documented by
+Michael Weller <eowmob@exp-math.uni-essen.de>. However, 
+other people added new features.
+
+Finally this page was edited by
+Michael Weller <eowmob@exp-math.uni-essen.de>.

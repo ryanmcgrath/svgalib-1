@@ -1,0 +1,161 @@
+.TH vga_waitevent 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_waitevent \- wait for various I/O events
+.SH SYNOPSIS
+
+.B "#include <sys/time.h>"
+.br
+.B "#include <sys/types.h>"
+.br
+.B "#include <unistd.h>"
+.br
+.B "#include <vga.h>"
+
+.BI "int vga_waitevent(int " which ", fd_set *" input ", fd_set *" output
+.BI ", fd_set *" except ", struct timeval *" timeout)
+
+.SH DESCRIPTION
+This is the only function allowing you to wait for keyboard
+AND mouse events. It is based on the
+.BR select (2)
+library function,
+so for deep understanding of
+.B vga_waitevent()
+look at
+.BR select (2)
+as well.
+
+.I which
+can be 0 or logical ored together from
+.BR VGA_MOUSEEVENT " and " VGA_KEYEVENT .
+If you are interested in waiting for file descriptors having
+input available or being ready for new write data or being
+in an exceptional condition (urgent data arrived on a TCP
+stream) set the corresponding bits in the
+.B fd_set
+structures passed (see
+.BR select (3)).
+If you want
+.B vga_waitevent()
+to return after a timeout value pass a
+.B struct timeval
+with the desired value. If you are not interested in the
+corresponding events you may pass
+.B NULL
+for any of the pointers.
+
+If
+.B NULL
+is passed for
+.IB "timeout " vga_waitevent()
+will not time out but block until any of the other events occurs.
+If the integer returned is < 0 an error occurred. Check the global
+variable
+.B errno
+for details. If a value >= 0 is returned it is a bitmask constructed using
+.BR VGA_MOUSEEVENT " and " VGA_KEYEVENT
+to show which of these events occured.
+
+If any of these two occured the appropriate update functions
+are already called by
+.BR vga_waitevent() . vga_waitevent()
+operates in raw as well as non-raw keyboard
+mode. In the latter case use
+.BR vga_getch (3)
+not
+.BR vga_getkey (3)
+to read the newly arrived keys.
+
+Any of the file related conditions being met will be signalled
+by setting exactly the bits for files that met the conditions
+in the corresponding
+.B fd_set
+structures. If a
+.RB non- NULL
+.I timeout
+is passed the remaining time is written into it on return.
+If it is 0 a timeout occured. (again: cf.
+.BR select (2))
+Therefore, depending on context,
+.BR vga_waitkey (3)
+may return 0 if only special, non svgalib, events occured.
+
+.SH EXAMPLES
+If you want to wait blocking for a keypress OR a mouse event use:
+.B vga_waitevent(VGA_MOUSEEVENT | VGA_KEYEVENT, NULL, NULL, NULL, NULL);
+
+If you want to wait for a keypress OR a mouse event but
+non-blocking use:
+
+.B "#include <sys/time.h>"
+.br
+.B "#include <sys/types.h>"
+.br
+.B "#include <unistd.h>"
+.br
+.B "#include <vga.h>"
+
+.B struct timeval timeout;
+.br
+.B timeout.tv_sec = 0;
+.br
+.B timeout.tv_usec = 0;
+.br
+.B vga_waitevent(VGA_MOUSEEVENT | VGA_KEYEVENT, NULL, NULL, NULL, &timeout);
+
+You could do a similar thing by just calling
+
+.B mouse_update();
+.br
+.B keyboard_update();
+
+though. There is no such counterpart for the first example.
+
+Finally, there is a very nice
+.BR eventtest (6)
+demo showing most capabilities of 
+.BR vga_waitevent() .
+
+.SH BUGS
+This function was introduced in 1.2.10. Unfortunately there was a typo in the first
+implementation which broke the case where
+.I input
+was
+.BR NULL .
+Though fixed in 1.2.11 for optimal portability pass an empty
+.B fd_set
+instead of
+.B NULL
+as first argument.
+
+When not running in background mode, that is, the svgalib applcation is suspended
+while the VC is switched away, it seems
+.B vga_waitevent
+gets stuck and does no longer timeout. It is not clear if this is an svgalib bug, kernel
+bug or general problem.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_getposition_6d (3),
+.BR mouse_getx (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_getkey (3),
+.BR vga_getch (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

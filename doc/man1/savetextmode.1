@@ -1,0 +1,71 @@
+.TH savetextmode 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+savetextmode, textmode \- save or restore the complete SVGA status for textmode.
+.SH SYNOPSIS
+
+.B savetextmode
+.br
+.B textmode
+
+.SH DESCRIPTION
+These are simple scripts to save the SVGA register state when in textmode to the
+files
+.IR /tmp/fontdata " and " /tmp/textregs
+or to restore it from these files.
+
+The actual utilities used are
+.BR restorefont (1),
+.BR restoretextmode "(1), and "
+.BR restorepalette (1).
+
+The purpose of these scripts program is usually to recover from a crashed console due to an
+svgalib, Xfree or other program bug.
+
+You do this by being a smart guy and running
+.B savetextmode
+right after booting of your machine,
+.B prior
+to any problems. Then, in case the SVGA state is hosed and you sit in front of a blank or
+useless console, change VC (maybe login) to get to a shell. Or exist the currently running
+program with
+.BR <Ctrl>-C ", "
+.BR <Ctrl>-<Alt>-<Backspace> ,
+or whatever applies. Once you got a shell, run
+.B textmode
+and it will hopefully render your console useable again.
+
+To make it clear: You do all this while not seeing anything on your console screen, you
+enter this information blindly or after logging in from a network. Also, if the keyboard is
+left in raw mode, nothing can really help you as you cannot enter anything which a shell
+will understand.
+
+.SH FILES
+.I /tmp/fontdata
+.br
+.I /tmp/textregs
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR dumpreg (1),
+.BR convfont (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restoretextmode (1),
+.BR restorepalette (1),
+.BR runx (1),
+.BR setmclk (1),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,56 @@
+.TH gl_setpixel 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setpixel, gl_setpixelrgb \- draw a pixel
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_setpixel(int " x ", int " y ", int " c ),
+.br
+.BI "void gl_setpixelrgb(int " x ", int " y ", int " r ", int " g ", int " b );
+
+.SH DESCRIPTION
+.B gl_setpixel
+draws a single pixel at position
+.RI ( x ", " y )
+in color
+.IR c .
+The lower
+8, 15, 16 or 24 bits of the color are significant, depending
+on the number of colors the current mode supports. 
+
+.B gl_setpixelrgb
+draws a single pixel at position
+.RI ( x ", " y )
+with color components
+.IR r ", " g ", and " b ,
+ranging from 0 to 255. In 256 color mode, only
+meaningful if the RGB palette is set
+.RB ( gl_setrgbpalette (3)).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR gl_circle (3),
+.BR gl_fillbox (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_rgbcolor (3),
+.BR gl_setrgbpalette (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

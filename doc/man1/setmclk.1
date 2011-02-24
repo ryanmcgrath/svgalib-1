@@ -1,0 +1,90 @@
+.TH setmclk 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+setmclk \- adjust the memory timing of certain Cirrus cards.
+.SH SYNOPSIS
+
+.BI setmclk
+
+.SH DESCRIPTION
+This program sets the 
+.B memory clock
+of Cirrus 5424/26/28 cards.
+
+The first three values could be set by utility programs that
+came with my card (AVGA3), but somewhat higher values seem to work (on my
+card at least). It may be that better and more recent Cirrus cards use a
+higher value as boot-up default. It should depend on DRAM speed, but it
+seems to be more dependant on the card logic.
+
+I have the impression that many Cirrus 542x cards suffer from horrible
+BIOS version/DRAM timing misconfigurations. Perhaps even some versions of
+MS-Windows drivers change the MCLK register. In any case, the boot-up BIOS
+default (0x1c) may be inappropriately low for the type of DRAM timing most
+cards use.
+
+Using a higher memory clock gives a very significant performance improvement;
+with high dot clock modes (like 640x480x16M or 1150x900x256) performance can
+be more than twice that of the standard 50 MHz clock. This goes for both
+(VLB) framebuffer access and accelerated features (bitblt). This also helps
+XFree86 server performance, but only if the XFree86 Cirrus driver doesn't
+set the memory clock register (it should work for XFree86 1.3 and 2.0).
+Use at your own risk!
+
+Note that the
+.B dot clock
+is something entirely different. There does not
+seem to be much correlation between the two (i.e. if a high dot clock gives
+screen problems, using a high memory clock is not likely to fix it, other
+than improving speed).
+
+The actual
+.B memory clock
+is hard compiled into the program. It defaults to 0x1c. You can change this value
+and some suggestiong come in th source of the utility.
+
+This utility is part of svgalib and can be found in the
+.I utils/
+subdirectory of the original svgalib distribution. However, it is not installed
+by default, s.t. it is unclear where you can find it if your svgalib was install
+linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. You
+don't need to install it. Just
+.B make
+in the
+.I utils/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR convfont (1),
+.BR dumpreg (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR fix132x43 (1),
+.BR textmode (1).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,62 @@
+.TH mouse_getx 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mouse_getx, mouse_gety, mouse_getbutton \- query the mouse state
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "int mouse_getx(void);
+.br
+.BI "int mouse_gety(void);
+.br
+.BI "int mouse_getbutton(void);
+
+.SH DESCRIPTION
+These three routines do the obvious, namely returning current mouse pointer position and
+button state.
+.B mouse_getbutton()
+returns an integer which can be bitwise &'d with
+.BR MOUSE_LEFTBUTTON ", " MOUSE_MIDDLEBUTTON ", " MOUSE_RIGHTBUTTON ", "
+.BR MOUSE_FOURTHBUTTON ", " MOUSE_FIFTHBUTTON ", " MOUSE_SIXTHBUTTON ", or " MOUSE_RESETBUTTON .
+
+A 1 on any of these bits means the button has been pressed,
+a 0 means it hasn't.
+
+Please note that you need to call
+.BR mouse_update (3)
+or
+.BR mouse_waitforupdate (3)
+for the mouse state actually to change.
+
+For 3d pointer devices, there is actually another interface. See
+.BR mouse_getposition_6d (3).
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_close (3),
+.BR mouse_init (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_setmousesupport (3),
+.BR mouse_seteventhandler (3),
+.BR vga_waitevent (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

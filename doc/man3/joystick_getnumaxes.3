@@ -1,0 +1,47 @@
+.TH joystick_getnumaxes 3 "14 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+joystick_getnumaxes, joystick_getnumbuttons \- query the capabilities of a joystick
+.SH SYNOPSIS
+
+.B "#include <vgajoystick.h>"
+
+.BI "char joystick_getnumaxes(int " joydev );
+.br
+.BI "char joystick_getnumbuttons(int " joydev );
+
+.SH DESCRIPTION
+queries the number of axes (number of continuous ranges which the joystick allows to choose
+from) and buttons. The old version 0.* joystick protocol reports 2 axes (x and y) and 4 buttons
+although the actual joystick will usually have less (often two) buttons.
+
+svgalib supports up to 127 axes and buttons, provided the underlying device driver does it.
+
+.SH CAVEATS
+This function is only available in ELF versions of svgalib. Due to backwards
+compatibility issues it cannot be used with shared a.out libs.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR joystick_init (3),
+.BR joystick_close (3),
+.BR joystick_update (3),
+.BR joystick_sethandler (3),
+.BR joystick_setdefaulthandler (3),
+.BR joystick_getaxis (3),
+.BR joystick_getbutton (3),
+.BR joystick_button1 (3),
+.BR joystick_getb1 (3),
+.BR joystick_x (3),
+.BR joystick_getx (3).
+
+.SH AUTHOR
+
+The svgalib joystick handler was mostly done by Daniel Engstr\\"om <daniel.engstrom@riksnett.no>.
+Multiple joystick, VC switching support and code to glue it into svgalib by Michael Weller
+<eowmob@exp-math.uni-essen.de>. Part of the code is based on code from C. Smith and
+Vojtech Pavlik.

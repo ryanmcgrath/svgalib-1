@@ -1,0 +1,48 @@
+.TH gl_setdisplaystart 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setdisplaystart \- set the start of the screen are displayed
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "vga gl_setdisplaystart(int " x ", int " y );
+
+.SH DESCRIPTION
+Set the physical display start address to the pixel at
+.RI ( x ", " y ).
+
+Can be used for hardware scrolling, or for page flipping
+(e.g.
+.B setdisplaystart(0, HEIGHT)
+displays from the second
+page). Make sure the scanline width
+.RB ( BYTEWIDTH )
+in bytes
+of the current context corresponds with the physical
+screen.
+
+Note also that the display start cannot be set to completely arbitrary points, see
+.BR vga_setdisplaystart (3).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR vga_setdisplaystart (3),
+.BR gl_copyscreen (3),
+.BR gl_setscreenoffset (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,57 @@
+.TH gl_copyboxfromcontext 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_copyboxfromcontext \- copy rectangular area from another context
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_copyboxfromcontext(GraphicsContext *" gc ", int " x1 ", int "
+.IB y1 ", int " w ", int " h ", int " x2 ", int " y2 );
+
+.SH DESCRIPTION
+Copy the rectangular area at
+.RI ( x1 ", " y1 )
+in the context
+.IR gc
+of size
+.RI ( w ", " h )
+to position
+.RI ( x2 ", " y2 )
+in the current context.
+
+This is more efficient than
+.BR copyboxtocontext (3).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_copybox (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_copyscreen (3),
+.BR gl_fillbox (3),
+.BR gl_getbox (3),
+.BR gl_getcontext (3),
+.BR gl_putbox (3),
+.BR gl_putboxmask (3),
+.BR gl_putboxmaskcompiled (3),
+.BR gl_putboxpart (3),
+.BR gl_rgbcolor (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

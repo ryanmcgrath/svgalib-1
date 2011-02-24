@@ -1,0 +1,57 @@
+.TH vga_setwritepage 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setwritepage \- set the 64K SVGA page number
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setwritepage(int " page );
+
+.SH DESCRIPTION
+Usually SVGA cards have more than the 64K memory which suffice for an ordinary VGA.
+However, the memory window mapped at
+.BR vga_getgraphmem (3)
+is only 64K bytes large.
+.BR vga_setwritepage()
+selects the
+.IR page "-th"
+64K memory chunk to be visible for writes at position
+.BR vga_getgraphmem (3).
+
+.BR vga_setreadpage (3)
+allows a different 64K memory chunk to be modified by reads from this memory window. This
+is a very useful feature for screen to screen pixmap copies. However, not all cards support
+this in all graphics modes. Check
+.BR vga_modeinfo (3)
+for availability. Esp. as this feature can also not be used when in background mode.
+
+Of course, this function must be used in conjunction with
+.BR vga_setreadpage (3)
+but may not be used in conjunction with
+.BR vga_setpage (3).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR fun (6),
+.BR vgatest (6),
+.BR vga_getgraphmem (3),
+.BR vga_claimvideomemory (3),
+.BR vga_modeinfo (3)
+.BR vga_setpage (3),
+.BR vga_setreadpage (3),
+.BR vga_setlinearaddressing (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

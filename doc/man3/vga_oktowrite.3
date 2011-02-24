@@ -1,0 +1,43 @@
+.TH vga_oktowrite 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_oktowrite \- indicates whether the program has direct access to the SVGA
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_oktowrite(void);"
+
+.SH DESCRIPTION
+Indicates whether the program is in the console currently
+visible on the screen, that is, whether it is OK to write
+to video memory (if running in the background has been allowed
+with the function above). Note that this is not entirely
+safe, since a console switch interrupt may occur during a
+video operation. It is best to avoid this function.
+
+Usually your program will be suspended when it has no access to the
+screen but see
+.BR vga_runinbackground (3)
+for an alternative.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR bg_test (6),
+.BR vga_runinbackground (3),
+.BR vga_runinbackground_version (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

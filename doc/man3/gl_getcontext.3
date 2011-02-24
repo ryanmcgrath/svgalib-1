@@ -1,0 +1,69 @@
+.TH gl_getcontext 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_getcontext, currentcontext \- get the current graphics contents.
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_getcontext(GraphicsContext *" gc );
+
+.BI "extern GraphicsContext " currentcontext ;
+/* this is already in vgagl.h */
+
+.SH DESCRIPTION
+Save the current context in the structure variable
+.IR gc .
+
+You can also get the current context from the global
+variable
+.IR currentcontext ;
+
+However, simply access single elements in this structure
+with the macros given in
+.BR vgagl (7)
+but do not copy
+.I currentcontext
+in another structure. This is because the size of the structure
+might change and your program does not know it when it will be
+linked dynamically to future svgalib versions.
+
+Instead use
+.BR gl_allocatecontext (3)
+to allocate such a structure, fill it with
+.B gl_getcontext
+and release it with
+.BR free (3)
+after usage.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_allocatecontext (3),
+.BR gl_copyboxfromcontext (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_freecontext (3),
+.BR gl_setcontext (3),
+.BR gl_setcontextheight (3),
+.BR gl_setcontextvga (3),
+.BR gl_setcontextvgavirtual (3),
+.BR gl_setcontextvirtual (3),
+.BR gl_setcontextwidth (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

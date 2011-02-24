@@ -1,0 +1,32 @@
+.TH vga_initcursor 3 "23 June 2001" "Svgalib (>= 1.9.6)" "Svgalib User Manual"
+.SH NAME
+vga_initcursor \- initialize mouse cursor 
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_initcursor(int sw);"
+
+.SH DESCRIPTION
+if 
+.B sw 
+is non-zero, this initializes the software cursor. Otherwise calls the chipset driver's 
+cursor init function. If the driver supports does not support a hardware cursor, a
+software cursor is used.
+
+.SH RETURN VALUE
+.BR vga_initcursor
+returns zero if a software cursor is used, and non-zero if hardware cursor is used.
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR mouse_init (3),
+.BR vga_selectcursor (3),
+.BR vga_showcursor (3),
+.BR vga_setcursorposition (3),
+.BR vga_setcursorimage (3),
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.
+

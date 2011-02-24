@@ -1,0 +1,68 @@
+.TH vga_getmonitortype 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_getmonitortype \- returns the monitor type configured
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_getmonitortype(void);"
+
+.SH DESCRIPTION
+This returns the monitor type configered in
+.IR /etc/vga/libvga.config .
+This function is really obsolete, as the result is of not much use to the application
+.BR vga_getmodeinfo (3)
+and
+.BR vga_hasmode (3)
+do already check the monitor type and there are more flexible ways to specify it too.
+
+The return value is one of:
+
+.PD 0
+.TP
+.B MON640_60
+31.5 KHz (standard VGA): does 640x480 in 60Hz vsync.
+.TP
+.B MON800_56
+35.1 KHz (old SVGA): does 800x600 in 56Hz vsync.
+.TP
+.B MON1024_43I
+35.5 KHz (low-end SVGA, 8514): does 1024x768 in 43Hz vsync interlaced.
+.TP
+.B MON800_60
+37.9 KHz (SVGA): does 800x600 in 60Hz vsync.
+.TP
+.B MON1024_60
+48.3 KHz (SVGA non-interlaced): does 1024x768 in 60Hz vsync, non-interlaced.
+.TP
+.B MON1024_70
+56.0 KHz (SVGA high frequency): does 1024x768 in 70Hz vsync.
+.TP
+.B MON1024_72
+does 1024x768 in 72Hz vsync or even better.
+.PD
+.PP
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR mousetest (6),
+.BR spin (6),
+.BR vga_init (3),
+.BR vga_setmode (3),
+.BR vga_hasmode (3),
+.BR vga_getmodeinfo (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

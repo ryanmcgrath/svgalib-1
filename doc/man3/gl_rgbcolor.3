@@ -1,0 +1,40 @@
+.TH gl_rgbcolor 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_rgbcolor \- return pixel value corresponding to an rgb color
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "int gl_rgbcolor(int " r ", int " g ", int " b );
+
+.SH DESCRIPTION
+Returns pixel value used in the current context that corresponds with the given color
+components. Used by
+.BR setpixelrgb (3).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR gl_circle (3),
+.BR gl_clearscreen (3),
+.BR gl_fillbox (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_setpixel (3),
+.BR gl_setpixelrgb (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

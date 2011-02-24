@@ -1,0 +1,76 @@
+.TH vga_setlinearaddressing 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setlinearaddressing \- switch to linear addressing mode
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_setlinearaddressing(void);"
+
+.SH DESCRIPTION
+Switch to linear addressing mode. This maps all (or most) of the SVGA memory at the
+position returned by
+.BR vga_getgraphmem (3)
+(which will probably change by the call
+to
+.BR vga_setlinearaddressing()).
+The
+.BR vga_set*page (3)
+calls
+are no longer required. This ensures optimal performance, however, 
+not all cards support it (and not in all modes).
+
+Use
+.BR vga_modeinfo (3)
+to check for availability of the function in a given mode.
+
+Furthermore, some cards (Cirrus) just enable this buffer at a fixed hardware address.
+For Cirrus it is mapped at 14MB so you should never used it if you have more than 14MB
+of memory (But how does an application know?).
+The Mach32 support for this is smarter. It makes this feature only available when it is safe
+to be used.
+
+To avoid all this problems you can use
+
+.TP
+.B nolinear
+Inhibit use of a linear mmaped frame buffer.
+.TP
+.B linear
+Allow (not enforce!) use of a linear mmaped frame buffer.
+.P
+in the
+.I /etc/vga/libvga.config
+file to disable the linear frame buffer if it cannot be used.
+
+Returns the size of the mapped framebuffer if successful (can
+be less than total video memory), -1 if not.
+
+The
+.BR testlinear (6)
+demo shows the use of this feature (and if it works for you).
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR testlinear (6),
+.BR vga_modeinfo (3),
+.BR vga_getgraphmem (3),
+.BR vga_setpage (3),
+.BR vga_setreadpage (3),
+.BR vga_setwritepage (3),
+.BR vga_setlinearaddressing (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,14 @@
+This is an _alpha_ release. Don't use it if you are not interested in
+svgalib development.
+
+Program using svgalib 1.9.0 or later don't need root provoleges (suid
+root). They do need access to /dev/svga, which is a char device
+with major 209 and minor 0.
+The module svgalib_helper need also be inserted.
+
+To make the devices, and the module (kernel 2.4 or newer), change to directory
+kernel/svgalib_helper, and type make install.
+
+There is a compile time option to return to old behaviour, of using root
+privileges to access /dev/mem, instead of svgalib helper. To compile for this
+select the NO_HELPER option in Makefile.cfg.

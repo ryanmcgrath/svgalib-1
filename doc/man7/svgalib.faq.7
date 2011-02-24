@@ -1,0 +1,336 @@
+.TH svgalib.faq 7 "10 Jun 1999" "Svgalib 1.4.1" "Svgalib User Manual"
+.SH NAME
+svgalib.faq \- frequently asked questions about svgalib
+
+.SH INTRODUCTION
+I (Matan Ziv-Av), added/changed some of the answers in this file, so some 
+answers are mine, and some are Michael's.
+
+List of (recently) frequently asked questions about svgalib. Esp. about
+it's status and future. Please note that as of now all answers are just
+written by me, Michael Weller <eowmob@exp-math.uni-essen.de>. I'd like
+this to change. So email your suggestion (best of all: question and the
+answer).
+
+Also, most questions deal with the status and future and my ideas about
+it. Necessarily they contain my own private opinions on this. People may
+disagree and I'm sure I don't have the best ideas about it or may even
+be completely wrong. I don't want to force anyone to agree with me.
+
+Also, I was asked about MY opinions, so I'm just presenting them here.
+
+.SH CONTENTS
+.TP
+.B Q 1)
+I want to write some svgalib application. Where is the documentation?
+.TP
+.B Q 2)
+My board is not supported. What now?
+.TP
+.B Q 3)
+I get:
+
+.B You must be the owner of the current console to use svgalib.
+.br
+.B Not running in a graphics capable console, and unable to find one.
+
+However, though logged in not directly from the linux console, I
+am the owner of the console.
+.TP
+.B Q 4)
+Is svgalib dead?
+.TP
+.B Q 5)
+There are so many Xfree drivers, why not just use them.
+.TP
+.B Q 6)
+Why not just use the VGA BIOS?.
+.TP
+.B Q 7)
+What about GGI?
+.TP
+.B Q 8)
+Why not just use X11?
+.TP
+.B Q 9)
+Now, again, what about the future of svgalib?
+.TP
+.B Q 10)
+Ok, just for completeness, what are your plans about svgalib anyway?
+.TP
+.B Q 11)
+Nice plan. But will it become true?
+.PP
+
+.SH THE QUESTIONS
+.SS Q 1)
+I want to write some svgalib application. Where is the documentation?
+
+.SS A a)
+Well, did you really look at everything? The
+.I 0-README
+file in the top
+level directory contains all function prototypes and explanations on
+how to call them.
+
+Yes, the documentation is short and/or confusing. Sorry, English is
+not my native tongue. Many people complain and want to write some
+better documentation. You are welcome to do so! However, up to now,
+either people found the documentation sufficient once they looked at
+the correct files or they just gave up. At least, I never heard from
+these people again.
+
+Also, svgalib comes with source. If in doubt: read it.
+
+Finally: Linux distributions include svgalib, but not the source and
+README's (or hide them so good noone finds them). Well, no problem,
+get full svgalib source, demos, readme's from svgalib-*.tar.gz on
+any Linux FTP server in your vicinity. Even if you don't dare to install
+or compile it, it contains the readme's.
+
+Oh yes, there are some simple demos in the
+.I demos/ subdir. They should
+get you started.
+
+When someone writes
+.BR man (1)
+manual pages, a distribution might just install
+them. Please do not complain, write them, mail them to me.
+
+.SS A b)
+Finally, I, Michael Weller wrote the manpages. Looking at
+.BR svgalib (7)
+should get you started. Additions and corrections are still welcome, of course.
+
+.SS Q 2)
+My board is not supported. What now?
+
+.SS A)
+Simple:
+
+.TP
+.B a)
+Contact the maintainers (see other README's) and check out if
+someone is working on a driver.
+
+.TP
+.B b)
+If so, contact them if you like and announce you'd be willing to
+test things or even help coding.
+
+.TP
+.B c)
+If not, write a driver. Get as many docs on your card as you can,
+then read and understand the internals of svgalib (again read the
+README's carefully!).
+.PP
+
+Please understand that this is a free project. I will not go and buy
+a similar card and write a driver for you. I already wrote support for
+the hardware I have! I just do this as a hobby. Because I don't get
+paid for this I can not just buy card & docu and spend much much time
+supporting whatever graphics card on earth exists.
+
+Also read below on the future of svgalib.
+
+If you don't feel able to write a driver for whatever reason, please
+do not complain if other people don't do it for you (because you are
+not better than they are).
+
+.SS Q 3)
+I get:
+
+.B You must be the owner of the current console to use svgalib.
+.br
+.B Not running in a graphics capable console, and unable to find one.
+
+However, though logged in not directly from the linux console, I
+am the owner of the console.
+
+.SS A)
+Alas, some programs use their suid root privilege and become a full
+root owned process. svgalib thinks they are run by root which does
+not own the current console.
+Defining
+.B ROOT_VC_SHORTCUT
+in
+.I Makefile.cfg
+and recompiling will allow
+svgalib to allocate a new VC. However, it will allow any person which
+is able to exec that program to start in on a new console. Even if not
+logged in from the console at all. Thus, for security, you need to
+explicitly enable that root feature.
+     
+.SS Q 4)
+Is svgalib dead?
+
+.SS A)
+This question comes up frequently esp. in recent times.
+
+The answer is, of course, no.
+
+.SS Q 5)
+There are so many Xfree drivers, why not just use them.
+
+.SS A)
+Well, actually much of the code in there is actually already used by
+svgalib. Xfree coders worked on svgalib and vice versa. But honestly, do
+not expect that a driver from Xfree can just be used for svgalib. The
+internal structures of Xfree and svgalib (and GGI) are just too
+different. As a source of knowledge and for one or the other subroutine,
+the Xfree sources are invaluable however.
+
+.SS Q 6)
+Why not just use the VGA BIOS?.
+
+.SS A)
+Actually, we do. There is now, thanks to Josh Vanderhoof, a VESA driver.
+The VESA driver does not work on all cards, even though it should.
+It does not even work on all cards where vbetest works. If vbetest does 
+not work it means the bios writers assumed it would always run in DOS, and
+used tricks (for delay, etc.) that can't work under Linux. If vbetest works,
+but the VESA driver does not, I (Matan Ziv-Av) believe it is due to the 
+following reason:
+The driver use VESA function 4 (save/restore video state). This function
+can't be used in a singletasking environment (DOS) and as such, some bios 
+writers failed to implement it properly, and all the tests (which are run 
+under DOS) failed to discover this.
+
+The VESA driver does work with many cards though. 
+
+.SS Q 7)
+What about GGI?
+
+.SS A)
+Yes, GGI. Another long story. At first: Yes, I like the idea of an
+in kernel graphics driver. I like it very much. And, yes, this is a
+bit weird because I am the svgalib maintainer and a working GGI will make
+svgalib obsolete. Again, I already said above: I did not invent svgalib
+nor do I promote it as
+.B the
+solution (now compare this to GGI). It just
+does what it does and works for me and some other people.
+
+I liked this idea so much, I even started coding a frame buffer device
+once. After a short time, other people came out with the GGI idea. Right
+from their beginning they claimed to be the only source of wisdom. I
+tried to join our efforts, but failed. In general we have the same
+goals (read the GGI project pages for that).
+
+Anyhow, at that time a flame war started. I don't really know why. I
+don't see I did anything else than offering my opinions, work and
+experience. But that should be judged by others.
+
+Well, after some time I stopped bothering them. I was satisfied to learn
+later though that they actually came up with some conclusions I proposed
+first but weeks or months later. But let us leave the past alone.
+
+.PP
+When intending to contribute to svgalib, you should think about what you
+really want. I don't see that GGI is becoming available soon. GGI people
+told me the opposite again and again, ok, I still don't see it. Still
+out of a sudden, everything might be GGI infested, so you might consider
+contributing to GGI instead.
+
+With svgalib you might be able to use your fruits earlier. And anyone
+(with supported hardware) can just use it right away without reinstalling kernel/X11
+what else (maybe being unable to use something he did before).
+
+.SS Q 8)
+Why not just use X11?
+
+Yes, this is what many people say. This is the common Unix way to do it.
+X does it.
+
+But X has some drawbacks:
+
+.IP i)
+It uses many resources. Admittedly this is becoming of lesser
+importance now, where you can run a sensible X11 Linux system on
+8MB (16 MB for heaven like performance) which is the absolute minimum
+to get a simple text editor running under M$ windows.
+
+Still, an advantage of Linux is the ability to use old hardware for
+mission critical background jobs on the net
+(servers/routers/firewalls) on low price or otherwise even unusable
+hardware.
+
+.IP ii)
+X has a nice API with draw commands for any kind of 'command oriented'
+screen output. I mean with that: Select a color, draw a line, polygon,
+etc.
+
+This imposes a bunch of overhead. If you just want access to the
+screen memory, it slows things down as hell. If you want just to use
+above's draw commands, it is ok!
+
+.IP iii)
+One can now circumvent the API restrictions by getting direct
+screen access using a special Xfree extension. Basically Xfree just
+setups the screen and gives you shared memory access to the screen
+memory. IMHO, this is not much different from the shared memory X11
+extension by MIT (which is probably why it was added so easily).
+Still it needs quite some overhead, at least when the card does not
+allow for a linear frame buffer.
+
+However, you cannot change screen modes and rez as easily. This is
+IMHO THE drawback of X. For a picture viewer, you want 256 color
+high/true color modes on a per picture basis (also, insert any other
+application you like: movie viewers, a special game, a drawing
+program). Also, you want a small picture use a low rez s.t. it does
+not appear as a thumbnail, maybe use a high rez mode for a huge
+picture which you don't want to use on a permanent basis because
+it flickers like hell (and you don't want to use a panning virtual
+desktop too, I hated them at best).
+
+This latter restriction can of course be circumvented by enlarging
+the picture. But this will need much time for a picture viewer
+already and certainly too much for smooth video or game animations.
+
+.IP iv)
+Finally, the problem how X11 itself accesses the screen is not solved.
+Security is usually no concern because X11 does it, is a trusted
+executable and a firewall between applications and the hardware.
+
+Alas, there might be security holes, also the stability and
+performance issues (IRQ driven accelerator queue, CPU support for
+VGA memory paging) still exist, though one can expect an Xserver
+to be a generally well coded application.
+
+.SS Q 9)
+Now, again, what about the future of svgalib?
+
+For console graphics, svgalib is still the only solution for most people, 
+and as such it should go on for a while. Compared to the other console
+graphics options (kgi and kernel fb device), writing svgalib driver is the
+simplest (at least, this is my experience), and so it makes sense to believe
+that svgalib will work on all cards where there is someone interested enough 
+in that support.
+
+.SS Q 10)
+Ok, just for completeness, what are your plans about svgalib anyway?
+
+First, make svgalib cooperate nicely with kernel fb device. Then (and it should
+be very similiar) make svgalib work on a secondary vga card.
+
+A rewrite of the code for memory handling and virtual console handling is necessary
+for the previous goals, but is also necessary in itself, and so will be done
+also.
+
+I do intend to maintain complete binary compatibility, so that older programs 
+will go on working.
+
+As internal changes are made, the drivers have to be changed as well. For some
+of the older drivers (ali, ark, ati, et3000, et4000, gvga, oak), I no longer get
+any reports, so I don't know if they still work. Some features are also lost,
+for example, linear frame buffer on non-PCI cards. This should not be a very
+big problem, as users with such cards can go on using 1.3.1, as most changes
+are not applicable for older machines. 
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR libvga.config (5).
+
+.SH AUTHOR
+This file was written by Michael Weller <eowmob@exp-math.uni-essen.de>,
+And later changed by Matan Ziv-Av.

@@ -1,0 +1,80 @@
+.TH convfont 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+convfont \- convert font files for svgalib
+.SH SYNOPSIS
+
+.BI convfont " fontfile fontheight vgafontfile"
+
+.SH DESCRIPTION
+convert the standard format binary fontfile name
+.I fontfile
+to the codepage format required by
+.BR restorefont (1).
+The converted font is written to
+.IR vgafontfile .
+
+A binary font file of any number of characters up to 256 can be used, although
+at least defining the first 128 characters is a good idea. The
+.I fontheight
+must be in the range
+.BR 1 " - " 32 .
+
+The
+.I fontfile
+file consist of
+.I fontheight
+bytes stored sequentially (top to bottom) for each character in your
+font, starting with the character with code 0.
+
+The format of
+.I vgafontfile
+is that required by
+.BR restorefont (1)
+and described there.
+
+This utility is part of svgalib and can be found in the
+.I utils/
+subdirectory of the original svgalib distribution. However, it is not installed 
+by default, s.t. it is unclear where you can find it if your svgalib was install
+linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. You
+don't need to install it. Just
+.B make
+in the
+.I utils/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR dumpreg (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

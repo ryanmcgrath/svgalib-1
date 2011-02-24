@@ -1,0 +1,13 @@
+This is a modified version of Josh Vanderhoof's lrmi-0.5 package
+The original is available at http://www.planet.net/pjoshv/
+
+
+
+vbetest - show available modes, and test a mode
+
+mode3 - set mode using vesa bios. It can usually restore text mode after
+        svgalib leaves a non-working text-mode.
+
+vga_reset - call real mode c000:0003, which should be the video card's
+	initialization routine. Should work in some cases when mode3 fails to
+	restore text mode.

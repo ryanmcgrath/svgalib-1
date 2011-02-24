@@ -1,0 +1,402 @@
+.TH accel 6 "29 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+accel \- tests the new style svgalib accelerator interface
+.SH SYNOPSIS
+
+.B accel
+
+.SH DESCRIPTION
+Test new-style accelerated functions (As of this writing: Ark, Cirrus, Chips &
+Technologies cards, and Mach32 only).
+For other cards the demo will not work (well it will complain about missing accelerator
+support). Don't worry about this.
+
+During the development of the Mach32 new style driver for 1.2.12, this demo was massively
+extended to check the Mach32 functions.
+
+Upon startup it lists all supported SVGA modes and asks you to enter a number
+identifying the mode to be tested. The supported subfunctions of
+.BR vga_accel (3)
+in this mode are listed and the demo instructs to press
+.B <Return>
+to start the demos.
+
+If supported, all drawing operations are performed in the background.
+
+Then the following tests are performed:
+.SS Positioning tests
+These tests were originally intended to check that the accelerator commands work on the
+proper screen locations. The screen shows 12 (4 x 3) smaller areas with red crosses in the
+corners. When everything is ok, the drawings should reach right in the corners of the crosses.
+
+A given card may not support all operations listed here. In that case the resp. test area
+just shows the red crosses. For tests performed, the name of the test is printed below the
+area. The tests are (from left to right, top to bottom):
+
+.IP 1.
+A green box is drawn with
+.BR vga_accel(ACCEL_FILLBOX) .
+.IP 2.
+A cross of green lines is drawn with
+.BR vga_accel(ACCEL_DRAWLINE) .
+.IP 3.
+A linux pixmap just fitting into the crosses is drawn with
+.BR vga_accel(ACCEL_PUTIMAGE) .
+.IP 4.
+A pixmap just fitting into the crosses is drawn into the red crosses (by
+.BR vgagl (5)
+which may or may not use the accelerator). The pixmap is then copied to a few lines/columns
+below. Green crosses mark the intended destination position.
+.IP 5.
+Works like 3. but copies to an area above the origin. The accelerator must ensure that the
+overlapping areas are handled non corrupting. Thus, watch that the copy operation is properly
+performed.
+.IP 6.
+A green triangle is drawn above the top/left to bottom/right diagonal by use of
+.BR vga_accel(ACCEL_DRAWHLINELIST) .
+.IP 7.
+Certain bitmaps are copied to the screen. In the corners you'll see the digits
+.RS
+.IP 0
+top/left, green on red.
+.IP 1
+top/right, red on green.
+.IP 2
+bottom/left, black on white.
+.IP 3
+bottom/right, white on black. Note that some black border, not the digit will be aligned 
+to the red crosses.
+.RE
+.IP
+Finally, a yellow wizard image is drawn into the center.
+
+The bit ordering for bitmaps is a bit weird. Please check that the digits are not mirrored or
+flipped.
+.IP 8.
+This time bitmap transparency is tested by drawing wizard images onto the aforementioned
+linux pixmap (left to right, top to bottom) in yellow, red, green, and cyan. The background
+of the yellow wizard is masked out by a black border bitmap.
+Note that the wizard will not reach into the red corners because the bitmap has some
+(transparent) border.
+.IP 9.
+The text below this box is copied as a monochrome bitmap from the screen into the corners
+listed under 7. in the same colors.
+.IP 10.
+Two green rectangles with an edge cut out from the bottom is drawn using
+.BR vga_accel(ACCEL_POLYLINE) . There is an intended bug which draws the center of the
+top line twice. If supported, the lower rectangle is drawn in cyan and with the xor
+raster operation s.t. the buggy point is not drawn thus leaving a pin hole.
+.IP 11.
+.BR vga_accel(ACCEL_POLYHLINE) is used to draw some green lines which makes this area look
+like a green box with a cut out, black M-style shape.
+.IP 12.
+A weird green polygon is filled in red with
+.BR vga_accel(ACCEL_POLYFILLMODE)
+using the techniques given in
+.BR vga_accel (3).
+This needs some offscreen memory. If VGA memory is tight in that resolution the test cannot
+be performed.
+.PP
+After this screen, you'll have to hit
+.B <Return>
+to continue.
+.SS Raster operations
+Again, red cross bordered areas are drawn on the screen, this time for each of the supported
+raster operations. For
+.BR ROP_AND " and " ROP_XOR
+the areas are filled in white first.
+
+Three overlapping boxes
+.BR A ", " B ", " C
+are drawn such that you see the following areas.
+
+.RB AAAAAA dddd BBBBBB
+.br
+.RB AAAAAA dddd BBBBBB
+.br
+.RB AAAAAA dddd BBBBBB
+.br
+.RB AAAA ee gggg ff BBBB
+.br
+.RB AAAA ee gggg ff BBBB
+.br
+.RB AAAA ee gggg ff BBBB
+.br
+.RB "    CCCCCCCC"
+.br
+.RB "    CCCCCCCC"
+.br
+.RB "    CCCCCCCC"
+
+The pictures should show:
+.IP 1.
+Replace mode. A, B, C are red, green, blue. They just overlap, yielding
+d - green and e, f, g - blue.
+.IP 2.
+The colors mix using
+.B ROP_OR
+(and a nice color table). The overlapping areas become the additive color mix:
+d - yellow, e - magenta, f - cyan, and g - white.
+.IP 3.
+.B ROP_AND
+is used. The background is filled white first, s.t. there is something in video memory
+to and with non trivially. We have A, B, C in cyan, magenta, yellow and d, e, f, g
+in blue, green, red, black.
+.IP 4.
+.B ROP_XOR
+is used and the background filled white first too. A, B, C are red, green, blue again, but
+the overlapping areas d, e, f, g  become blue, green, red, white.
+.IP 5.
+.B ROP_INV
+is used, s.t. A, B, C are all white and d, e, f, g  become black, black, black, white.
+Note that this is not done by using
+.B ROP_XOR
+and drawing A, B, C in white. Instead A, B, C are drawn in the usual
+ red, green, blue. However, the accelerator just inverts the memory contens.
+.PP
+If the accelerator supports raster operations for
+.B ACCEL_DRAWHLINELIST
+actually disks (well, ellipses) are drawn instead of boxes.
+.PP
+After this screen, you'll have to hit
+.B <Return>
+to continue.
+
+.SS Replace QuixDemo
+If
+.B ACCEL_DRAWLINE
+is supported, a Quix like bouncing series of lines in varying colors is drawn. The lines
+are removed from the screen by overdrawing them in black, thus erasing the dots and text
+on the background.
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS XOR Mode QuixDemo
+As before, but this time all lines are drawn in
+.B ROP_XOR
+mode (if
+.B ACCEL_DRAWLINE
+supports raster operations). Thus the background will not be destroyed this time.
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS FillBox Demo
+The screen is
+.BR ACCEL_FILLBOX
+filled with a series of boxes of increasing colors.
+In truei/high color modes you'll probably only see a series of varying blue tones (because these
+are at the beginning of the color table and there are soo many of them).
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS ScreenCopy Demo
+Some random dots are drawn on the screen and thirds of the screen contents are moved
+around using
+.BR ACCEL_SCREENCOPY .
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS Scroll Demo
+Some random dots are drawn on the screen and moved one line up with
+.BR ACCEL_SCREENCOPY .
+In offscreen memory a new line is prepared which will be cleared by
+.BR ACCEL_FILLBOX and move in from below. This test requires some offscreen and will not
+be performed if video memory is very tight.
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS FillBox with DrawHLineList Demo
+Like the FillBox test, but no box fill is done but the screen is filled with a list of
+horizontal lines drawn with
+.BR ACCEL_DRAWHLINELIST .
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS FillBox XOR Mode Demo
+Like the FillBox test, but the XOR raster operation is used.
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SS PutBitmap Demo
+The screen is filled with bitmasks consisting of tiny vertical lines alternating in red and
+blue.
+
+The test lasts about 5 seconds and some statistics are printed to stdout.
+
+.SH SOME DATAPOINTS
+Here is a list of speed listings for some cards. Please keep in mind that also the
+calling overhead for the program is measured. This seems to be esp. true for the
+QuixDemo.
+
+.SS "Results on a Cirrus GD5434-E with 2Mb:"
+.TP
+.B "640x480x256 60 Hz"
+.br
+FillBox: 200.3 Mpixels/s (200.3 Mbytes/s)
+.br
+ScreenCopy: 51.0 Mpixels/s (51.0 Mbytes/s)
+.br
+Scroll Demo: 50.5 Mpixels/s (50.5 Mbytes/s)
+.br
+FillBox XOR: 83.2 Mpixels/s (83.2 Mbytes/s)
+.TP
+.B "320x200x256 70 Hz"
+.br
+FillBox: 200.1 Mpixels/s (200.1 Mbytes/s)
+.br
+ScreenCopy: 52.3 Mpixels/s (52.3 Mbytes/s)
+.br
+Scroll Demo: 51.2 Mpixels/s (51.2 Mbytes/s)
+.br
+FillBox XOR: 87.1 Mpixels/s (87.1 Mbytes/s)
+.TP
+.B "640x480x32K 60 Hz"
+.br
+FillBox: 90.9 Mpixels/s (181.8 Mbytes/s)
+.br
+ScreenCopy: 23.1 Mpixels/s (46.3 Mbytes/s)
+.br
+Scroll Demo: 23.0 Mpixels/s (46.1 Mbytes/s)
+.br
+FillBox XOR: 37.2 Mpixels/s (74.5 Mbytes/s)
+.TP
+.B "640x480x16M (32-bit) 60 Hz"
+.br
+FillBox: 35.5 Mpixels/s (142.3 Mbytes/s)
+.br
+ScreenCopy: 9.3 Mpixels/s (37.3 Mbytes/s)
+.br
+Scroll Demo: 9.2 Mpixels/s (37.1 Mbytes/s)
+.br
+FillBox XOR: 14.6 Mpixels/s (58.6 Mbytes/s)
+
+.SS "On a Cirrus Logic 5426 VLB (50 MHz MCLK):"
+.TP
+.B "640x480x256 60 Hz"
+.br
+FillBox: 32.8 Mpixels/s (32.8 Mbytes/s)
+.br
+ScreenCopy: 16.4 Mpixels/s (16.4 Mbytes/s)
+.br
+Scroll Demo: 16.3 Mpixels/s (16.3 Mbytes/s)
+.br
+FillBox XOR: 16.5 Mpixels/s (16.5 Mbytes/s)
+.TP
+.B "640x480x32K 60 Hz"
+.br
+FillBox: 12.2 Mpixels/s (24.4 Mbytes/s)
+.br
+ScreenCopy: 6.1 Mpixels/s (12.2 Mbytes/s)
+.br
+Scroll Demo: 6.0 Mpixels/s (12.1 Mbytes/s)
+.br
+FillBox XOR: 6.1 Mpixels/s (12.2 Mbytes/s)
+
+.SS "Tweaked to 60 MHz MCLK:"
+.TP
+.B "640x480x256 60 Hz"
+.br
+FillBox: 42.1 Mpixels/s (42.1 Mbytes/s)
+.br
+ScreenCopy: 21.0 Mpixels/s (21.0 Mbytes/s)
+.br
+Scroll Demo: 20.9 Mpixels/s (20.9 Mbytes/s)
+.br
+FillBox XOR: 21.1 Mpixels/s (21.1 Mbytes/s)
+.TP
+.B "640x480x32K 60 Hz"
+.br
+FillBox: 16.7 Mpixels/s (33.5 Mbytes/s)
+.br
+ScreenCopy: 8.3 Mpixels/s (16.7 Mbytes/s)
+.br
+Scroll Demo: 8.3 Mpixels/s (16.7 Mbytes/s)
+.br
+FillBox XOR: 8.3 Mpixels/s (16.7 Mbytes/s)
+.SS Results on a Mach32 EISA with 2Mb VRAM:
+.TP
+.B 1280x1024x256 60 Hz
+Replace QuixDemo: 12.1 Klines/s (6.7 Mpixels/s or 6.7 Mbytes/s)
+.br
+Xor QuixDemo: 9.9 Klines/s (5.1 Mpixels/s or 5.1 Mbytes/s)
+.br
+FillBox: 75.4 Mpixels/s (75.4 Mbytes/s)
+.br
+ScreenCopy: 26.4 Mpixels/s (26.4 Mbytes/s)
+.br
+Scroll Demo: 28.7 Mpixels/s (28.7 Mbytes/s)
+.br
+FillBox with DrawHlineList: 73.1 Mpixels/s (73.1 Mbytes/s)
+.br
+FillBox XOR: 37.9 Mpixels/s (37.9 Mbytes/s)
+.br
+PutBitmap: 15.6 Mpixels/s (15.6 Mbytes/s)
+
+.TP
+.B 1024x768x64K 72Hz
+Replace QuixDemo: 12.3 Klines/s (5.2 Mpixels/s or 10.5 Mbytes/s)
+.br
+Xor QuixDemo: 9.0 Klines/s (5.1 Mpixels/s or 10.3 Mbytes/s)
+.br
+FillBox: 37.6 Mpixels/s (75.2 Mbytes/s)
+.br
+ScreenCopy: 13.2 Mpixels/s (26.4 Mbytes/s)
+.br
+Scroll Demo: 13.2 Mpixels/s (26.4 Mbytes/s)
+.br
+FillBox with DrawHlineList: 37.0 Mpixels/s (74.0 Mbytes/s)
+.br
+FillBox XOR: 18.9 Mpixels/s (37.8 Mbytes/s)
+.br
+PutBitmap: 15.2 Mpixels/s (30.5 Mbytes/s)
+
+.PP
+You're encouraged to send in more data.
+This demo is part of svgalib and can be found in the
+.I demos/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I demos/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_accel (3),
+.BR threed (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+demo and most of its documentation is due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.

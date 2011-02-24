@@ -1,0 +1,216 @@
+Here are some tips on writing a new chipset svgalib driver.
+They don't require knowledge of direct vga programming, even though that 
+helps.
+The instructions assume: 
+1- A super vga card, that is a card which is extended, but also fully 
+compatible to standard vga. Of the cards available today (in the mass market),
+all are, with the possible exception of Permedia chipsets.
+2- A PCI (or AGP) connected card. This is useful for detection of the card,
+and for finding the linear aperture, as well as knowing it is always there.
+3- Knowledge of the extended features of the chipset: Usually either as the
+spec, or a source of a driver for the chipset (XFree86).
+
+as a start, get the following:
+1- vgadoc4b.zip[1] (or a later version), includes information on the vga
+   hardware registers, as well as on many chipsets.
+2- the latest svgalib[2]. 
+3- If the card is supported by XFree86, either the link kit (Xlkit.tgz[3]) 
+   if the card is supported by the XF86_SVGA server, or the XFree86 source 
+   ([4]), if it is supported by a special server.
+
+1. in the src subdir of the svgalib distribution, cp skeleton.c to some other
+   name, chipset.c, where chipset is the name of the chipset you intend to
+   support.
+
+2. now you have to fill the blanks. The functions that need to be are
+sk_setpage
+sk_saveregs
+sk_setregs
+sk_initializemode
+sk_unlock
+sk_test
+sk_setdisplaystart
+sk_setlogicalwidth
+sk_init
+
+3. When that is done, change all sk_ in the driver to chipset_ (where 
+   chipset is the name of the chipset you write the driver for). Then
+   the driver needs to be integrated into svgalib. The files that need
+   to be edited are:
+Makefile.cfg
+src/Makefile
+src/driver.h
+src/vga.c
+src/vga.h
+   (It's easy to see what changes are needed in those files, by simply 
+    seeing how its done for another driver).
+
+4. Now is the most interesting time - debugging. Usually (in my experience,
+   in all cases), the driver won't work right immediately. Here are a few 
+   debugging tips:
+
+Setting modes is made of two things: setting the timings, and setting the
+memory organisation. You can usually tell which is the problem, by noticing
+if the wrong screen is seen as if some/all pixels are not set to the color
+they should (memory organisation), or the display looks "stormy" (timings 
+problem). If the problem is timing problem, a digital monitor taht displays
+horizontal and vertical timings helps. If the horizontal freq is right, but 
+vertical is wrong, then the problem is in the vertical timing. If both horiz
+and vert are wrong, then either the clock frequency, or the horizontal 
+frequency is wrong.
+
+If the problem is in memory organisation, It might work in linear mode, so try
+running testlinear and lineart.
+
+If the driver fails to restore text mode properly, then usually starting X
+will work. It won't help restoring text mode, but then you might be able
+to see the output of the program (using /dev/vcs?, /dev/vcsa?).
+
+The program mode3 (in lrmi-0.6m subdir) might be able to restore text mode,
+corrupted by a bad driver.
+
+The same mode3 might be used for debugging as follows: if a mode, say 
+800x600x256 does not work properly, but mode3 does work, you might try the
+following run vgatest, select 11 (for 800x600x256), and while the wrong mode
+is displayed, press d (to recieve a registers dump).
+then, try mode3 259 ; utils/dumpreg ; mode3, and compare the register dump
+of vesa mode 259 (800x600x256), with the output from your driver. Try finding
+out what do the bits that are different mean.  
+
+
+Here are some more details on writing the necessary functions:
+examples given are from the banshee.c driver, written according to the spec
+available from 3dfx, and the (hypotethical) milleniumII.c driver, written 
+according to the XFree86 source.
+
+_setpage:
+
+This is a simple function. A mistake in this function is indicated by:
+all linear programs work fine, while in paged memory examples, the problem 
+is that blocks (full width * ??? lines) are moved.
+
+For millenium, from freebe (this part is unavailable in X source, 
+since X uses only linear mode).
+{
+	outw(0x3de,(page<<8)|4);
+};
+
+For Banshee:
+{
+   page<<=1;
+   outl(banshee_io_base+0x2c,(inl(banshee_io_base+0x2c)&0xfff00000)|(page)|(page<<10));
+}
+
+
+_saveregs, _setregs
+
+This functions should save and restore the state of the svga card, such that 
+it can be restored to a previous state, no matter what we do. A mistake is 
+indicated by failure to restore text mode properly.
+
+We should save all registers that we change, or might be changed by other 
+programs (X, SVGATextMode, etc.), here's the banshee_saveregs:
+
+typedef struct {
+   unsigned int pllCtrl0, pllCtrl1, dacMode, dacAddr,
+      		vidProcCfg, vidScreenSize, vgaInit0,
+                vgaInit1, vidDesktopStartAddr,vidDesktopOverlayStride;
+} *HWRecPtr;
+
+static int banshee_saveregs(unsigned char regs[])
+{ 
+  HWRecPtr save;
+
+  banshee_unlock();
+  
+  save=(HWRecPtr)(regs+62);
+  
+  regs[BANSHEEREG_SAVE(0)]=__svgalib_inCR(0x1a);
+  regs[BANSHEEREG_SAVE(1)]=__svgalib_inCR(0x1b);
+  save->pllCtrl0=inl(banshee_io_base+0x40);
+  save->pllCtrl1=inl(banshee_io_base+0x44);
+  save->dacMode=inl(banshee_io_base+0x4c);
+  save->dacAddr=inl(banshee_io_base+0x50);
+  save->vidProcCfg=inl(banshee_io_base+0x5c);
+  save->vidScreenSize=inl(banshee_io_base+0x98);
+  save->vgaInit0=inl(banshee_io_base+0x28);
+  save->vgaInit1=inl(banshee_io_base+0x2c);
+  save->vidDesktopStartAddr=inl(banshee_io_base+0xe4);
+  save->vidDesktopOverlayStride=inl(banshee_io_base+0xe8);
+  
+  return BANSHEE_TOTAL_REGS - VGA_TOTAL_REGS;
+}
+
+If we use the X source, it usually in the functions XXXSave and XXXRestore.
+It is only needed to translate from XFree86 notation to svgalib notation, 
+and to remember that while the X functions need to save the vga state (usually
+by calling the vga function to do it, in svgalib the chipset_saveregs/setregs
+don't need to do that, but only save extended vga info).
+For MilleniumII, the interesting X functions are: MGA3026Save and 
+MGA3026Restore, here a translation of a part of MGA3026Restore to 
+mill_setregs:
+
+MGA3026Restore:
+	for (i = 0; i < 6; i++)
+		outw(0x3DE, (restore->ExtVga[i] << 8) | i);
+
+	/* restore DAC regs */
+	for (i = 0; i < sizeof(MGADACregs); i++)
+		outMGA1064(MGADACregs[i], restore->DACreg[i]);
+
+translates to (assuming sizeof(MGADACregs)==32)
+	for (i = 0; i < 6; i++)
+		outw(0x3DE, (restore[60+i] << 8) | i);
+
+	/* restore DAC regs */
+	for (i = 0; i < 32; i++){
+		OUTREG8(RAMDAC_OFFSET + MGA1064_INDEX, MGADACregs[i]);
+		OUTREG8(RAMDAC_OFFSET + MGA1064_DATA, restore[66+i]);
+	};
+
+
+_initializemode - This is the trickiest function. If you use the XFree86 
+source, try to translate the appropriate function from X to svgalib (in
+the milleniumII case, MGA1064Init(mode)). For examples of this translation,
+see how its done for nv3.c compared to nv/nv3driver.c from X, or apm.c compared
+to apm/apm_driver.c.
+If you are working from specs, it usually explained in the spec.
+
+_unlock:
+simple function. The skeleton includes the vga unlocking part. If you have
+specs, they usually explain how to unlock the extended features, if you use
+the X source, its usually in the EnterLeave function.
+
+_test - If you are supporting a single chipset of a single manufacturer,
+on a PCI/AGP, the skeleton driver includes a test for this, just make sure to
+set VENDOR_ID and CARD_ID properly. Otherwise, either the specs explain
+how to recognize that you have the right chipset, or its in the function 
+XXXProbe of the XFree86 source.
+
+
+_setdisplaystart, _setlogicalwidth:
+vga includes this settings, but with limited range (start<65536, 
+width<2048 bytes). An svga chipset either defines extra bits, for increasing
+the range, or completely new registers for these values.
+In the first case, the skeleton driver includes setting the vga part, and
+the extra bits are either defined in the specs, or in the XXXAdjust function
+in XFree86 (see mx.c for example of this). In the second case, remove the
+vga setting part from the functions (see for example rage.c).
+Note that none of the demo programs test this functions, so if you want to 
+check if they work, the only example I know of is seejpeg (try to see an image
+larger than the screen)
+
+
+_init
+should not need much changes, except for checking memory size (in the spec, or
+in XXXProbe), and maybe setting MMIO (if other functions use it).
+
+
+
+
+1- http://home.worldonline.dk/finth
+2- http://www.cs.bgu.ac.il/~zivav/svgalib
+3- ftp://ftp.xfree86.org/pub/XFree86/current/binaries/Linux-ix86-libc5/Xlkit.tgz
+    (or mirrors)
+4- ftp://ftp.xfree86.org/pub/XFree86/current/source/X333servonly.tgz
+    (or mirrors)

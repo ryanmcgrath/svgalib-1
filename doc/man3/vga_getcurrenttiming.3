@@ -1,0 +1,24 @@
+.TH vga_addtiming 3 "7 April 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_getcurrenttiming \- get the current timing parameters.
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_addtiming(int *pixelClock, int *HSyncStart, int *HSyncEnd, int *HTotal, int *VDisplay, int *VSyncStart, int *VSyncEnd, int *VTotal, int *flags);
+
+
+.SH DESCRIPTION
+Saves to the current timing parameters to the variables given in the function call.
+See 
+.BR svidtune (6)
+for an example of using this.
+
+.SH SEE ALSO
+
+.BR vga_changetiming (3)
+.BR svidtune (6)
+
+.SH AUTHOR
+
+This manual page was written by Matan Ziv-Av

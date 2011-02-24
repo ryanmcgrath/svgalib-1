@@ -1,0 +1,44 @@
+.TH gl_fillbox 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_fillbox \- fill a rectangular area
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_fillbox(int " x ", int " y ", int " w ", int " h ", int " c );
+
+.SH DESCRIPTION
+Fill a rectangular area at position
+.RI ( x ", " y )
+with size
+.RI ( w ", " h )
+of the screen with a single color
+.IR c .
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR testgl (1),
+.BR currentcontext (3),
+.BR gl_clearscreen (3),
+.BR gl_getbox (3),
+.BR gl_putbox (3),
+.BR gl_putboxmask (3),
+.BR gl_putboxmaskcompiled (3),
+.BR gl_putboxpart (3),
+.BR gl_scalebox (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

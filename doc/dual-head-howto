@@ -1,0 +1,111 @@
+There is a new config option - "device". After you insert the module, you 
+see output such as (those lines are available with the command dmesg, or 
+in the file /var/log/messages, depending on your syslog setup):
+
+svgalib_helper: Initializing, version 1.9.18
+svgalib_helper: device1: vendor:1002 id:4c49
+device1: region0, base=dd000000 len=16777216 type=0
+device1: region1, base=0000d000 len=256 type=1
+device1: region2, base=e4000000 len=4096 type=0
+svgalib_helper: device2: vendor:12d2 id:0018
+device2: region0, base=df000000 len=16777216 type=0
+device2: region1, base=e0000000 len=16777216 type=8
+svgalib_helper: device3: vendor:102b id:051a
+device3: region0, base=e1000000 len=16384 type=0
+device3: region1, base=e2000000 len=8388608 type=8
+device3: region2, base=e3000000 len=8388608 type=0
+svgalib_helper: device4: vendor:102b id:0525
+device4: region0, base=d8000000 len=33554432 type=8
+device4: region1, base=da000000 len=16384 type=0
+device4: region2, base=db000000 len=8388608 type=0
+
+(Of course, the number of cards, and their types will be different).
+
+From which you can see which number each card is assigned. Then you 
+create a different libvga.config for each card, which contains the 
+device keyword.
+
+For example In my system I have
+
+/etc/vga/libvga.config.rage:
+novccontrol
+secondary
+device 1
+BiosParams 3 29500
+include /etc/vga/libvga.config.common
+mouse none
+HorizSync 30 38
+VertRefresh 40 90
+
+/etc/vga/libvga.config.nv3:
+helper /dev/svga_helper/2
+novccontrol
+secondary
+include /etc/vga/libvga.config.common
+Modeline "6" 14.16 640 776 840 904 240 332 337 625 -hsync -vsync tvmode tvpal
+newmode 640 240 65536 1280 2
+HorizSync 24 60
+VertRefresh 55 75
+
+/etc/vga/libvga.config.mystique:
+helper /dev/svga3
+novccontrol
+secondary
+chipset g400
+include /etc/vga/libvga.config.common
+Modeline "6" 14.16 640 776 840 904 240 332 337 625 -hsync -vsync tvmode 
+tvpal
+newmode 640 240 65536 1280 2
+HorizSync 30 37
+VertRefresh 30 90
+
+/etc/vga/libvga.config.mga:
+Device 4
+OverRideEnable
+include /etc/vga/libvga.config.common
+HorizSync 30 115
+VertRefresh 40 160
+
+
+Some explanations:
+
+When the environment variable SVGALIB_CARD is set, svgalib opens the 
+config file /etc/vga/libvga.config.$SVGALIB_CARD, instead of the usual 
+/etc/vga/libvga.config. So, if I want to run zgv on the nv3 card, I do 
+export SVGALIB_CARD=nv3 ; zgv
+
+The helper keyword can be used similar to the device keyword, to tell 
+svgalib which device to open.
+
+All cards except for the primary need to use the secondary and 
+novccontrol keywords. Secondary tells svgalib not to try to use the 
+standard VGA ports when accessing this card (since only one card can be 
+accessed with those, and that is the primary). NoVCControl tells svgalib 
+not to check or try to control the VC, so you can run an svgalib program 
+on a secondary card, while working normally on the main head, including 
+switching virtual consoles.
+
+You should use "mouse none", or "mdev" options to make sure no two 
+programs open the mouse at the same time. (Though it is possible with 
+most mice, and can give some funny results).
+
+XFree86 likes to disable all PCI video cards that it does not use, 
+whenever it is started, or switched to, so if you switch in and out of X 
+on your main card, you need to patch your X server to prevent this 
+behavior. If you only run X on the main card, and don't return to 
+text mode, there is no need to patch X.
+
+
+There are no limitations on the primary card. As you can see, I currently 
+use nvidia, mystique and rage (mach64) cards as secondaries. Also known to 
+work are sis, r128 (including radeon), laguna, trident and s3 (trio and up) 
+cards. 
+
+
+The main issue with secondary cards is initializing them. If your BIOS
+initializes them, that's the best (I heard rumors of such BIOSes, but 
+never something concrete). The next option is x86emu, this almost always 
+works (on x86 systems). It also works on some other arches, if you use PC 
+video cards. If even that fails, then C code is available to initialize some
+mach64 cards, and old matrox cards (before G100).
+

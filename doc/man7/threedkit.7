@@ -1,0 +1,267 @@
+.TH threedkit 7 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+threedkit \- a set of functions for 3D support.
+
+.SH DESCRIPTION
+The 3dkit consists mainly of the following triangle functions
+.BR gl_striangle (3),
+.BR gl_swtriangle (3),
+.BR gl_triangle (3),
+.BR gl_trigetcolorlookup (3),
+.BR gl_trisetcolorlookup (3),
+.BR gl_trisetdrawpoint (3),
+.BR gl_wtriangle (3).
+
+Beware, these functions are not a direct part of the svgalib library.
+Instead their source is part of svgalib and can be found in the
+.I threeDkit/
+subdirectory of the original svgalib distribution. However, it is not
+installed in the system by default, s.t. it is unclear where you can find it
+if your svgalib was installed by some
+linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I threeDkit/
+subdirectory. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+The functions are defined in the
+.IR tri.o " and " triangl.o
+files (or their resp. sources) which you must link to your program.
+
+.SH EXPLANATION ON 3DKIT.C
+This is main engine for 3D rendering.
+
+Program flow:
+
+.TP
+.B 1.
+The function called from outside of
+.I 3dkit.c
+is
+.BR TD_drawsolid .
+This first calculates the rotation matrix from the camera
+rotation angles (see below for more details).
+It then allocates memory for the temporary array
+.Itemp
+for
+holding temporary coords in subsequently called functions.
+It also sorts the surfaces from furthest to closest; according
+to the distance of the centre grid-point of each surface from
+the camera.
+
+It also establishes whether
+.B ROTATE_OBJECT
+option is on
+and zero's the camera position if so --- this is for displaying the
+object at the screen centre like in a 3D CAD package, as
+apposed to virtual reality where the object can be anywhere
+and the actual camera position can move.
+
+In the case of
+.B ROTATE_OBJECT
+being on, although the camera position
+is zero, some distance has to be placed between the camera and the
+object (or else  it would appear to be infinitely large on the
+screen). This is done using the variable
+.I s_cam
+which is
+initialized to
+.I distance
+which is set by the calling application.
+It then loops through each surface (ordering them in the way they
+were just sorted --- i.e. according to
+.I sortarray
+indexing) and
+calls one of five graphic routines to write the 3D surface to the
+hardware.
+
+.TP
+.B 2.
+Assume that
+.B TD_drawsolid
+then calls
+.BR TD_drawmesh .
+Here, each surface
+grid point is first
+.BR TD_translate 'd
+into a 2D screen point and stored in
+the
+.I temp
+array. There are obviously w(idth)*h(eight) points in the
+grid.
+
+Following, each line from the 2D temp array is drawn on the screen.
+To draw the surface, the corner wishbone (two lines) from each grid
+square is drawn while advancing across and the down. After completing
+the scan, the furthest two edges of the surface must then be filled
+in, vis.:
+ _ _ _ _ _ _
+.br
+|_|_|_|_|_|_
+.br
+|_|_|_|_|_|_
+.br
+|_|_|_|_|_|_
+.br
+|_|_|_|_|_|_
+.br
+|_|_|_|_|_|_
+.br
+| | | | | |
+
+To understand the object rotation, a knowledge of matrix
+multiplication is required. I once derived a camera rotation
+before I learned matrix computation. It amounted to the same
+thing, but was unnecessarily complicated to optimise.
+
+.TP
+.B 3.
+.B TD_translate
+called from
+.B TD_drawmesh
+(and others) converts from
+the 3D grid point coordinate to the 2D screen coordinate using:
+.B (a)
+the three camera position coordinates, (or the single camera
+distance value,
+.IR s_cam ,
+if
+.B ROTATE_OBJECT
+is set), and
+.B (b)
+the three camera rotation angles. However, the three camera rotation
+angles have already been converted into a rotation matrix when
+.B TD_calc_rotation_matrix
+was called by
+.BR TD_draw_solid .
+
+To convert from a 3D coordinate to a 2D screen coordinate,
+the camera position (or more correctly, the position of the object
+from the camera) must first be added to each of the 3D grid coordinates.
+If the user has chosen to use 32 bit values for the discription 
+of the surface, then these must be right shifted to the same size
+as the 16 bit case.
+
+.IR x ", " y " and " z
+now hold the 3D position of the
+object relative to the camera centre (or in these terms, the
+centre of the video screen
+.B RIGHT ON
+the screen). The vector
+.BI [ "x y z" ]
+must
+now be multiplied by the rotation matrix. The
+.I xt
+value must also have the camera distance,
+.IR s_cam ,
+added to it in case the
+.B ROTATE_CAMERA
+is set (in which case
+.IR x_cam ", " y_cam " and " z_cam
+(the camera position)
+will be zero and instead
+.I s_cam
+will have a value to provide the necessary object-camera distance). A test is
+also made as to whether this
+value is zero or negative. In the case, the point is too close to the
+camera, or behind the camera, and must not be drawn.
+
+After the multiplication, the resulting vector
+.BI [ "xt yt zt" ]
+has been rotated
+to be aligned with screen. The vector is now adjusted for perspective
+by dividing the
+.IR yt " and " zt
+values (horizontal and vertical
+respectively) by the
+.I xt
+value (into the screen). Division is done
+by
+.B muldiv64
+because the intermediate product is larger
+than 32 bits.
+.IR xscale " and " yscale
+are factors that scale the image to size.
+.IR posx " and " posy
+is just the centre of the screen, or more precisely:
+
+The exact position of the pinhole camera viewing the object.
+
+.TP
+.B 4.
+.B TD_calc_rotation_matrix
+calculates the nine entries of the 3 by 3
+matrix used in
+.BR TD_translate .
+In order that only integer arithmetic
+is performed, these values are stored and used as integers. Since this
+matrix's entries are always between -1 and +1, they have to be
+integer left shifted to give them accuracy.
+.B TD_MULCONSTANT
+scales them
+to sufficient bits of accuracy before they are converted to integers.
+
+This also means that results (of multiplications with them) have
+to be scaled down by the same amount. This scaling is inherent in the
+final multiplication and division
+.RB ( muldiv64 )
+done in the
+.B TD_translate
+function, so an extra division is not consumed.
+
+The rotation matrix effectively rotates the vector by the Eulerian angles
+.IR alpha ", " beta " and " gamma .
+These angles represent successive rotations about
+each of the 3D axes. You can test which angles do what by looking at
+the calling application. Their precise definitions are not
+all that important since you can get the keyboard to do the right thing
+with a little trial and error.
+
+.PP
+Intrisics of drawing non-transparent surfaces...
+
+to be continued ?!
+
+.SH SEE ALSO
+.BR vgagl (7),
+.BR svgalib (7),
+.BR gl_striangle (3),
+.BR gl_swtriangle (3),
+.BR gl_triangle (3),
+.BR gl_trigetcolorlookup (3),
+.BR gl_trisetcolorlookup (3),
+.BR gl_trisetdrawpoint (3),
+.BR gl_wtriangle (3),
+.BR plane (6),
+.BR wrapdemo (6).
+
+.SH AUTHOR
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+demos, the initial documentation and the whole threedkit stuff was done by
+Paul Sheer <psheer@icon.co.za>.
+
+Paper mail:
+.RS
+Paul Sheer
+.br
+P O BOX 890507
+.br
+Lyndhurst
+.br
+Johannesburg 2106
+.br
+South Africa
+.RE
+
+Donations (by check or postal order) will be appreciated and will encourage
+further development of this software. However this is strictly on a voluntary
+basis where this software falls under the GNU LIBRARY GENERAL PUBLIC LICENSE.

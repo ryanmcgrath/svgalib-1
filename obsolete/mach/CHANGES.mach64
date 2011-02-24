@@ -1,0 +1,74 @@
+Mach64 driver changes log:
+--------------------------
+April 11, 1998 (Michael Weller)
+ VGA Emulation should be used to avoid MACH64 code in get_lut
+    (and elsewhere?)
+
+March 17, 1996 (Asad Hanif)
+
+NON FUNCTIONAL DRIVER sent for inclusion in 1.2.10
+
+It doesn't seem to quite work.  Its hardcoded to 640x480x256@60hz for
+a WINTURBO 2mbVRAM and 68860 ramdac - with the 18818 clock.
+The screen has vertical bars thru it... each 64k chunk is a little offset
+and its full of crap.  I can't seem to track the problem down.  I checked
+the CRTC registers, and dac programming.  They are similar to what I got
+from ATI and based on what I yanked from XFree86.
+
+Help.
+
+Added dac handling code to vgapal.c.
+
+Didn't work so I stripped it clean.  Removed clock programming... 
+fixed  the dac to 68860 and clock to 8 - the default clock setting.
+Based code on combination of ATI's SDK and the mach64 x server.
+
+Went from a.out to elf.
+Discovered a hell of a lof of segfaults.  Due to my attempts to be nice
+and unmap and free any mapped/allocated ram... uncommented worked fine.
+
+Nov 18, 1995 (Asad Hanif)
+
+Re-synced to pre 1.2.9 from 1.2.7
+
+Sept 25, 1995 (Asad Hanif)
+
+So I'm lazy (actually busy)
+
+Well... I got the updated SDK from ATI.  Updated the autodetect function
+to reflect the SDK recommendations.  I'm gonna avoid using the Extended
+vga registers to try and maintain compatability with the CT/ET.  So all
+work will be done with the Mach64 controller thingy.
+
+It now downloads all the necessary data from the rom.
+
+
+Sept 2, 1995 (Asad Hanif)
+
+Stuck in a register dumper so I know what I see.
+
+It's still a vga driver.
+
+
+
+Aug 30, 1995 (Asad Hanif)
+
+This files was created to log all the changes made to svgalib-1.2.7 in 
+order to incorporate an ATI Mach 64 driver.
+
+libvga.h:	The Mach64 has 32 bit registers.  The libvga.h doesn't
+		have code for inl and outl.  These were added.
+vga.h:		Well.. gotta tell it there's a new driver.
+		Mach64 = 13 ooohh.. lucky number.  But its actually
+		the 14th driver-- if you count from 0. :)
+vga.c:		Added the driver to the list. 
+config.h:	Added some INCLUDE_MACH64_...
+driver.h:	Added the extern driver specs thingy.
+Makefile.aout:	stuck a line in their about mach64.c
+
+mach64.regs:	Named register list.
+mach64.h:	Header file.
+mach64.c:	Driver.
+mach64.CHANGES:	You're look at it.	
+
+Genesis

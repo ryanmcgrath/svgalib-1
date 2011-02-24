@@ -1,0 +1,49 @@
+.TH joystick_close 3 "14 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+joystick_close \- close a joystick
+.SH SYNOPSIS
+
+.B "#include <vgajoystick.h>"
+
+.BI "void joystick_close(int " joydev );
+
+.SH DESCRIPTION
+closes the joystick
+.I joydev
+which was opened with
+.BR joystick_init (3).
+
+.IB joydev " = -1"
+closes all currently open joystick devices. Note that any calibration data is lost if you
+close a joystick.
+
+.SH CAVEATS
+This function is only available in ELF versions of svgalib. Due to backwards
+compatibility issues it cannot be used with shared a.out libs.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR joystick_init (3),
+.BR joystick_update (3),
+.BR joystick_sethandler (3),
+.BR joystick_setdefaulthandler (3),
+.BR joystick_getnumaxes (3),
+.BR joystick_getnumbuttons (3),
+.BR joystick_getaxis (3),
+.BR joystick_getbutton (3),
+.BR joystick_button1 (3),
+.BR joystick_getb1 (3),
+.BR joystick_x (3),
+.BR joystick_getx (3).
+
+.SH AUTHOR
+
+The svgalib joystick handler was mostly done by Daniel Engstr\\"om <daniel.engstrom@riksnett.no>.
+Multiple joystick, VC switching support and code to glue it into svgalib by Michael Weller
+<eowmob@exp-math.uni-essen.de>. Part of the code is based on code from C. Smith and
+Vojtech Pavlik.

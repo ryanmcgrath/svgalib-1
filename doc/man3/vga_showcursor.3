@@ -1,0 +1,47 @@
+.TH vga_showcursor 3 "23 June 2001" "Svgalib (>= 1.9.6)" "Svgalib User Manual"
+.SH NAME
+vga_showcursor \- show / hide mouse cursor 
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_showcursor(int show);"
+
+.SH DESCRIPTION
+if 
+.B show 
+== 0, hides the cursor.
+
+if 
+.B show 
+== 1, shows the cursor.
+
+if 
+.B show 
+== 2, hides the cursor only if a software cursor is in use.
+
+.SH NOTES
+The 
+.B show
+== 2 case is needed, since drawing over the software cursor is not allowed. This means
+that when the program needs to draw and can not be sure that the cursor is not overwritten,
+it needs to hide the cursor before drawing. This might cause the cursor to flicker. If the 
+cursor is hidden by calling 
+.B vga_showcursor(2)
+(instead of 
+.B vga_showcursor(0)
+), then hardware cursor will not flicker.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR mouse_init (3),
+.BR vga_selectcursor (3),
+.BR vga_initcursor (3),
+.BR vga_setcursorposition (3),
+.BR vga_setcursorimage (3),
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.
+

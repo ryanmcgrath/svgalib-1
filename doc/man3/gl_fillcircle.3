@@ -1,0 +1,46 @@
+.TH gl_fillcircle 3 "4 Dec 1999" "Svgalib (>= 1.4.1)" "Svgalib User Manual"
+.SH NAME
+gl_fillcircle \- draw a filled circle
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_fillcircle(int " x ", int " y ", int " r ", int " c );
+
+.SH DESCRIPTION
+Draw a filled circle of radius
+.I r
+in color
+.I c ,
+centered at
+.I ( x ", " y ).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_circle (3),
+.BR gl_clearscreen (3),
+.BR gl_colorfont (3),
+.BR gl_disableclipping (3),
+.BR gl_enableclipping (3),
+.BR gl_fillbox (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_setclippingwindow (3),
+.BR gl_setpalette (3),
+.BR gl_setpalettecolor (3),
+.BR gl_setpalettecolors (3),
+.BR gl_setpixel (3),
+.BR gl_setpixelrgb (3),
+.BR gl_setrgbpalette (3),
+.BR gl_setwritemode (3).
+
+.SH AUTHOR
+
+This manual page was written by Jay Link <jlink@svgalib.org>. The function
+itself is based upon the original gl_circle (3).

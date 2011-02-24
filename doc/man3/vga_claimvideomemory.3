@@ -1,0 +1,37 @@
+.TH vga_claimvideomemory 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_claimvideomemory \- declare the amount of video memory used
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_claimvideomemory(int " m );
+
+.SH DESCRIPTION
+Declare the amount of video memory in bytes that is to
+be saved when temporarily switching to textmode. Returns
+nonzero if the amount is not available. Defaults to one
+screen when a mode is set. Use this if you are using more
+than one screen of video memory.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_getmodeinfo (3),
+.BR vga_init (3),
+.BR vga_setmode (3),
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,80 @@
+.\" Process this file with
+.\" groff -man -Tascii buildcsr.1
+.\" 
+.TH BUILDCSR "FEBRUARY 2001" Linux "User Manuals"
+.SH NAME
+buildcsr - builds a cursor
+.SH SYNOPSIS
+.B buildcsr [-p
+.I name
+.B -b
+.I name
+.B -m
+.I mode
+.B -s]
+.SH DESCRIPTION
+.B buildcsr
+presents a blank screen with a cursor. One may hold down the left
+mouse button and draw the color1 part of the cursor on the
+screen. Typing 
+.B 2 
+on the keyboard will cause color2 to be drawn.  The cursor can be
+viewed as a cursor by typing 
+.BR n .  
+To modify the cursor type
+.B o
+to go back to the original cursor.  Pixels may be erased by clicking
+on them with the right mouse button.  The left mouse button will draw
+either color1 or color2, depending on whether
+.B 1
+or
+.B 2
+was chosen from the keyboard last.  The current color is displayed at
+the bottom of the screen.
+.SH OPTIONS
+.IP -p
+and
+.IP -b
+followed by name will produce a cursor file with the name
+.BR name .
+.IP -p
+will produce a c language definition of the cursor suitable for
+inclusion in a program as a header file.
+.IP -b
+will produce a binary cursor file which may be read into a user
+program at execution time.
+.IP -m
+mode , a mode number will cause the program to run in mode 
+.BR mode .
+This will not make a difference in the screen representation of the
+cursor, but the cursor itself will be much smaller in high resolution
+modes.  Thus, for high resolution it is wise to construct the cursor
+using the resolution at which it is intended to be used.  Typing
+.B n
+will show the cursor as it will look at the resolution of the screen.
+If no mode is given using 
+.B -m
+the mode will be 
+.B SVGALIB_DEFAULT_MODE
+if that has been defined in an environment variable.  If no default
+has been given and no
+.B -m
+was used, the screen mode will be mode 5, G320x200x256, which is
+default for this program.  The hardware cursor will be used if a
+hardware cursor exists for the video card in use, otherwise the
+software cursor will be used.
+.IP -s
+option will force the software cursor to be used even if a hardware
+cursor exists.
+.SH ENVIRONMENT
+.IP SVGALIB_DEFAULT_MODE
+will be used if it has been defined and 
+.B -m
+was not given.  If neither of these are in effect the mode will be
+mode 5, G320x200x256.
+.SH AUTHOR
+Don Secrest <secrest@uiuc.edu>
+.SH "SEE ALSO"
+.BR VGA_CURSOR (3) 
+.BR VGA_GETDEFAULTMODE (3)
+

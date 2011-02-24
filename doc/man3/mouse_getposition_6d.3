@@ -1,0 +1,86 @@
+.TH mouse_getposition_6d 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mouse_getposition_6d, mouse_setposition_6d, mouse_setrange_6d \- provide an interface to 3d mice
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "void mouse_getposition_6d(int *" x ", int *" y ", int *" z ", int *" rx
+.BI ", int *" ry ", int *" rz );
+.br
+.BI "void mouse_setposition_6d(int " x ", int " y ", int " z ", int " rx
+.BI ", int " ry ", int " rz ", int " dim_mask );
+.br
+.BI "void mouse_setrange_6d(int " x1 ", int " x2 ", int " y1 ", int " y2 ", int " z1
+.BI ", int " z2 ", int " rx1 ", int " rx2 ", int " ry1 ", int " ry2
+.BI ", int " rz1 ", int " rz2 ", int " dim_mask );
+
+.SH DESCRIPTION
+These routines provide the same function as
+.BR mouse_getx (3),
+.BR mouse_gety (3),
+.BR mouse_setxrange (3),
+.BR mouse_setyrange (3),
+.BR mouse_setposition "(3), and "
+.BR mouse_getx (3),
+except that they work in all six dimensions,
+x, y, z, and rotations about those axes.
+
+For
+.BR mouse_getposition_6d() ", " NULL
+pointers may be passed for
+any coordinate you don't care to know about.  Those dimensions
+will be ignored.
+
+.BR mouse_setposition_6d() " and " mouse_setrange_6d()
+take an additional
+argument called
+.IR dim_mask ,
+which should be an logical or of the
+following:
+.BR MOUSE_XDIM ", " MOUSE_YDIM ", " MOUSE_ZDIM ", " MOUSE_RXDIM ", "
+.BR MOUSE_RYDIM ", or " MOUSE_RZDIM .
+.BR MOUSE_2DIM ", " MOUSE_3DIM ", " MOUSE_6DIM
+can be used as shorthand for the XY, XYZ, or
+XYZRxRyRz dimensions.  The position or ranges will only
+be set if that dimension is included in
+.IR dim_mask .
+
+The 6d mouse routines can be used safely with
+.B any
+mouse type, including standard 2D mice.
+
+When used with mice that support fewer than six axes, the
+other coordinates will always return zero (or whatever value
+you set them to).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_close (3),
+.BR mouse_init (3),
+.BR mouse_setposition (3),
+.BR mouse_getx (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_setmousesupport (3),
+.BR mouse_seteventhandler (3),
+.BR vga_waitevent (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

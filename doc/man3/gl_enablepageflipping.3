@@ -1,0 +1,71 @@
+.TH gl_enablepageflipping 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_enablepageflipping \- enables automatic page flipping
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "int gl_enablepageflipping(GraphicsContext *" gc );
+
+.SH DESCRIPTION
+Enable page flipping or triple buffering in
+.BR gl_copyscreen (3)
+if the physical context
+.I gc
+can do it.
+
+Returns 3 if triple
+buffering will be used, 2 for page flipping, 0 if page
+flipping is not possible (due to video memory/mode
+limitations).
+
+When pageflipping is enabled, the
+.BR gl_screenoffset (3)
+is ignored in
+.BR gl_copyscreen (3).
+
+The idea is that you draw your picture in
+.I gc
+and copy it to the screen by consecutive
+.BR gl_copyscreen (3)
+calls. Each of these will choose a free buffer in the screen and
+adjust the display start accourdingly.
+
+The current context must by the VGA when
+.BR gl_copyscreen (3)
+is called in this situation.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_copybox (3),
+.BR gl_copyboxfromcontext (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_copyscreen (3),
+.BR gl_getbox (3),
+.BR gl_putbox (3),
+.BR gl_setcontext (3),
+.BR gl_setcontextheight (3),
+.BR gl_setcontextvga (3),
+.BR gl_setcontextvgavirtual (3),
+.BR gl_setcontextvirtual (3),
+.BR gl_setcontextwidth (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

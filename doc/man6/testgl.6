@@ -1,0 +1,92 @@
+.TH testgl 6 "8 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+testgl \- test the vgagl library
+.SH SYNOPSIS
+
+.B testgl
+
+.SH DESCRIPTION
+Demo program for
+.BR vgagl (7)
+framebuffer library. Runs in any mode preset
+from the environment.
+
+First draws pixels in random locations, then
+random boxes, then random lines and finally some bit image in random
+locations (all just over the previous drawings).
+
+Then the
+test is repeated clipping the screen output to a smaller screen
+portion (using a
+.BR vgagl (7)
+function). Finally a (lousy) 'rotating'
+linux logo is shown in the top left quadrant and then is drawn
+over the whole screen.
+Depending on internal development state of svgalib, it may use an
+accelerator for some of the functions.
+
+You can set a videomode
+to use by setting the environment variable
+.B SVGALIB_DEFAULT_MODE
+to a number (see vgatest
+for a list) or a string like G0x1x2 where you replace 0 with desired x
+resolution, 1 with the desired y rez, and 2 with the desired number of
+colors (2, 16, 256, 32K, 64K, 16M, 16M4). Again, only certain choices are
+available, see vgatest for a list.
+
+In case nothing is selected, G320x200x256 is choosen.
+
+This demo is part of svgalib and can be found in the
+.I demos/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I demos/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR threed (6),
+.BR accel (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

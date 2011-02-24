@@ -1,0 +1,30 @@
+.TH vga_addmode 3 "7 April 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+vga_addmode \- add a mode to svgalib modes list
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_addmode(int width, int height, int num_cols, int offset, int bytesperpixel )"
+
+.SH DESCRIPTION
+Adds a mode to the list of modes, with the given parameters. 
+The function returns the mode number. If such a mode already exists on the list,
+its number is returned, and no mode is added.
+
+.SH NOTE
+Adding a mode to the list is not enough in order to use it. There must
+also be a timing line that fits that mode. This can be added either as a modeline in the config file,
+or with one of the functions
+.BR vga_addtiming (3)
+and
+.BR vga_guesstiming (3). 
+.SH SEE ALSO
+
+.BR vga_addtiming (3)
+.BR vga_guesstiming (3)
+.BR addmodetest (6)
+
+.SH AUTHOR
+
+This manual page was written by Matan Ziv-Av

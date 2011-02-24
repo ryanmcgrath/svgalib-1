@@ -1,0 +1,35 @@
+.TH vga_lockvc 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_lockvc \- disables virtual console switching for safety
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_lockvc(void);"
+
+.SH DESCRIPTION
+Disables virtual console switching for safety. Recommended
+when doing register I/O or low-level device handling. Used
+by mouse functions. Also useful in conjunction with background running.
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR bg_test (6),
+.BR vga_oktowrite (3),
+.BR vga_runinbackground (3),
+.BR vga_runinbackground_version (3),
+.BR vga_unlockvc (3),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,66 @@
+.TH gl_bcircle 3 "4 Dec 1999" "Svgalib (>= 1.4.1)" "Svgalib User Manual"
+.SH NAME
+gl_bcircle \- draw a filled or unfilled Bresenham circle
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_bcircle(int " x ", int " y ", int " r ", int " c ", int " fill ");"
+
+.SH DESCRIPTION
+Draw a Bresenham circle of radius
+.I r
+in color
+.I c ,
+centered at
+.I ( x ", " y ).
+
+.I Fill 
+should be 0 for a hollow circle, or any other value for a solid color.
+
+This function differs from gl_circle (3) and gl_fillcircle (3) in that it
+looks good in 320 x 200 screen modes. The modified algorithm was provided
+by Chris Atenasio <chris@svgalib.org>, and is based upon Bresenham's
+formula. 
+
+Note that the "circle" is technically an ellipse, and is actually wider
+than it is tall. Therefore,
+.I r
+is equal to the circle's height, but is less than its width. This
+distortion is necessary to accomodate the 8:5 aspect ratio (e.g., 320 x
+200).
+
+I don't recommend using this function in standard 4:3 screen modes (e.g.,
+640 x 480 and higher). Furthermore, care must be taken so that a circle
+drawn with this function isn't copied to a screen with a different aspect
+ratio. Otherwise, the result may be undesirable.
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR gl_circle (3),
+.BR gl_clearscreen (3),
+.BR gl_colorfont (3),
+.BR gl_disableclipping (3),
+.BR gl_enableclipping (3),
+.BR gl_fillbox (3),
+.BR gl_fillcircle (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_setclippingwindow (3),
+.BR gl_setpalette (3),
+.BR gl_setpalettecolor (3),
+.BR gl_setpalettecolors (3),
+.BR gl_setpixel (3),
+.BR gl_setpixelrgb (3),
+.BR gl_setrgbpalette (3),
+.BR gl_setwritemode (3).
+
+.SH AUTHOR
+
+This manual page was written by Jay Link <jlink@svgalib.org>.

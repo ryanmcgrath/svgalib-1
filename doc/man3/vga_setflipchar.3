@@ -1,0 +1,43 @@
+.TH vga_setflipchar 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setflipchar \- set the character causing a vga_flip()
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_setflipchar(int " c );
+
+.SH DESCRIPTION
+This sets the ASCII code of the key which causes
+.BR vga_getch (3)
+to shortly switch between graphics and text mode
+when waiting for a keypress.
+.B <ESC>
+is the default at startup.
+
+Because one can now swicth directly between consoles even when in graphics modes and
+the use of
+.BR vga_flip (3)
+is discouraged except for debugging, this function is just there for
+vgalib compatibility but has no effect!
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_flip (3),
+.BR vga_getkey (3),
+.BR vga_waitevent (3),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

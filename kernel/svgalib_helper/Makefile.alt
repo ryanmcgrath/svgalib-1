@@ -1,0 +1,84 @@
+include ../../Makefile.cfg
+
+
+ifndef INCLUDEDIR
+INCLUDEDIR = /lib/modules/$(shell uname -r)/build/include
+endif
+
+MODVER = $(shell grep CONFIG_MODVERSIONS $(INCLUDEDIR)/linux/autoconf.h)
+
+ifeq ($(MODVER),)
+	@echo INCLUDEDIR is not set up correctly
+	exit 1
+endif
+
+# Extract version number from headers.
+VER = $(shell awk -F\" '/REL/ {print $$2}' $(INCLUDEDIR)/linux/version.h 2>/dev/null)
+
+# Use version of current running kernel
+ifeq ($(VER),)
+	VER = $(shell uname -r)
+endif
+
+VER_MAJOR = $(shell echo $(VER) | cut -d. -f1)
+VER_MINOR = $(shell echo $(VER) | cut -d. -f2)
+
+INCLUDES += -I$(INCLUDEDIR)
+INCLUDES += -I$(INCLUDEDIR)/asm/mach-default
+                                                                                                  
+CFLAGS = -O2 -DLINUX -Dlinux -D__KERNEL__ -DMODULE $(DEBFLAGS) 
+ifeq (2,$(VER_MAJOR))
+	ifeq (6,$(VER_MINOR))
+		CFLAGS += -DKBUILD_MODNAME="svgalib_helper"
+	endif
+endif
+
+CFLAGS += $(INCLUDES)
+CFLAGS += -DSVGALIB_HELPER_MAJOR=$(SVGALIB_HELPER_MAJOR)
+                                                                                                  
+ifeq (1,$(findstring 1,$(MODVER)))
+	CFLAGS += -DMODVERSIONS -include $(INCLUDEDIR)/linux/modversions.h
+endif
+
+TARGET = svgalib_helper
+OBJS = $(TARGET).o
+SRC = main.c interrupt.c i810.c virtual.c displaystart.c
+
+ifeq (2,$(VER_MAJOR))
+	ifeq (6,$(VER_MINOR))
+		OBJS = $(TARGET).ko
+	endif
+endif
+
+all: .depend $(OBJS)
+
+$(TARGET).o: $(SRC:.c=.o)
+	$(LD) -r $^ -o $@
+
+$(TARGET).ko: $(TARGET).o
+	$(LD) -d -r $^ -o $@
+
+install: device modules_install
+
+modules_install: $(OBJS)
+	mkdir -p /lib/modules/$(VER)/kernel/misc 
+	install -m 0644 -c $(OBJS) /lib/modules/$(VER)/kernel/misc
+
+device:
+	rm -f /dev/svgalib_helper* /dev/svga_helper* /dev/svga /dev/svga?
+	mknod -m 666 /dev/svga c $(SVGALIB_HELPER_MAJOR) 0
+	mknod -m 666 /dev/svga1 c $(SVGALIB_HELPER_MAJOR) 1
+	mknod -m 666 /dev/svga2 c $(SVGALIB_HELPER_MAJOR) 2
+	mknod -m 666 /dev/svga3 c $(SVGALIB_HELPER_MAJOR) 3
+	mknod -m 666 /dev/svga4 c $(SVGALIB_HELPER_MAJOR) 4
+
+clean:
+	rm -f *.ko *.o *~ core .depend *.bak *.orig
+
+depend .depend dep:
+	$(CC) $(CFLAGS) -M *.c > $@
+
+
+ifeq (.depend,$(wildcard .depend))
+include .depend
+endif

@@ -1,0 +1,88 @@
+multi-monitor support is still very experimental, and not 
+very easy to setup. Here's a copy of a message I sent to 
+the mailing list:
+
+
+First: only nvidia, 3dfx, sis and i740 cards can be secondary cards,
+(though the primary can be anything, including vesa).
+Second: as far as I can understand, once both cards are enabled, there
+ought to be a resource contention (in hardware) between the cards for
+the vga regions (IO 0x3c0-0x3df and MEM 0xa0000-0xbffff). I don't know
+how it is supposed to be solved, but in practice, if I ignore it in my
+system, it just works.
+
+If anybody else has successfully run svgalib on a secondary card, please
+tell me, and if you had to do something different from what I did, a
+detailed report to the list might help others.
+
+Here's my setup:
+
+I have two vga cards: AGP (1:0.0) nVidia TNT2 and (PCI0:0f.0) Riva128.
+The AGP card is the primary (in the BIOS option "initialize AGP card
+first" is selected). My boot sequence includes the following code to
+initialize the secondary card:
+
+/usr/local/sbin/vbios.x86emu
+/usr/local/sbin/vga_reset
+/sbin/setpci -s 00:0f.0 COMMAND=2
+
+the vbios.x86emu is the same as distributed in x86emu-0.6 (from ftp.scitechsoft.com) 
+except that in debug.h the line
+#define CONFIG_ACTIVE_DEVICE 1
+is replaced by
+#define CONFIG_ACTIVE_DEVICE 0
+(so that the active device is not initialized by x86emu).
+
+the setpci line enables memory access (of the drivers supporting
+secondary card, nv3 and i740 use only memory mapped IO, sis and banshee
+need I/O access as well, so you need COMMAND=3). The COMMAND register
+might have other bits set, so you might try to see its value first, and
+then set the 0,1 bits.
+
+I have two config files in /etc/vga:
+libvga.config.0 - for the scondary card:
+
+novccontrol
+secondary
+include /etc/vga/libvga.config.common
+HorizSync 30 54
+VertRefresh 40 120
+
+The novccontrol and secondary options are necessary for a secondary
+card. The include statement is for a card with common configurations -
+mouse, keyboard, etc.
+
+libvga.config.1 - for the primary:
+
+PCIStart 1 0
+include /etc/vga/libvga.config.common
+HorizSync 30 115
+VertRefresh 40 160
+
+The pcistart option is necessary to make sure that svgalib skips the
+first card (in PCI order), and so finds the AGP card.
+
+to run a program on the primary card, in the usual way, I do
+
+export SVGALIB_CARD=1
+/svgalib/demos/vgatest
+
+to run a program on the secondary card:
+
+export SVGALIB_CARD=0
+/svgalib/demos/vgatest
+
+There are a few differences for a program running on secondary card:
+
+- The program is not aware of VC switches, so you can switch to another
+  console, and the program will still run (and display).
+- The program can't event system (mouse or raw keyboard).
+- Standard VGA modes and paged memory modes might have problems.
+
+What this limitations mean is that usual svgalib program might not be
+useful for a secondary card. I use the secondary display for
+watching TV, movies and slideshows. Eye candy programs (such as
+synaesthesia) might also work, after a few changes, but interactive
+programs (zgv, games) are unusable right now. I intend to add support
+for Vojtech Pavlik's input event system to svgalib-2.0, so that
+interactive program will be usable as well.

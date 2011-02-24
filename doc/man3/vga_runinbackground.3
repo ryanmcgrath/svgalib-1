@@ -1,0 +1,254 @@
+.TH vga_runinbackground 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_runinbackground \- enable running of the program while there is no VGA access
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_runinbackground(int " stat );
+
+.SH DESCRIPTION
+Enable/disable background running of a graphics program.
+.TP
+.IB stat " = 1"
+enables
+.TP
+.IB stat " = 0"
+disables
+.PP
+Normally, the program is suspended while
+not in the current virtual console. A program can only
+safely run in the background if it doesn't do any video
+access during this time.
+
+As of version 1.2.11 this was changed by Pekka T. Alaruikka <alaruik@cc.hut.fi>
+& Michael Friman <no email>
+The support for this must be enabled
+in 
+.I Makefile.cfg
+of svgalib (which it is by default). Several ways to support this may exist internally.
+As of now, only one using proc-fs works.
+Using
+.BI "vga_runinbackground(VGA_GOTOBACK, void (*" goto )())
+and
+.BI "vga_runinbackground(VGA_COMEFROMBACK, void (*" comefrom )())
+with
+function pointers to functions
+.BI "void " goto "(void)"
+and
+.BI "void " comefrom "(void)"
+you can setup function to be called
+when your program goes to background mode and when it comes
+back to foreground. These can be changed at any time, and
+passing
+.B NULL
+as function disables the feature.
+
+Both these new
+features require a 
+.BR vga_runinbackground_version (3)
+of 1 or higher. You should check and not call it when the
+svgalib in use returns 0.
+Also, when writing applications, check with
+
+.B #ifdef VGA_GOTOBACK
+.br
+.BR "    " "/* code using " vga_runinbackground(VGA_GOTOBACK, "
+.IB goto )
+*/
+.br
+.B #else
+.br
+.BR "    " "/* code using no goto or comefrom function */"
+.br
+.B #endif
+
+if you are compiling with an svgalib that supports this feature,
+and try to rearrange your source to work without it when
+an svgalib version prior to 1.2.11 is used.
+
+The function should be called right after
+.BR vga_init (3).
+The
+.BR bg_test (6)
+demos shows the principle operation.
+.PP
+Please note that background capabilities are in
+.B VERY
+early stages. Please do not expect that 
+.B EVERYTHING
+works flawlessly when background abilities are enabled in your program.
+
+.SH EXAMPLE
+.B vga_init();
+.br
+.B vga_setmode(G320x200x256);
+.br
+.B "if (vga_runinbackground_version() == 1)"
+.br
+.B "    " vga_runinbackground(1);
+
+.SH NOTES
+Before a program is left background capable, it should be tested well. Most 
+programs will work just well. 
+
+When the program is in background, it can read IO-devices (except keyboard). 
+This can cause harm, if the programmer does not take this int account. I.e. in games 
+using a joystick or/and mouse device the game continues reading joystick or/and 
+mouse as it would be on foreground.
+
+The mouse can be made working correctly also in background, but this means that
+svgalib must be configured to use gpm mouse driver.
+
+More information about gpm-linux can be founded from latest gpm packet (by 
+Alessandro Rubini).
+
+The goto and comefrom routines provide a way to overcome this restriction.
+.PP
+There are so far two different methods for background running. The first method 
+use mmap function with FIXED option, which is not recommended by mmap's man page.
+It has some probability to fail. But it allows programs to think that 
+graphics memory is always present.
+
+The second method is just let the functions to write directly graphics memory's 
+save-buffer. This means that the memory area where graphics information is changes 
+for the program. The program must always know where to write. This type of action
+needs much more work and leaves probably always room for race conditions.
+
+Hopefully the first method proves to be good enough and second method can be 
+left away. 
+
+Neither method allows the use of the graphics card's registers in background. 
+When registers are used, vc switching is disabled, but the request are queued.
+Vc switching is done as soon as possible.
+.PP
+Generally, accelerated functions will probably cause problems, except when they are
+implemented carefully to check for availability of the cards registers.
+.PP
+User programs should generally not use the graphics registers directly. But if program needs to 
+use the registers, it has to check if it is in background or not. In the
+background state it can not use the registers. For testing the
+.BR vga_oktowrite (3)
+function can be used. During register access the virtual console must be 
+locked. A possible code fragment might look like:
+
+.B vga_lockvc();
+.br
+.B "if (vga_oktowrite()) {"
+.br
+.BR "   " "/* Register operations. */"
+.br
+.B } else {
+.br
+.BR "   " "/* Registers can not be used. Alternative action. */"
+.br
+.B }
+.br
+.B vga_unlockvc();
+
+.SH ADVANCED NOTES
+.SS Installation
+Background capability is enabled in svgalib by setting
+.B BACKGROUND=y
+and 
+disabled by commenting
+.B #BACKGROUND=y in
+.I Makefile.cfg
+before compiling svgalib. Background capable 
+svgalib is more stable with all programs. Programs do not have to use 
+background abilities even when they are available. As of this writing, all
+precompiled svgalib binaries are background capable by default.
+.B NOTICE: proc-fs must be mounted for background capability.
+
+.SS Status of the background feature
+Background capability in svgalib is in an early stagei of development.
+There has been done lot of work for it, but probably not everything will work
+perfectly. This applies only to programs which actually enabled background running
+with
+.BR vga_runinbackground (3).
+
+The
+.BR vga_drawline (3),
+.BR vga_drawpixel (3),
+.BR vga_getclolors (3),
+.BR vga_getpixel (3),
+.BR vga_screenoff (3),
+.BR vga_screenon (3),
+.BR vga_setegacolor (3),
+.BR vga_setrgbcolor (3),
+.BR vga_setcolor (3),
+.BR vga_setpage "(3) and "
+.BR vga_clear (3)
+functions appear to work and calling
+.BR vga_setmode (3)
+is safe too but cannot change modes while in background. The remaining
+svgalib and vgagl function should work too but are not well tested.
+
+Calling accelerated functions will most probably cause harm though this is
+worked on.
+
+Please report problems to Pekka (see
+.B AUTHOR
+section).
+
+.SS Programming within svgalib
+When coding within svgalib,
+there are same restrictions as in user programs. 
+SVGA registers can not be used while in background. The svgalibrary has 
+internal functions for locking and unlocking virtual console switching 
+.B __svgalib_dont_switch_vt_yet()
+and 
+.BR __svgalib_is_vt_switching_needed() .
+These 
+functions are not meant to be called from user program.
+.BR vga_unlockvc (3)
+can not 
+release vc switching if internal svgalib locking is used. This is for safety. 
+The procedure for registers are similar to the procedure for user programs:
+
+.B "void vga_super_new_function(void) {"
+.br
+.B "    __svgalib_dont_switch_vt_yet();"
+.br
+.B "    if (vga_oktowrite()) {"
+.br
+.BR "        " "/* Register operations. */"
+.br
+.B "    } else {"
+.br
+.BR "        " "/* Registers can not be used. Alternative action. */"
+.br
+.B "    }"
+.br
+.B "    __svgalib_is_vt_switching_needed();"
+.br
+.B "}"
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR bg_test (6),
+.BR vga_accel (3),
+.BR vga_bitblt (3),
+.BR vga_blitwait (3),
+.BR vga_fillblt (3),
+.BR vga_hlinelistblt (3),
+.BR vga_imageblt (3),
+.BR vga_init (3),
+.BR vga_lockvc (3),
+.BR vga_oktowrite (3),
+.BR vga_runinbackground_version (3),
+.BR vga_safety_fork (3),
+.BR vga_setchipset (3),
+.BR vga_setpage (3),
+.BR vga_setreadpage (3),
+.BR vga_setwritepage (3),
+.BR vga_unlockvc (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+function was implemented and documented by Pekka T. Alaruikka <alaruik@cc.hut.fi>
+& Michael Friman <no email>.

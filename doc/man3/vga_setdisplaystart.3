@@ -1,0 +1,47 @@
+.TH vga_setdisplaystart 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setdisplaystart \- set the display start address
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setdisplaystart(int " a );
+
+.SH DESCRIPTION
+Set the display start address to
+.IR a ,
+where the address is the
+number of pixels offset from the start of video memory,
+except for hicolor/truecolor modes, which use a unit of
+1 byte. Can be used for page-flipping and virtual desktop
+scrolling. May not work properly for 16 color modes.
+
+You should ensure that the memory displayed is actually available on the SVGA
+card (query memory size with
+.BR vga_modeinfo (3))
+and ensure that it is saved by svgalib during console switches with
+.BR vga_claimvideomemory (3).
+
+You may only set the bits of the display start address returned by
+.BR vga_modeinfo (3).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_modeinfo (3),
+.BR vga_setlogicalwidth (3),
+.BR vga_claimvideomemory (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

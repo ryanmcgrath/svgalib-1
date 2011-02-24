@@ -1,0 +1,128 @@
+.TH threed 6 "8 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+threed \- The svgalib 3d demo
+.SH SYNOPSIS
+
+.B 3d
+
+.SH DESCRIPTION
+Well, the 3d demo...
+
+I, Michael, the current svgalib maintainer, do not have any source for it.
+
+Thus, you may experience weird problems with new svgalib versions
+and you need installed a.out libc and svgalib versions.
+Also the demo is known to be buggy in several aspects. Thus, do not
+panic if it appears not to work for you.
+
+If it works in a certain mode for you be happy and
+play around with it. For example, with recent svgalibs,
+.B 3d
+is
+unable to initialize the mouse if not started directly in a linux
+console for unknown reasons.
+
+Otherwise:
+.B "Don't worry at all."
+
+.SS "Here's the author's (Harm's) info about it:"
+
+There's also a
+.B 3d
+demo binary included in this directory. It has been
+in a similar state for several months now, but I'm planning to get
+some work done (although it probably won't be the amazing multi-player
+networked 3D lightsource-shaded real-time VGA virtual reality
+simulation). I'll release the source code at some point (when it has
+some degree of flexibility). I'm sorry that there's no scene
+description file; it will come. So now you know you can do this kind
+of thing in Linux. And it's practically 100% C code.
+
+You can set the graphics mode to be used with the
+.B SVGALIB_DEFAULT_MODE
+environment
+variable (e.g. G640x480x256). All linear 256 color, 32K color and 16M
+color modes are supported, with page flipping used if available. Planar
+256 color VGA modes also work. This should do 800x600 full screen 3D
+animation at near 10 fps with a good system.
+Request: Please report if page flipping goes wrong on a particular
+chipset (e.g. ET4000, Trident) in 320x200x256. Also 32-bit pixel
+truecolor modes don't work correctly, this will be fixed.
+The user interface is somewhat primitive at this point:
+
+- Use the mouse to rotate.
+.br
+- Left button accelerates, right decelerates.
+.br
+- Press
+.B <W>
+to move upwards,
+.B <S>
+to go down again.
+.br
+- Use
+.B <R>
+and
+.B <F>
+to control the zoom factor.
+.br
+-
+.BR <q> " or " <Ctrl>-C
+exits.
+
+Note that the light source rotates quickly at an infinite distance.
+This is not something that will easily occur naturally (as far as I
+know)...
+
+This demo is part of svgalib and can be found in the
+.I demos/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I demos/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH BUGS
+Countless.
+.br
+In addition, source is still not available. Sorry, I just don't have it.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR accel (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR vgatest (6),
+.BR plane (6),
+.BR wrapdemo (6)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+demo and most of it's documentation is due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.

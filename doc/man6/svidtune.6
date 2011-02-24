@@ -1,0 +1,55 @@
+.TH vgatest 6 "10 June 1999" "Svgalib (>= 1.4.0)" "Svgalib User Manual"
+.SH NAME
+svidtune - tunes svgalib modes 
+.SH SYNOPSIS
+
+.B svidtune mode
+
+.SH DESCRIPTION
+
+.I mode
+is an svgalib mode number for the mode to be tuned. The number of colours
+is irrelevant, but the mode must be supported by the hardware.
+
+svidtune displays the mode timing parameters, and a rectangle around the
+screen. You can then adjust the parameters to have the display tuned
+properly.
+
+Please note that modelines (and this program) only affects display when
+the driver uses the timing.c interface. Specifically, it has no affect on
+the VESA driver.
+
+.SH KEYS
+
+.IR l,r,d,u
+move the displayed portion of the screen left, right, down or up.
+
+.IR w,n
+increase or decrease the screens horizontal size.
+
+.I s,o
+increase or decrease the screens vertical size.
+
+.I p
+print the current modeline to the standard error.
+
+.I P
+print the current modeline to the config file, so it will be used by
+svgalib from now on.
+
+.I q
+quit
+
+.SH BUGS
+
+The program does not test that the modes remain within the monitor limits.
+
+.SH SEE ALSO
+
+.BR vga_getcurrenttiming (3),
+.BR vga_changecurrenttiming (3),
+.BR libvga.config (5)
+
+.SH AUTHOR
+
+This man page was written by Matan Ziv-Av.

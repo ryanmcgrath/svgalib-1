@@ -1,0 +1,43 @@
+.TH vga_setlogicalwidth 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setlogicalwidth \- set the logical scanline width
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setlogicalwidth(int " l );
+
+.SH DESCRIPTION
+Set the logical scanline width to
+.I l
+bytes. It must be a multiple of 8. Only changes the VGA register, drawing
+functions don't take it into account. The logical scan line width is the offset
+between points above each other in consecutive lines. Note that for some cards and
+graphics modes a
+multiple of 8 will not suffice to ensure a proper video timing. You should
+only set
+.I l
+to multiples of the value returned for that graphics mode by
+.BR vga_modeinfo (3).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_modeinfo (3),
+.BR vga_displaystart (3),
+.BR vga_claimvideomemory (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,97 @@
+.TH mach32info 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mach32info \- read out configuration information of a Mach32
+.SH SYNOPSIS
+
+.B mach32info {info|force}
+
+.SH DESCRIPTION
+.B mach32info
+prints out almost all the info about your mach32 card from configuration
+registers and Mach32 EEPROM. It also measures the Mach32 clocks. A
+completely idle system is required when these measurements are being
+performed. During these measurements, the video signals will be screwed up
+for about 3-4 seconds.
+
+If your monitor does not switch off when getting a video signal it can't
+stand (fixed freq. monitors) better switch it off before starting
+mach32info. Your computer will beep when it is finished probing.
+You can redirect the 'stdout' of
+.B mach32info
+to some file for viewing the results easier or mailing them.
+
+Do not redirect 'stderr' as you won't hear the beep.
+
+This tool is part of svgalib. Although it's output maybe useful to debug
+Xfree86 Mach32 Servers, I am
+.B NOT
+related to Xfree86!
+.B Please do not send me (Michael Weller) any Xfree86 bug reports!
+Thanx in advance.
+
+Note that this tool comes
+.B without any warranty!
+Use it at your
+.B own
+risk!
+
+.BR Warning ,
+this tool does not check for VC changes etc.. Just let it run in
+its own virtual console as root and don't try to fool it.
+Actually this is due to it not using svgalib at all but simply accessing the
+Mach32.
+
+Please report any problems with running
+.B mach32info
+or with configuring the
+.BR svgalib (7)'s
+Mach32 driver to Michael Weller <eowmob@exp-math.uni-essen.de>.
+Include the results from running this test with your report.
+
+.SH OPTIONS
+.TP
+.B info
+print out the configuration information. Without
+.B info
+.B mach32info
+prints a usage message (looking almost like this manpage ;-)).
+.TP
+.B force
+The
+.B force
+option disables the sanity check that tries to detect the
+presence of the mach32 prior to printing the information.
+
+Do not use this option unless you are really,
+really sure that you have a Mach32 compatible vga card installed.
+.PP
+This utility is part of svgalib and can be found in the
+.I mach32/
+subdirectory of the original svgalib distribution. However, it is not installed
+by default, s.t. it is unclear where you can find it if your svgalib was install
+by a linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. You
+don't need to install it. Just
+.B make
+in the
+.I mach32/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR svgalib.mach32 (7),
+.BR vgagl (7),
+.BR libvga.config (5).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>.
+He also wrote the referenced utility as well as of the original documentation.

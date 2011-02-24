@@ -1,0 +1,957 @@
+svgalib(7)		      Svgalib User Manual		    svgalib(7)
+
+
+
+1mNAME0m
+       svgalib - a low level graphics library for linux
+
+1mTABLE OF CONTENTS0m
+       1m0. 22mIntroduction
+       1m1. 22mInstallation
+       1m2. 22mHow to use svgalib
+       1m3. 22mDescription of svgalib functions
+       1m4. 22mOverview of supported SVGA chipsets and modes
+       1m5. 22mDetailed comments on certain device drivers
+       1m6. 22mGoals
+       1m7. 22mReferences (location of latest version, apps etc.)
+       1m8. 22mKnown bugs
+
+
+1m0. INTRODUCTION0m
+       This  is	 a  low	 level graphics library for Linux, originally based on
+       VGAlib 1.2 by Tommy Frandsen. VGAlib supported a number of standard VGA
+       graphics	 modes,	 as  well  as  Tseng  ET4000 high resolution 256-color
+       modes. As of now, support for many more chipsets has  been  added.  See
+       section 1m4 Overview of supported SVGA chipsets and modes0m
+
+       It  supports  transparent  virtual  console switching, that is, you can
+       switch consoles to and from  text  and  graphics	 mode  consoles	 using
+       alt-[function  key].  Also,  svgalib corrects most of VGAlib's textmode
+       corruption behaviour by catching 1mSIGSEGV22m,  1mSIGFPE22m,  1mSIGILL22m,  and	other
+       fatal  signals  and ensuring that a program is running in the currently
+       visible virtual console before setting a graphics mode.
+
+       Note right here that 1mSIGUSR1 22mand 1mSIGUSR2 22mare  used  to	 manage	 console
+       switching  internally  in  1msvgalib22m.	  You can not use them in your pro-
+       grams. If your program needs to use one of those signals,  svgalib  can
+       be compiled to use other signals, by editing libvga.h
+
+       This  version  includes	code to hunt for a free virtual console on its
+       own in case you are not starting the program from one (but instead over
+       a  network or modem login, from within 1mscreen22m(1) or an 1mxterm22m(1)).  Pro-
+       vided there is a free console, this succeeds if you are root or if  the
+       svgalib	calling	 user own the current console. This is to avoid people
+       not using the console being able to fiddle with it.  On	graceful  exit
+       the  program  returns to the console from which it was started.	Other-
+       wise it remains in text mode at the VC which svgalib allocated to allow
+       you  to	see any error messages. In any case, any I/O the svgalib makes
+       in text mode (after calling 1mvga_init22m(3)) will also take place  at  this
+       new console.
+
+       Alas,  some games misuse their suid root privilege and run as full root
+       process. svgalib cannot detect this and allows Joe Blow User to open  a
+       new  VC	on  the console. If this annoys you, 1mROOT_VC_SHORTCUT 22min 4mMake-0m
+       4mfile.cfg24m allows you to disable allocating a new  VC	 for  root  (except
+       when he owns the current console) when you compile svgalib. This is the
+       default.
+
+       When the library is used by a program at run-time, first the chipset is
+       detected and the appropriate driver is used. This means that a graphics
+       program will work on any card that is supported by svgalib, if the mode
+       it  uses	 is supported by the chipset driver for that card. The library
+       is upwardly compatible with VGAlib.
+
+       The set of drawing functions provided  by  svgalib  itself  is  limited
+       (unchanged  from	 VGAlib) and unoptimized; you can however use 1mvga_set-0m
+       1mpage22m(3)  and  1mvga_getgraphmem22m(3)  (which  points   to	 the   64K   VGA
+       framebuffer)  in a program or graphics library.	A fast external frame-
+       buffer graphics library for linear and banked 1, 2, 3 and 4  bytes  per
+       pixel modes is included (it also indirectly supports planar VGA modes).
+       It is documented in 1mvgagl22m(7).
+
+       One obvious application of the library is a picture viewer. Several are
+       available,  along  with animation viewers. See the 1m7. References 22mat the
+       end of this document.
+
+       I have added a simple VGA textmode font restoration  utility  (1mrestore-0m
+       1mfont22m(1))  which  may help if you suffer from XFree86 textmode font cor-
+       ruption. It can also be used to change the textmode font. It comes with
+       some other textmode utilities: 1mrestoretextmode22m(1) (which saves/restores
+       textmode registers), 1mrestorepalette22m(1), and the script 1mtextmode22m(1).  If
+       you  run	 the  1msavetextmode22m(1)  script  to save textmode information to
+       4m/tmp24m, you'll be able to restore textmode  by  running  the	1mtextmode22m(1)
+       script.
+
+
+1m1. INSTALLATION0m
+       Installation  is	 easy in general but there are many options and things
+       you should keep in mind. This document however assumes that 1msvgalib  22mis
+       already installed.
+
+       If  you need information on installation see 4m0-INSTALL24m which comes with
+       the svgalib distribution.
+
+       However, even after installation of the library you might need to  con-
+       figure svgalib using the file 4m/etc/vga/libvga.config24m.  Checkout section
+       1m4 Overview of supported SVGA chipsets and  modes  22mand  1mlibvga.config22m(5)
+       for information.
+
+
+1m2. HOW TO USE SVGALIB0m
+       For  basic  svgalib  usage  (no	mouse,	no  raw keyboard) add 1m#include0m
+       1m<vga.h> 22mat the beginning your program.  Use 1mvga_init22m(3) as  your  first
+       1msvgalib 22mcall. This will give up root privileges right after initializa-
+       tion, making setuid-root binaries relatively safe.
+
+       The function  1mvga_getdefaultmode22m(3)	 checks	 the  environment  variable
+       1mSVGALIB_DEFAULT_MODE  22mfor a default mode, and returns the corresponding
+       mode number. The environment string can either be a mode	 number	 or  a
+       mode  name as in (1mG640x480x222m, 1mG640x480x1622m, 1mG640x480x256 22m, 1mG640x480x32K22m,
+       1mG640x480x64K22m, 1mG640x480x16M22m).  As an example, to set the default  graph-
+       ics mode to 640x480, 256 colors, use:
+
+       1mexport SVGALIB_DEFAULT_MODE=G640x480x2560m
+
+       on  the 1mbash(1) 22mcommand line. If a program needs just a linear VGA/SVGA
+       resolution (as required by 1mvgagl22m(7)), only modes where 1mbytesperpixel 22min
+       the 1mvga_modeinfo 22mstructure returned by 1mvga_getmodeinfo22m(3) is greater or
+       equal to 1 should be accepted (this is 0 for tweaked  planar  256-color
+       VGA modes).
+
+       Use  1mvga_setmode(4m22mgraphicsmode24m1m)  22mto  set  a  graphics mode. Use 1mvga_set-0m
+       1mmode(TEXT) 22mto restore textmode before program exit.
+
+       Programs that use svgalib must 1m#include<vga.h>22m; if they  also  use	the
+       external	 graphics  library  1mvgagl22m(7), you must also 1m#include<vgagl.h>22m.
+       Linking must be done with 1m-lvga 22m(and 1m-lvgagl 22mbefore 1m-lvga22m, if  1mvgagl22m(7)
+       is  used).  You	can  save  binary space by removing the unused chipset
+       drivers in 4mMakefile.cfg24m if you only use specific chipsets. However this
+       reduces	the  flexibility  of svgalib and has a significant effect only
+       when you use the static libraries. You should  better  use  the	shared
+       libraries and these will load only the really used parts anyway.
+
+       Functions  in  the  1mvgagl22m(7)  library  have the prefix 1mgl_22m.  Please see
+       1mvgagl22m(7) for details.
+
+       There are demos with sources available which will also help to get  you
+       started,	 in  recomended	 order	of  interest:  1mvgatest22m(6), 1mkeytest22m(6),
+       1mmousetest22m(6),  1meventtest22m(6),  1mforktest22m(6),  1mbg_test22m(6),  1mscrolltest22m(6),
+       1mspeedtest22m(6),  1mfun22m(6),	 1mspin22m(6),	1mtestlinear22m(6), 1mlineart22m(6), 1mtestgl22m(6),
+       1maccel22m(6), 1mtestaccel22m(6), 1mplane22m(6), and 1mwrapdemo22m(6).
+
+       Debugging your programs will turn out to be rather  difficult,  because
+       the svgalib application can not restore textmode when it returns to the
+       debugger.
+
+       Happy are the users with a serial terminal, X-station, or  another  way
+       to log into the machine from network. These can use
+
+       1mtextmode </dev/tty4m22mN0m
+
+       on the console where the program runs and continue.
+
+       However,	 the  1mvga_flip22m(3) function allows you to switch to textmode by
+       entering a call to it blindly into  your	 debugger  when	 your  program
+       stops  in  graphics  mode.   1mvga_flip22m(3) is not very robust though. You
+       shall not call it when svgalib is not yet initialized or in textmode.
+
+       Before continuing your program, you must then call 1mvga_flip22m(3) again to
+       return  to  graphics  mode.  If	the  program  will not make any screen
+       accesses or svgalib calls before it returns to the  debugger,  you  can
+       omit that, of course.
+
+       This  will  only	 work if your program and the debugger run in the same
+       virtual linux console.
+
+
+1m3. DESCRIPTION OF SVGALIB FUNCTIONS0m
+       Each function has it's own section 3 manual page. For a list  of	 1mvgagl0m
+       functions see 1mvgagl22m(7).
+
+   1mInitialization0m
+       1mvga_init22m(3)
+	      - initialize svgalib library.
+       1mvga_disabledriverreport22m(3)
+	      - makes svgalib not emit any startup messages.
+       1mvga_claimvideomemory22m(3)
+	      - declare the amount of video memory used.
+       1mvga_safety_fork22m(3)
+	      - start a parallel process to restore the console at a crash.
+       1mvga_setchipset22m(3)
+	      - force chipset.
+       1mvga_setchipsetandfeatures22m(3)
+	      - force chipset and optional parameters.
+
+   1mInquire hardware configuration0m
+       1mvga_getmousetype22m(3)
+	      - returns the mouse type configured.
+       1mvga_getcurrentchipset22m(3)
+	      - returns the current SVGA chipset.
+       1mvga_getmonitortype22m(3)
+	      - returns the monitor type configured.
+
+   1mSetting video modes0m
+       1mvga_setmode22m(3)
+	      - sets a video mode.
+       1mvga_setdisplaystart22m(3)
+	      - set the display start address.
+       1mvga_setlogicalwidth22m(3)
+	      - set the logical scanline width.
+       1mvga_setlinearaddressing22m(3)
+	      - switch to linear addressing mode.
+       1mvga_setmodeX22m(3)
+	      - try to set Mode X-like memory organization .
+       1mvga_ext_set22m(3)
+	      - set and query several extended features.
+       1mvga_screenoff22m(3), 1mvga_screenon22m(3)
+	      - turn generation of the video signal on or off.
+
+   1mGet video mode information0m
+       1mvga_getxdim22m(3), 1mvga_getydim22m(3), 1mvga_getcolors22m(3)
+	      - return the current screen resolution.
+       1mvga_white22m(3)
+	      - return the color white in the current screen resolution.
+       1mvga_getcurrentmode22m(3)
+	      - returns the current video mode.
+       1mvga_hasmode22m(3)
+	      - returns if a video mode is supported.
+       1mvga_getmodeinfo22m(3)
+	      - returns pointer to mode information structure for a mode.
+       1mvga_getdefaultmode22m(3)
+	      - returns the default graphics mode number.
+       1mvga_lastmodenumber22m(3)
+	      - returns the last video mode number.
+       1mvga_getmodename22m(3)
+	      - return a name for the given video mode.
+       1mvga_getmodenumber22m(3)
+	      - return a number for the given video mode.
+
+   1mDrawing primitives0m
+       1mvga_clear22m(3)
+	      - clear the screen.
+       1mvga_setcolor22m(3)
+	      - set the current color.
+       1mvga_setrgbcolor22m(3)
+	      - set the current color.
+       1mvga_setegacolor22m(3)
+	      - set the current color.
+       1mvga_drawpixel22m(3)
+	      - draw a pixel on the screen.
+       1mvga_drawscanline22m(3)
+	      - draw a horizontal line of pixels.
+       1mvga_drawscansegment22m(3)
+	      - draw a horizontal line of pixels.
+       1mvga_drawline22m(3)
+	      - draw a line on the screen.
+       1mvga_getpixel22m(3)
+	      - get a pixels value from the screen.
+       1mvga_getscansegment22m(3)
+	      - get a list of consecutive pixel values.
+       1mvga_waitretrace22m(3)
+	      - wait for vertical retrace.
+
+   1mBasic (non raw) keyboard I/O0m
+       1mvga_getch22m(3)
+	      - wait for a key.
+       1mvga_getkey22m(3)
+	      - read a character from the keyboard without waiting.
+       1mvga_waitevent22m(3)
+	      - wait for various I/O events.
+
+   1mDirect VGA memory access0m
+       1mvga_setpage22m(3)
+	      - set the 64K SVGA page number.
+       1mvga_setreadpage22m(3)
+	      - set the 64K SVGA page number.
+       1mvga_setwritepage22m(3)
+	      - set the 64K SVGA page number.
+       1mvga_getgraphmem22m(3)
+	      - returns the address of the VGA memory.
+       1mvga_copytoplanar25622m(3)
+	      - copy linear pixmap into Mode X video memory.
+       1mvga_copytoplanar1622m(3)
+	      - copy linear pixmap into VGA 16 color mode video memory.
+       1mvga_copytoplane22m(3)
+	      -	 copy  linear pixmap to some planes of VGA 16 color mode video
+	      memory.
+
+   1mManage color lookup tables0m
+       1mvga_setpalette22m(3)
+	      - set a color in the color lookup table.
+       1mvga_getpalette22m(3)
+	      - get a color in the color lookup table.
+       1mvga_setpalvec22m(3)
+	      - sets colors in the color lookup table.
+       1mvga_getpalvec22m(3)
+	      - gets colors from the color lookup table.
+
+   1mMouse handling0m
+       1mvga_setmousesupport22m(3)
+	      - enable mouse support.
+       1mmouse_init22m(3), 1mmouse_init_return_fd22m(3)
+	      - specifically initialize a mouse.
+       1mmouse_close22m(3)
+	      - explicitly close a mouse.
+       1mmouse_update22m(3)
+	      - updates the mouse state.
+       1mmouse_waitforupdate22m(3)
+	      - wait for an mouse update.
+       1mmouse_setscale22m(3)
+	      - sets a mouse scale factor.
+       1mmouse_setwrap22m(3)
+	      - set what happens at the mouse boundaries.
+       1mmouse_setxrange22m(3), 1mmouse_setyrange22m(3)
+	      - define the boundaries for the mouse cursor.
+       1mmouse_getx22m(3), 1mmouse_gety22m(3), 1mmouse_getbutton22m(3)
+	      - query the mouse state.
+       1mmouse_setposition22m(3)
+	      - set the current mouse position.
+       1mmouse_getposition_6d22m(3), 1mmouse_setposition_6d22m(3), 1mmouse_setrange_6d22m(3)
+	      - provide an interface to 3d mice.
+       1mmouse_seteventhandler22m(3), 1mmouse_setdefaulteventhandler22m(3)
+	      - set a mouse event handler.
+
+   1mRaw keyboard handling0m
+       1mkeyboard_init22m(3), 1mkeyboard_init_return_fd22m(3)
+	      - initialize the keyboard to raw mode.
+       1mkeyboard_close22m(3)
+	      - return the keyboard to normal operation from raw mode.
+       1mkeyboard_update22m(3), 1mkeyboard_waitforupdate22m(3)
+	      - process raw keyboard events.
+       1mkeyboard_translatekeys22m(3)
+	      - modify scancode mappings in raw keyboard mode.
+       1mkeyboard_keypressed22m(3)
+	      - check if a key is pressed when in raw keyboard mode.
+       1mkeyboard_getstate22m(3)
+	      - get a pointer to a buffer holding the state of all keys in raw
+	      keyboard mode.
+       1mkeyboard_clearstate22m(3)
+	      - reset the state of all keys when in raw keyboard mode.
+       1mkeyboard_seteventhandler22m(3), 1mkeyboard_setdefaulteventhandler22m(3)
+	      - define an event handler for keyboard events in raw mode.
+
+   1mJoystick handling0m
+       1mjoystick_init22m(3)
+	      - initialize and calibrate joysticks.
+       1mjoystick_close22m(3)
+	      - close a joystick device.
+       1mjoystick_update22m(3)
+	      - query and process joystick state changes.
+       1mjoystick_sethandler22m(3), 1mjoystick_setdefaulthandler22m(3)
+	      - define own joystick even handler.
+       1mjoystick_getnumaxes22m(3), 1mjoystick_getnumbuttons22m(3)
+	      - query the capabilities of a joystick.
+       1mjoystick_getaxis22m(3), 1mjoystick_getbutton22m(3)
+	      - query the state of a joystick.
+       1mjoystick_button1|2|3|422m(3),	1mjoystick_getb1|2|3|422m(3), 1mjoystick_x|y|z22m(3),
+       1mjoystick_getx|y|z22m(3)
+	      - convenience macros to query the joystick position.
+
+   1mAccelerator interface (new style)0m
+       1mvga_accel22m(3)
+	      - calls the graphics accelerator.
+
+   1mAccelerator interface (old style)0m
+       1mvga_bitblt22m(3)
+	      - copy pixmap on screen using an accelerator.
+       1mvga_fillblt22m(3)
+	      - fill rectangular area in video memory with a single color.
+       1mvga_hlinelistblt22m(3)
+	      - draw horizontal scan lines.
+       1mvga_imageblt22m(3)
+	      -	 copy a rectangular pixmap from system memory to video memory.
+       1mvga_blitwait22m(3)
+	      - wait for any accelerator operation to finish.
+
+   1mControlling VC switches0m
+       1mvga_lockvc22m(3)
+	      - disables virtual console switching for safety.
+       1mvga_unlockvc22m(3)
+	      - re-enables virtual console switching.
+       1mvga_oktowrite22m(3)
+	      - indicates whether the program has direct access to the SVGA.
+       1mvga_runinbackground22m(3)
+	      - enable running of the program while there is no VGA access.
+       1mvga_runinbackground_version22m(3)
+	      - returns the version of the current background support.
+
+   1mDebugging aids0m
+       1mvga_dumpregs22m(3)
+	      - dump the contents of the SVGA registers.
+       1mvga_gettextfont22m(3), 1mvga_puttextfont22m(3)
+	      - get/set the font used in text mode.
+       1mvga_gettextmoderegs22m(3), 1mvga_settextmoderegs22m(3)
+	      - get/set the vga state used in text mode.
+       1mvga_flip22m(3)
+	      - toggle between text and graphics mode.
+       1mvga_setflipchar22m(3)
+	      - set the character causing a vga_flip().
+
+
+
+1m4. OVERVIEW OF SUPPORTED SVGA CHIPSETS AND MODES0m
+   1mVGA and compatibles0m
+       320x200x256, and the series of 16-color	and  non-standard  planar  256
+       color modes supported by VGAlib, as well as 720x348x2.
+
+
+   1mALI23010m
+       Supports 640x480x256, 800x600x256, 1024x768x256 SVGA modes
+
+
+   1mAT3D (AT25)0m
+       Also  known  as Promotion at25. Popular as the 2D part of a voodoo rush
+       card. As of this writing there are  a  few  known  problems  with  this
+       driver. Read below.
+
+
+   1mARK Logic ARK1000PV/2000PV0m
+       Full  support,  limited RAMDAC support. Only ARK1000PV tested. Supports
+       Clocks and Ramdac lines in config file.
+
+
+   1mATI SVGA (VGA Wonder and friends)0m
+       This is no real driver. I do not support any  new  modes.   However  it
+       saves  additional card setup and thus allows use of the plain VGA modes
+       even when you are using non standard text  modes.  It  is  possible  to
+       enforce use of this driver even on ATI Mach32 but not very useful.
+
+
+   1mATI Mach320m
+       The  driver  by	Michael Weller supports all ATI BIOS-defined modes and
+       more... It hits the best out of your card.  Some	 modes	may  not  have
+       nice  default timings but it uses the ATI's EEPROM for custom config or
+       allows to specify modes in 1mlibvga.config22m(5).  Some problems	 may  occur
+       with  quite some third party cards (usually on board) Mach32 based con-
+       trollers as they do not completely conform to the Mach32	 data  sheets.
+       Check out 1msvgalib.mach3222m(7) (and 1mlibvga.config22m(5)).
+
+
+   1mATI Mach64 (rage)0m
+       A driver for ATi Mach64 based cards with internal DAC.
+
+
+   1mChips  and	 Technologies  chipsets	 65525,	 65535, 65546, 65548, 65550, and0m
+       1m65554 (usually in laptops).0m
+       This server was written using the SVGALIB patch from Sergio and	Angelo
+       Masci as a starting point. This version of the code resembled the XFree
+       server code that was used up to XFree 3.1.2. As such it	was  incapable
+       of  programming	the  clocks,  using linear addressing, Hi-Color, True-
+       Color modes or the hardware acceleration. All of	 these	features  have
+       since  been  added  to  the code.  The 64200 and 64300 chips are unsup-
+       ported, however these chips are very similar to the 6554x  chips	 which
+       are supported.
+
+
+   1mCirrus Logic GD542x/3x0m
+       All  the	 modes, including 256 color, 32K/64K color, 16M color (3 bytes
+       per pixel) and 32-bit pixel 16M color modes (5434). Some	 bitblt	 func-
+       tions are supported.  The driver doesn't work with mode dumps, but uses
+       a SVGA abstraction with mode timings like the X drivers.
+
+
+   1mGenoa(?) GVGA6400 cards.0m
+       Supported.
+
+
+   1mHercules Stingray 64/Video0m
+       Is supported as an ARK2000PV
+
+
+   1mNV3 driver for the Riva128.0m
+       This driver was written by Matan Ziv-Av and is derived from the XFree86
+       driver by David J. Mckay. It lacks 24bit modes (can the card do them at
+       all?), acceleration support and pageflipping in threeDKit is broken.
+
+
+   1mOak Technologies OTI-037/67/77/870m
+       Driver by Christopher Wiles; includes 32K color modes for OTI-087.
+
+
+   1mS30m
+       The driver is not complete, but should work on a number	of  cards/RAM-
+       DACs, and 640x480x256 should work on most card. The best support is for
+       a 801/805 with AT&T20C490-compatible RAMDAC, and S3-864	+  SDAC.   All
+       256/32K/64K/16M	works  for  them  (within the bounds of video memory &
+       ramdac restrictions).
+
+       The supported cards include S3 Virge and S3 Trio64 cards.
+
+       None of the acceleration function is supported yet.
+
+       The chip level code should work with the 964/868/968, but  most	likely
+       the card they come on would use an unsupported ramdac/clock chip.  Sup-
+       port for these chips is slowly being added.
+
+       Clocks and Ramdac lines in 1mlibvga.config22m(5) supported.
+
+       The maximum pixel clock (in MHz) of the ramdac can be set using a  1mDac-0m
+       1mspeed	22mline	 in the config file. A reasonable default is assumed if the
+       1mDacspeed 22mline is omitted.  1mClocks 22mshould be the  same	as  in	XFree86.
+       Supported  ramdac  IDs:	1mSierra32K22m,	 1mSC1502522m,	1mSDAC22m, 1mGenDAC22m, 1mATT20C49022m,
+       1mATT20C49822m, 1mIBMRGB52x22m.
+
+       Example:
+       1mClocks 25.175 28.3 40 70 50 75 36 44.9 0 118 77 31.5 110 65 72 93.50m
+       1mRamdac att20c4900m
+       1mDacSpeed 850m
+
+       Also supported, at least in combination with the SC15025/26A ramdac, is
+       the  ICD 2061A clock chip.  Since it cannot be autodetected you need to
+       define it in the config file using a 1mClockchip 22mline. As there is no way
+       to  read	 the  current settings out of the 2061, you have the option to
+       specify the frequency used when switching back to text mode  as	second
+       argument in the 1mClockchip 22mline.
+
+       This  is	 especially  required if your text mode is an 132 column mode,
+       since these modes use a clock from the  clock  chip,  while  80	column
+       modes use a fixed clock of 25 MHz.  The text mode frequency defaults to
+       40 MHz, if omitted.
+
+       Example:
+       1mClockChip icd2061a 40.00m
+
+
+   1mTrident TVGA 8900C/9000 (and possibly also 8800CS/8900A/B)	 and  also  TVGA0m
+       1m94400m
+       Derived	from  tvgalib  by  Toomas  Losin.  TVGA	 9440  support	by ARK
+       <ark@lhq.com, root@ark.dyn.ml.or>.
+
+       Supports 640x480x256, 800x600x256, 1024x768x256	(interlaced  and  non-
+       interlaced)  Might  be useful to add 16-color modes (for those equipped
+       with a 512K TVGA9000) for the 8900 and 9000 cards.
+
+       320x200x{32K, 64K, 16M}, 640x480x{256, 32K,  64K,  16M},	 800x600x{256,
+       32K,  64K,  16M}, 1024x768x{16, 256}, 800x600x{16, 256, 32K, 64K} modes
+       are supported for the TVGA 9440.
+
+       Autodetection can be forced with a:
+
+	      1mchipset TVGA 4m22mmemory24m 4mflags0m
+
+       line in the config file.
+
+       4mmemory24m is the amount of VGA memory in KB, 4mflags24m is  composed  of  three
+       bits:
+
+	      1mbit2 = false, bit1 = false0m
+		     force 8900.
+
+	      1mbit2 = false, bit1 = true0m
+		     force 9440.
+
+	      1mbit2 = true, bit1 = false0m
+		     force 9680.
+
+	      1mbit0 = true0m
+		     force noninterlaced.
+
+	      1mbit0 = false0m
+		     force  interlaced	which  only  matters on 8900's with at
+		     least 1M since there is no 512K interlaced	 mode  on  the
+		     8900 or any of the other cards.
+
+
+   1mTseng ET4000/ET4000W32(i/p)0m
+       Derived	from  VGAlib;  not  the same register values.  ET4000 register
+       values are not compatible; see 1msvgalib.et400022m(7).
+
+       Make sure the colors are right in hicolor  mode;	 the  vgatest  program
+       should draw the same color bars for 256 and hicolor modes (the DAC type
+       is defined at compilation  in  4met4000.regs24m	or  the	 dynamic  registers
+       file).	ET4000/W32  based cards usually have an AT&T or Sierra 15025/6
+       DAC. With recent W32p based cards, you might have some  luck  with  the
+       AT&T  DAC  type.	  If the high resolution modes don't work, you can try
+       dumping the registers in DOS using the program in the 4met4000/24m directory
+       and putting them in a file (4m/etc/vga/libvga.et400024m is parsed at runtime
+       if  1mDYNAMIC  22mis  defined  in  4mMakefile.cfg24m  at	 compilation  (this   is
+       default)).
+
+       Supported    modes    are   640x480x256,	  800x600x256,	 1024x768x256,
+       640x480x32K, 800x600x32K, 640x480x16M, etc.
+
+       Reports of ET4000/W32i/p functionality are welcome.
+
+       There may be a problem with the way the hicolor DAC  register  is  han-
+       dled;  dumped  registers	 may  use  one of two timing methods, with the
+       value written to the register for a particular DAC for a	 hicolor  mode
+       (in  vgahico.c)	being  correct for just one of the these methods. As a
+       consequence some dumped resolutions may work while others don't.
+
+
+   1mTseng ET60000m
+       Most modes of which the card is capable are supported.  The 8 15 16  24
+       and 32 bit modes are supported.
+
+       The  ET6000 has a built in DAC and there is no problem coming from that
+       area. The ET6000 is capable  of	acceleration,  but  this  as  well  as
+       sprites are not yet implemented in the driver.
+
+       The  driver now uses modelines in libvga.config for user defined modes.
+       It is sometimes useful to add a modeline for a  resolution  which  does
+       not display well.  For example, the G400x600 is too far to the right of
+       the screen using standard modes.	 This is  corrected  by	 including  in
+       1mlibvga.config 22mthe line
+
+       Modeline "400x600@72"  25.000 400  440  488  520	  600  639  644	 666
+
+       More examples are given below.
+
+       This driver was provided by Don Secrest.
+
+
+   1mVESA0m
+       Please  read  README.vesa  and  README.lrmi  in doc subdirectory of the
+       standard distribution.
+
+       Go figure! I turned off autodetection in the release, as a broken  bios
+       will  be	 called	 too, maybe crashing the machine. Enforce 1mVESA 22mmode by
+       putting a 1mchipset VESA 22min the end of your 4mlibvga.config24m(5).
+
+       Note that it will leave protected mode and call the cards bios  opening
+       the door to many hazards.
+
+
+1m5. DETAILED COMMENTS ON CERTAIN DEVICE DRIVERS0m
+       This  section  contains	detailed information by the authors on certain
+       chipsets.
+
+
+   1mAT3D (AT25)0m
+       Also known as Promotion at25. Popular as the 2D part of a  voodoo  rush
+       card.
+
+       I  have written a driver for this chipset, based on the XF86 driver for
+       this chipset.
+
+       The programs that work with this driver include all the programs in the
+       demos directory, zgv and dvisvga (tmview).
+
+       I believe it should be easy to make it work on AT24, AT6422.
+
+
+   1mATI Mach320m
+       Please see 1msvgalib.mach3222m(7).
+
+
+   1mATI Mach640m
+       The  rage.c  driver works only on mach64 based cards with internal DAC.
+       The driver might misdetect the base frequency the card uses, so if when
+       setting	any svgalib modes the screen blanks, or complains about out of
+       bound freqencies, or the display	 is  unsynced,	then  try  adding  the
+       option 1mRageDoubleClock 22mto the config file.
+
+
+   1mChips  and	 Technologies  chipsets	 65525,	 65535, 65546, 65548, 65550, and0m
+       1m65554 (usually in laptops).0m
+       Please see 1msvgalib.chips22m(7).
+
+
+   1mTseng ET4000/ET4000W32(i/p)0m
+       Please see 1msvgalib.et400022m(7).
+
+
+   1mTseng ET60000m
+       I have only 2 Mbytes of memory on my ET6000 card, so I am not  able  to
+       get  all	 possible modes running. I haven't even tried to do all of the
+       modes which I am capable of doing, but I am confident that I can manage
+       more  modes  when  I have time. I have enough modes working to make the
+       card useful, so I felt it was worth while to add the driver to  svgalib
+       now.
+
+       Linear  graphics	 is  working on this card, both with and without BACK-
+       GROUND enabled, and vga_runinbackground works.
+
+       I decided it was best to quit working on more  modes  and  try  to  get
+       acceleration and sprites working.
+
+       My  et6000  card is on a PCI bus.  The card will run on a vesa bus, but
+       since I don't have one on my machine I couldn't develop vesa  bus  han-
+       dling.  I quit if the bus is a vesa bus.
+
+       I  check for an et6000 card, which can be unequivocally identified. The
+       et4000 driver does not properly identify et4000 cards.  It  thinks  the
+       et6000 card is an et4000, but can only run it in vga modes.
+
+       I have found the following four modelines to be useful in 1mlibvga.config0m
+       or in 1m~/.svgalibrc 22mfor proper display of some modes.
+
+       Modeline "512x384@79" 25.175 512 560 592 640  384 428 436 494
+       Modeline "400x300@72" 25.000 400 456 472 520  300 319 332 350  DOUBLES-
+       CAN
+       Modeline "512x480@71" 25.175 512 584 600 656  480 500 510 550
+       Modeline "400x600@72" 25.000 400 440 488 520  600 639 644 666
+
+       Don Secrest <secrest@uiuc.edu> Aug 21, 1999
+
+
+
+   1mOak Technologies OTI-037/67/77/870m
+       First  a	 few  comments	of  me	(Michael  Weller <eowmob@exp-math.uni-
+       essen.de>):
+
+       As of this writing (1.2.8) fixes were made to the oak driver  by	 Frodo
+       Looijaard  <frodol@dds.nl>  to  reenable OTI-067 support. It is unknown
+       right now if they might have broken OTI-087 support. The author of  the
+       '87  support  Christopher  Wiles	 <wileyc@moscow.com> owns no longer an
+       OTI-087 card and can thus  no  longer  give  optimal  support  to  this
+       driver.	Thus  you might be better off contacting me or Frodo for ques-
+       tions. If you are a knowledgable OTI-087 user and  experience  problems
+       you  are	 welcome  to provide fixes.  No user of a OTI-087 is currently
+       known to me, so if you are able to fix problems with the driver	please
+       do so (and contact me) as noone else can.
+
+       Michael.
+
+       Now back to the original Oak information:
+
+       The original OTI driver, which supported the OTI-067/77 at 640x480x256,
+       has been augmented with the following features:
+
+
+       1m1)	22mSupported resolutions/colors have been expanded to  640x480x32K,
+	      800x600x256/32K, 1024x768x256, and 1280x1024x16.
+
+       1m2)	22mThe	OTI-087	 (all  variants) is now supported.  Video memory is
+	      correctly recognized.
+
+
+       The driver as it exists now is somewhat schizoid.  As the '87  incorpo-
+       rates a completely different set of extended registers, I found it nec-
+       essary to split its routines from the others.  Further, I did not  have
+       access  to  either  a '67 or a '77 for testing the new resolutions.  If
+       using them causes your monitor/video card to fry, your dog to bite you,
+       and so forth, I warned you.  The driver works on my '87, and that's all
+       I guarantee.  Period.
+
+       Heh.  Now, if someone wants to try them out ... let  me	know  if  they
+       work.
+
+       New from last release:
+
+       32K  modes  now	work for 640x480 and 800x600.  I found that the Sierra
+       DAC information in VGADOC3.ZIP is, well, wrong.	But, then  again,  the
+       information for the '87 was wrong also.
+
+       64K  modes  1mdo	 not  22mwork.	 I can't even get Oak's BIOS to enter those
+       modes.
+
+       I have included a 1280x1024x16 mode, but I haven't tested it.  My moni-
+       tor can't handle that resolution.  According to the documentation, with
+       2 megs the '87 should be able to do  an	interlaced  1280x1024x256  ...
+       again,  I  couldn't get the BIOS to do the mode.	 I haven't 2 megs any-
+       way, so there it sits.
+
+       I have included routines for entering and leaving  linear  mode.	  They
+       1mshould	 22mwork,  but	they  don't.   It looks like a pointer to the frame
+       buffer is not being passed to SVGALIB.  I've been  fighting  with  this
+       one  for a month.  If anyone wants to play with this, let me know if it
+       can be make to work.  I've got exams that I need to pass.
+
+       Tidbit: I pulled the extended register info  out	 of  the  video	 BIOS.
+       When  the  information  thus  obtained  failed  to work, I procured the
+       OTI-087 data book.  It appears that Oak's video BIOS sets various modes
+       incorrectly  (e.g.  setting  8-bit color as 4, wrong dot clock frequen-
+       cies, etc.).  Sort of makes me wonder ...
+
+       Christopher M. Wiles (a0017097@wsuaix.csc.wsu.edu)
+       12 September 1994
+
+
+1m6. GOALS0m
+       I think the ability to use a VGA/SVGA graphics resolution in  one  vir-
+       tual   console,	and  being able to switch to any other virtual console
+       and back makes a fairly useful implementation of graphics modes in  the
+       Linux console.
+
+       Programs	 that use 1msvgalib 22mmust be setuid root. I don't know how desir-
+       able it is to have this changed; direct port access can hardly be  done
+       without.	 Root  privileges  can now be given up right after initializa-
+       tion. I noticed some unimplemented stuff in  the	 kernel	 header	 files
+       that  may  be  useful,  although	 doing all register I/O via the kernel
+       would incur a significant context-switching  overhead.  An  alternative
+       might be to have a pseudo 4m/dev/vga24m device that yields the required per-
+       missions when opened, the device being readable by  programs  in	 group
+       vga.
+
+       It  is important that textmode is restored properly and reliably; it is
+       fairly reliable at the moment, but  fast	 console  switching  back  and
+       forth  between  two  consoles running graphics can give problems.  Wild
+       virtual console switching also sometimes corrupts the contents  of  the
+       textmode screen buffer (not the textmode registers or font).  Also if a
+       program crashes it may write into the area  where  the  saved  textmode
+       registers  are  stored,	causing textmode not be restored correctly. It
+       would be a good idea to somehow store this information in a 'safe' area
+       (say  a	kernel buffer). Note that the 1mvga_safety_fork22m(3) thing has the
+       same idea.
+
+       Currently, programs that are in graphics mode are suspended  while  not
+       in the current virtual console. Would it be a good idea to let them run
+       in the background, virtualizing framebuffer actions (this should not be
+       too  hard for linear banked SVGA modes)? It would be nice to have, say,
+       a raytracer with a real-time display run in  the	 background  (although
+       just  using a separate real-time viewing program is much more elegant).
+
+       Anyone wanting to rewrite it all in a cleaner way (something with load-
+       able  kernel  modules  shouldn't	 hurt  performance  with linear frame-
+       buffer/vgagl type applications) is encouraged.
+
+       Also, if anyone feels really strongly about a  low-resource  and	 true-
+       color  supporting  graphical  window  environment with cut-and-paste, I
+       believe it would be surprisingly little work to come up with  a	simple
+       but very useful client-server system with shmem, the most useful appli-
+       cations being fairly trivial  to	 write	(e.g.  shell  window,	bitmap
+       viewer).	    And many X apps would port trivially.
+
+       This  is	 old information, please be sure to read 1msvgalib.faq22m(7) if you
+       are interested in further goals.
+
+
+1m7. REFERENCES0m
+       The latest version of  svgalib  can  be	found  on  4msunsite.unc.edu24m	 in
+       4m/pub/Linux/libs/graphics24m  or  4mtsx-11.mit.edu24m in 4m/pub/linux/sources/libs0m
+       as 4msvgalib-X.X.X.tar.gz24m.  As of this  writing  the	latest	version	 is
+       4msvgalib-1.4.1.tar.gz24m.  There are countless mirrors of these ftp servers
+       in the world. Certainly a server close to you will carry it.
+
+       The	 original	VGAlib	     is	      on       4mtsx-11.mit.edu24m,
+       4mpub/linux/sources/libs/vgalib12.tar.Z24m.   4mtvgalib-1.0.tar.Z24m  is	 in  the
+       same directory.
+
+       SLS has long been distributing an old  version  of  VGAlib.   Slackware
+       keeps  a	 fairly up-to-date version of svgalib, but it may be installed
+       in different directories from what svgalib likes to do by default.  The
+       current	svgalib	 install tries to remove most of this. It also removes
+       4m/usr/bin/setmclk24m and 4m/usr/bin/convfont24m, which is  a  security	risk  if
+       setuid-root.  Actually the recent makefiles try to do a really good job
+       to cleanup the mess which some distributions make.
+
+       If you want to recompile the a.out shared library, you  will  need  the
+       DLL  'tools'  package  (found  on 4mtsx-11.mit.edu24m, 4mGCC24m dir).  To make it
+       work with recent ELF compiler's you actually need to hand patch it. You
+       should  probably	 not  try  to compile it. Compiling the ELF library is
+       deadly simple.
+
+       And here is a list of other  references	which  is  horribly  outdated.
+       There  are  many	 more  svgalib applications as well as the directories
+       might have changed.  However, these will give you  a  start  point  and
+       names to hunt for on CD's or in ftp archives.
+
+
+   1mViewers (in /pub/Linux/apps/graphics/viewers on sunsite.unc.edu):0m
+       1mspic	22mPicture viewer; JPG/PPM/GIF; truecolor; scrolling.
+       1mzgv	22mFull-featured viewer with nice file selector.
+       1msee-jpeg0m
+	      Shows picture as it is being built up.
+       1mmpeg-linux0m
+	      svgalib  port  of the Berkeley MPEG decoder (mpeg_play); it also
+	      includes an X binary.
+       1mflip	22mFLI/FLC player (supports SVGA-resolution).
+
+
+   1mGames (in /pub/Linux/games on sunsite.unc.edu):0m
+       1mbdash	22mB*lderdash clone with sound.
+       1msasteroids0m
+	      Very smooth arcade asteroids game.
+       1myatzy	22mNeat mouse controlled dice game.
+       1mvga_cardgames0m
+	      Collection of graphical card games.
+       1mvga_gamespack0m
+	      Connect4, othello and mines.
+       1mwt	22mFree state-of-the-art Doom-like engine.
+       1mMaelstrom0m
+	      A very nice asteroids style game port from Mac.
+       1mKoules 22mA game. (I've no idea what it looks like)
+
+
+   1mDocs0m
+       In the vga directory of the 1mSIMTEL MSDOS 22mcollection, there is a package
+       called  4mvgadoc324m which is a collection of VGA/SVGA register information.
+
+       The XFree86 driver sources distributed with the link-kit may  be	 help-
+       ful.
+
+
+   1mMiscellaneous0m
+       There's	an  alternative RAW-mode keyboard library by Russell Marks for
+       use with 1msvgalib 22mon 4msunsite.unc.edu24m.
+
+       1mLIBGRX22m, the extensive framebuffer library by  Csaba	 Biegl	distributed
+       with  1mDJGPP22m,  has  been  ported  to	 Linux.	 Contact  Hartmut  Schirmer
+       (phc27@rz.uni-kiel.d400.de, subject prefix "HARTMUT:"). A  more	up-to-
+       date  port  by  Daniel  Jackson	(djackson@icomp.intel.com)  is on 4msun-0m
+       4msite.unc.edu24m.
+
+       The vgalib ghostscript device driver  sources  can  be  found  on  4msun-0m
+       4msite.unc.edu24m,   4m/pub/Linux/apps/graphics24m.    Ghostscript  patches  from
+       Slackware: 4mftp.cdrom.com24m, 4m/pub/linux/misc24m.  1mgnuplot 22mpatches are on 4msun-0m
+       4msite.unc.edu24m.
+
+       Mitch  D'Souza  has  written font functions that work in 16 color modes
+       and can use VGA textmode (codepage format) fonts; these can be found in
+       his  1mg3fax  22mpackage	 in 4msunsite.unc.edu24m.  These functions may go into a
+       later version of 1msvgalib22m.
+
+
+1m8. KNOWN BUGS0m
+       This section is most probably outdated, none of these problems  are  no
+       longer reported.
+
+       Using a 132 column textmode may cause graphics modes to fail. Try using
+       something like 80x28.
+
+       The console switching doesn't preserve some registers that may be  used
+       to draw in planar VGA modes.
+
+       Wild console switching can cause the text screen to be corrupted, espe-
+       cially when switching between two graphics consoles.
+
+       On ET4000, having run XFree86 may cause high resolution modes  to  fail
+       (this is more XFree86's fault).
+
+       The  Trident  probing  routine in the XFree86 server may cause standard
+       VGA modes to fail after exiting X on a Cirrus. Try putting a  'Chipset'
+       line in your Xconfig to avoid the Trident probe, or use the link kit to
+       build a server without the Trident driver.  Saving  and	restoring  the
+       textmode	 registers with savetextmode/textmode (restoretextmode) should
+       also work. [Note: svgalib now resets the particular extended  register,
+       but  only  if the Cirrus driver is used (i.e. the chipset is not forced
+       to VGA)] [This is fixed in XFree86 v2.1]
+
+       Some Paradise VGA cards may not work even in standard  VGA  modes.  Can
+       anyone confirm this?
+
+       Piping  data into a graphics program has problems. I am not sure why. A
+       pity, since zcatting a 5Mb FLC file into flip on a 4Mb machine would be
+       fun.
+
+       The  1mtseng3.exe  22mDOS program include as source in the svgalib distribu-
+       tion doesn't recognize any modes on some	 ET4000	 cards.	  Also	ET4000
+       cards  with  a  Acumos/Cirrus  DAC may only work correctly in 64K color
+       mode.
+
+
+1mFILES0m
+       4m/etc/vga/libvga.config0m
+       4m/etc/vga/libvga.et40000m
+
+
+1mSEE ALSO0m
+       1msvgalib.et400022m(7), 1msvgalib.chips22m(7), 1msvgalib.mach3222m(7), 1mvgagl22m(7),  1mlib-0m
+       1mvga.config22m(5),  1m3d22m(6), 1maccel22m(6), 1mbg_test22m(6), 1meventtest22m(6), 1mforktest22m(6),
+       1mfun22m(6), 1mkeytest22m(6), 1mlineart22m(5), 1mmousetest22m(6), 1mjoytest22m(6),  1mmjoytest22m(6),
+       1mscrolltest22m(6), 1mspeedtest22m(6), 1mspin22m(6), 1mtestaccel22m(6), 1mtestgl22m(6), 1mtestlin-0m
+       1mear22m(6), 1mvgatest22m(6),  1mplane22m(6),  1mwrapdemo22m(6),	 1mconvfont22m(1),  1mdumpreg22m(1),
+       1mfix132x4322m(1),  1mrestorefont22m(1),	 1mrestorepalette22m(1),  1mrestoretextmode22m(1),
+       1mrunx22m(1), 1msavetextmode22m(1), 1msetmclk22m(1), 1mtextmode22m(1), 1mmach32info22m(1).
+
+
+1mAUTHOR0m
+       There are many authors of svgalib. This	page  was  edited  by  Michael
+       Weller  <eowmob@exp-math.uni-essen.de>.	The original documentation and
+       most of 1msvgalib 22mwas done by Harm Hanemaayer <H.Hanemaayer@inter.nl.net>
+       though.
+
+
+
+Svgalib 1.4.1		       16 December 1999			    svgalib(7)

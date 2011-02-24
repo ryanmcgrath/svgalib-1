@@ -1,0 +1,41 @@
+.TH vga_getch 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_getch \- wait for a key
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_getch(void);"
+
+.SH DESCRIPTION
+waits for a key press just like
+.BR getchar (3)
+would.
+
+For a non blocking check for a keypress use
+.BR vga_getkey (3)
+or use
+.BR vga_waitevent (3)
+if you want to wait for several events to occur at once.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_getkey (3),
+.BR vga_setflipchar (3),
+.BR vga_waitevent (3),
+.BR getchar (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

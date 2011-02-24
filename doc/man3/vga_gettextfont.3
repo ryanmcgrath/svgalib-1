@@ -1,0 +1,59 @@
+.TH vga_gettextfont 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_gettextfont, vga_puttextfont \- get/set the font used in text mode
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_gettextfont(void *font);"
+.br
+.BI "void vga_puttextfont(void *font);"
+
+.SH DESCRIPTION
+The functions gives access to the buffer where svgalib saves the font used by the kernel.
+This is used by the
+.BR restorefont "(1), "
+.BR savetextmode "(1), and "
+.BR textmode "(1)"
+utilities to restore a possibly screwed console font.
+
+The font buffer occupies 8192 bytes. However, versions 1.2.13 and later use
+a larger buffer internally and the size of the buffers passed to 
+.BR vga_gettextfont "(3) and " vga_puttextfont (3)
+can be set with
+.BR vga_ext_set (3).
+
+The functions give access to the internal buffers of svgalib,
+.B not
+the font tables of the VGA card. This means that both functions must be called
+in graphics mode and a newly set font takes effect only at the next
+.BR vga_setmode(TEXT)
+call.
+
+.SH SEE ALSO
+
+.BR vga_setmode (3),
+.BR vga_ext_set (3),
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR restorefont (1),
+.BR restoretextmode (1),
+.BR restorepalette (1),
+.BR savetextmode (1),
+.BR textmode (1),
+.BR vga_dumpregs (3),
+.BR vga_gettextmoderegs (3),
+.BR dumpreg (1)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

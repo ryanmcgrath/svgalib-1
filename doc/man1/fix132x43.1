@@ -1,0 +1,91 @@
+.TH fix132x43 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+fix132x43 \- fix problems with certain (132 column) graphics modes
+dump the state of the card as the svgalib chipset driver sees it.
+.SH SYNOPSIS
+
+.BI fix132x43 " options"
+
+.SH DESCRIPTION
+This program tries to fix problems with extended textmodes on some cards. The problem is that for
+132x43 textmode, some BIOS's set the vertical display end register to 349 (350), instead of 343
+(344 = 3 * 8 scanlines). Because in Linux textmode video memory is usually filled with old text
+that has already scrolled away (this includes the area below the 43rd textmode line, which changes
+when the console scrolls), the top half of a constantly changing irrelevant text line is visible
+at the bottom of the screen, which is very annoying.
+
+This program sets the VGA Vertical Display End register to the proper value.
+
+This problem is at least present in the BIOS of most Cirrus Logic 542x based cards, and
+some WD90C03x based cards.
+
+The
+.B LINES
+environment variable is used to detect 43 or 44 line consoles.
+
+.SH OPTIONS
+You have to specify exactly one of the following options:
+.TP
+.B -f
+Fix problem of annoying changing line of text at bottom of screen.
+.TP
+.B -v
+Switch to 9 line characters (400 line frame, 70 Hz).
+.TP
+.B -w
+Switch to 11 line characters (480 line frame, 60 Hz).
+
+.B fix132x43
+does not usually provide this option but it can be enabled in the source of
+.BR fix132x43.
+
+.TP
+.B -r
+Switch to 8 line characters again (350 line frame, 70 Hz).
+.PP
+This utility is part of svgalib and can be found in the
+.I utils/
+subdirectory of the original svgalib distribution. However, it is not installed
+by default, s.t. it is unclear where you can find it if your svgalib was install
+linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. You
+don't need to install it. Just
+.B make
+in the
+.I utils/
+subdirecty. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR convfont (1),
+.BR dumpreg (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

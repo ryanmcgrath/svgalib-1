@@ -1,0 +1,172 @@
+** Svgalib keyboard scancode remapping: the Readme **
+
+** Introduction
+
+After a poll on Slashdot.org about keyboard layouts, I decided to switch from
+QWERTY to the Dvorak simplified keyboard. (Such is the power of Slashdot!) It
+was easy to switch the keymaps used by the console and X and even LILO, but
+svgalib programs that used raw keyboard weren't affected since they interpret
+the keyboard scancodes into characters themselves - often assuming a standard
+US keyboard with QWERTY layout.
+
+In order for my machine to present a ``unified front'' with a single consistent
+keyboard layout, I added to svgalib the ability to remap scancodes. This is
+done in keyboard_getevents(), before the event handler is called, so it will
+work whether or not a program provides its own handler. Programs that do not
+use raw keyboard are not affected, so by setting both the console and svgalib
+itself to use the same keymap a consistent keyboard layout is available to all
+svgalib programs.
+
+
+** Background
+
+When you press or release a key on your keyboard, it sends a byte of data to
+your computer. The top bit indicates whether the key was pressed or released,
+and the lower seven bits hold the scancode, a number that uniquely identifies
+the key. A program on the computer interprets these scancodes as representing
+characters (`A', `%', etc) or actions to be taken (`Page Up', `Back Space') or
+modifiers that alter the interpretation of other keys (`Shift', `Alt', etc).
+Most programs do not perform this interpretation themselves, but leave it up
+to some other piece of software: the system BIOS, or the operating system,
+or the graphical user interface system.
+
+On Linux this is normally done by the kernel or by the X server for X clients,
+but this doesn't meet the needs of some programs (especially games) which
+care more about whether a key is up or down than what it means and treat the
+modifiers the same way as other keys. These programs open the keyboard in `raw'
+mode and deal directly with scancodes.
+
+The problem comes because these programs often do need to interpret the keys
+into characters, or it is important for a certain key to be identifiable to
+the user as being associated with a certain key. For instance, a game player
+might need to type a description of a saved game or be directed to press a
+certain key to activate a game feature. Interpretation of keyboard scancodes
+can be difficult since there are many different keyboard layouts which do not
+have the same associations between scancodes, modifiers, characters, and
+commands. So the author of the program must choose between writing a complex
+and customizable conversion routine that can handle any layout the user might
+have, and a simple routine that is hard-coded to use a single layout. In the
+latter case, users of other keyboard layouts will encounter numerous
+discrepancies between what he or she tries to type and what the program
+interprets.
+
+
+** How it works
+
+Svgalib's scancode conversion is meant to at least partially fill this gap by
+converting the scancodes that the keyboard produces to equivalent, or nearly
+equivalent, scancodes for the keyboard layout that the program expects. The
+program then (hopefully) interprets the new scancode into the intended
+character.
+
+As an example, let us consider a US keyboard with Dvorak layout and the game
+Quake, which expects a US keyboard with QWERTY layout. Both layouts have the
+same scancodes for each physical key, but different characters are produced.
+For intance, the first row of letters produces the scancodes 16 through 27, but
+on QWERTY this produces the charaters qwertyuiop[] while Dvorak produces
+',.pyfgcrl/=. Thus when the Dvorak letter `p' is pressed, the scancode 19
+is interpreted by Quake as the letter `r', which occupies scancode 19 on the
+QWERTY layout.
+
+The solution lies in the fact that svgalib acts as an intermediary between the
+keyboard and the program and has the opportunity to present a different
+scancode to the program than the keyboard produced. In this case we tell Quake
+that the scancode was not 19 but rather 25, which is the letter `p' in the
+QWERTY layout, so when Quake interprets the scancode the correct character is
+produced.
+
+
+** The keymap files
+
+In order to know what scancodes to convert to what other scancodes, a keymap
+file is read which lists scancodes produced by the keyboard and their
+equivalents in the layout expected by the program.
+
+A program called svgakeymap is provided to generate these maps from the
+keytable files in /usr/lib/kbd/keytables; you must have perl for it to work.
+Creating a keymap file with svgakeymap is easy; to make a map to convert
+scancodes from a US Dvorak keyboard to a US QWERTY keyboard as for our example
+above:
+
+  svgakeymap dvorak us > dvorak-us.keymap
+
+The path and .map and .gz suffixes are automatically added if necessary. If
+your keytables are stored elsewhere, specify a complete path. If only one
+keytable is specified, a keymap is generated that performs no conversions but
+contains the correct key names so you can specify scancodes used by fake
+keyboard and mouse events by name instead of by number. If none are specified,
+this is done for the standard US QWERTY layout.
+
+dvorak-us.keymap and default.keymap (the US QWERTY layout) are provided with
+the svgalib distribution and can serve as an example if you wish to make your
+own keymap files manually or create an improved generator.
+
+
+** Configuration
+
+You can specify a keymap to use for all svgalib programs (keeping in mind that
+only those that use raw keyboard are affected) by putting a line like this into
+libvga.config or ~/.svgalibrc:
+
+  kbd_keymap /etc/vga/dvorak-us.keymap
+
+You must specify a complete path to the keymap file. If no keymap is specified,
+no conversion is performed.
+
+You can also override the global keymap by setting the environment variable
+SVGALIB_KEYMAP to point to the appropriate keymap file. This can be useful if
+some programs support alternate keymaps directly but not others, or if
+different users use their own keyboard layouts based on preference.
+
+
+** Security issues
+
+It can be dangerous to let users arbitrarily reassign keyboard scancodes; for
+instance all keys could be routed to an unused scancode, making the console
+unusable. To prevent this, put the option kbd_only_root_keymaps into
+libvga.config; only keymaps owned by root will be accepted, so the available
+keymaps can be limited to safe ones.
+
+
+** Bugs and limitations
+
+There are no known bugs, but there probably are some. If you find any please
+let me know at brion@pobox.com.
+
+Limitations however we definitely have. The scancode conversion performed is
+very simple, and can only achieve 100% success when the keyboard layouts being
+converted between differ _only_ in arrangement of keys while producing the same
+characters from each key. Example: the de facto standard Dvorak keyboard has
+the left and right brackets (`[' and `]') on separate keys, with the curly
+braces (`{' and `}') produced by those keys when shifted. The standard QWERTY
+keyboard produces those characters the same way, the only difference is that
+the keys are a row higher on Dvorak; switching the scancodes around results in
+proper character interpretation. However the official ANSI standard Dvorak
+layout has tho two brackets on _the same key_, one regular and one shifted.
+The curly braces similarly have their own key. These cannot be properly mapped
+by scancode to the QWERTY keyboard since they produce different characters
+in conjunction with modifiers, and the wrong character is produced by the
+program.
+
+This could be worked around by interpreting the modifiers in svgalib and
+simulating the proper modifier/character keypress/release sequences, but it
+would be very complex and would do nothing to help the situation where
+characters on the physical keyboard layout do not exist on the target layout
+(quite likely when dealing with national or language-specific keyboards);
+they cannot be converted into any key sequence since they do not exist.
+
+Ultimately it might be better to set up a ``medium-rare'' keyboard mode where
+keys are interpreted into characters but ``raw''-style non-interpreted key
+press and release events are available.
+
+
+** Further information
+
+There isn't really any further information right now unless you want to Use The
+Source... More to come in the future. If it does you'll find it at:
+
+  Brion Vibber's Svgalib Stuff - http://pobox.com/~brion/linux/svgalib.html
+
+
+-- brion vibber (brion@pobox.com)
+   3 July 1998

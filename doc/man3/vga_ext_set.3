@@ -1,0 +1,259 @@
+.TH vga_ext_set 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_ext_set \- set and query several extended features
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_ext_set(unsigned " what ", " ... );
+
+.SH DESCRIPTION
+sets and several extended features. Before trying to call
+.B vga_ext_set()
+you should check if it is available in
+.BR vga_getmodeinfo (3)
+for compatibility with old svgalib versions. In addition, the availability of certain
+features will depend on the current graphics mode.
+
+However, the
+.BR VGA_EXT_PAGE_OFFSET " and " VGA_EXT_FONT_SIZE
+features are features of the base module of svgalib and are always available if your
+version of svgalib supports them. Actually the result of
+.BR vga_getmodeinfo (3)
+shows the availability of enhancements of
+.BR vga_ext_set()
+in the given SVGA graphics mode. Hence, these base features may be supported even if
+svgalib does not admit it. Since version 1.2.13 you can check
+.B vga_getmodeinfo(TEXT)
+to see if basic
+.BR vga_ext_set()
+functionality is available. The
+.BR VGA_EXT_PAGE_OFFSET " and " VGA_EXT_FONT_SIZE
+calls are then available in any mode
+.B even if
+.BR vga_getmodeinfo (3)
+states that you should not call
+.B vga_ext_set()
+at all.
+
+As of now, the following calls are defined:
+.SS Query availability of features
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_SET)"
+returns an int with the 
+.IR i -th
+bit set if
+.I i
+is a valid
+.I what
+parameter for
+.BR vga_ext_set() .
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_ACCEL)"
+returns an integer with the 
+.IR i -th
+bit set if
+.I i
+is a valid
+.I what
+parameter for
+.BR vga_accel (3).
+For nicer code, the following integers are predefined to have a bit
+set in the right position:
+
+.BR ACCELFLAG_FILLBOX ,
+.BR ACCELFLAG_SCREENCOPY ,
+.BR ACCELFLAG_PUTIMAGE ,
+.BR ACCELFLAG_DRAWLINE ,
+.BR ACCELFLAG_SETFGCOLOR ,
+.BR ACCELFLAG_SETBGCOLOR ,
+.BR ACCELFLAG_SETTRANSPARENCY ,
+.BR ACCELFLAG_SETRASTEROP ,
+.BR ACCELFLAG_PUTBITMAP ,
+.BR ACCELFLAG_SCREENCOPYBITMAP ,
+.BR ACCELFLAG_DRAWHLINELIST ,
+.BR ACCELFLAG_SETMODE ", and "
+.BR ACCELFLAG_SYNC .
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_ROP)"
+returns an integer as
+.B VGA_AVAIL_ACCEL
+does, but this time listing the
+.BR vga_accel (3)
+operations which obey a
+.B vga_accel(ACCEL_SETRASTEROP, ...)
+setting.
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_TRANSPARENCY)"
+returns an integer as
+.B VGA_AVAIL_ACCEL
+does, but this time listing the
+.BR vga_accel (3)
+operations which obey a
+.B vga_accel(ACCEL_SETTRANSPARENCY, ...)
+setting.
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_ROPMODES)"
+returns an integer with the 
+.IR i -th
+bit set if
+.I i
+is a valid
+.I mode
+parameter for a
+.BI "vga_accel(ACCEL_SETRASTEROP, " mode )
+call. For example:
+
+.RS
+.B if (vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_ROPMODES) & (1 << ROP_XOR))
+.br
+.B "    " vga_accel(ACCEL_SETRASTEROP, ROP_XOR);
+.br
+.B else
+.br
+.B "    " /* do something else */
+.RE
+
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_TRANSMODES)"
+returns an integer with the 
+.IR i -th
+bit set if
+.I i
+is a valid
+.I mode
+parameter for a
+.BI "vga_accel(ACCEL_SETTRANSPARENCY, " mode ", ...)"
+call. The function lists only the supported enable functions (currently
+.BR ENABLE_TRANSPARENCY_COLOR " and " ENABLE_BITMAP_TRANSPARENCY ).
+It is assumed the corresponding disable functions will then exist as well.
+.TP
+.BI "vga_ext_set(VGA_EXT_AVAILABLE, VGA_AVAIL_FLAGS)"
+returns an int with one bit on/off flags. Bits that are set are supported
+refer to special features which can be enabled in the current mode.
+
+.SS Operations with one bit flags
+A certain mode might have a special feature which can be turned on or off by the
+applications. These functions allow to handle such features.
+
+You can always set flags, and their settings are remembered if not
+supported in the current mode. This is to avoid problems when
+switching VC's.
+
+.TP
+.BI "vga_ext_set(VGA_EXT_SET, int " bitflags )
+set all flags that are set in
+.IR bitflags ,
+do not touch any other flags. Returns previous setting of all flags.
+.TP
+.BI "vga_ext_set(VGA_EXT_CLEAR, int " bitflags )
+clear all flags that are set in
+.IR bitflags ,
+do not touch any other flags. Returns previous setting of all flags.
+.TP
+.BI "vga_ext_set(VGA_EXT_RESET, int " bitflags )
+set all flags to the corresponding bits of
+.IR bitflags .
+Returns previous setting of all flags.
+
+.SS One bit flags for special features
+As of now, we only support
+.TP
+.B VGA_CLUT8
+which is set by calling
+.BR "vga_ext_set(VGA_EXT_SET, VGA_CLUT8)" .
+This makes the color lookup table for 16 and 256 color lookup table modes work
+with 8 bit per red, green, blue part instead of the ordinary 6 bits.
+
+As of now this feature is only availabl for Mach32 cards with type 2 DAC's.
+8 bit per red, green, blue wide in all (even VGA) 256 color modes. This mean,
+however, that all calls to
+.BR vga_setpalette "(3) and " vga_setpalvec (3)
+need to be adjuste accordingly as well as that the interpretation of the
+return values of
+.BR vga_getpalette "(3) and " vga_getpalvec (3)
+changes.
+
+The
+.BR testaccel (6)
+demos makes use of this to show a smooth 256 blue shades scale.
+
+.SS Miscanellous features
+.TP
+.BI "vga_ext_set(VGA_EXT_PAGE_OFFSET, int " offset )
+for all following
+.BI vga_set*page( n )
+calls (even those implicitly done
+by svgalib drawing functions) do
+.BI vga_set*page( n " + " offset )
+instead.
+This is
+.B very
+nice for drawing in an offscreen area. However, it
+requires the mode being able to use more than one page at all as well as
+.B not
+having called
+.BR vga_setlinearaddressing (3).
+
+A better approach would be to just use higher
+.I y
+values for all
+draw operations to have them end up in offscreen regions that
+may be displayed later (cf.
+.BR vga_setdisplaystart (3)).
+
+The previously set value for
+.B VGA_EXT_PAGE_OFFSET
+(which defaults to 0 at startup) is returned.
+
+.TP
+.BI "vga_ext_set(VGA_EXT_FONT_SIZE, int " size )
+sets the size of the buffer which the application passes to
+.BR vga_gettextfont "(3) and "
+.BR vga_puttextfont (3).
+Old versions of svgalib used a fixed size of 8192 which is still the default.
+Newer versions of svgalib use a larger size internally to properly support the
+extended font capabilities of newer kernels.
+
+Calling
+.B vga_ext_set(VGA_EXT_FONT_SIZE, 0)
+returns the size of the internal buffers of svgalib. It is recommended to use this
+(or a larger size) for any font (re)storing application. If this differs from the
+size of the applications buffers set
+.BR vga_gettextfont "(3) and "
+.BR vga_puttextfont (3)
+truncate and zero-pad all buffers accordingly.
+
+Otherwise the previously set buffer size is returned.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR accel (6),
+.BR testaccel (6),
+.BR vga_setpalette (3),
+.BR vga_setpalvec (3),
+.BR vga_getpalette (3),
+.BR vga_getpalvec (3),
+.BR vga_setlinearaddressing (3),
+.BR vga_setdisplaystart (3),
+.BR vga_setpage (3),
+.BR vga_setreadpage (3),
+.BR vga_setwritepage (3),
+.BR vga_gettextfont (3),
+.BR vga_puttextfont (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

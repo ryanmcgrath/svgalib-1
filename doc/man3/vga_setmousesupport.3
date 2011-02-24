@@ -1,0 +1,52 @@
+.TH vga_setmousesupport 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setmousesupport \- enable mouse support
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setmousesupport(int " stat );
+
+.SH DESCRIPTION
+Set mouse support; 0 disables (default), 1 enabled. If
+enabled, the mouse is set up for screen resolution after a
+mode set and you can use the various
+.B mouse_
+functions. You can also use
+.BR mouse_init (3)
+the mouse in more flexibility. However, usually this is not the deal of the application.
+The mouse is configured in
+.I /etc/vga/libvga.config
+and usually the application will just want to use that.
+
+The
+.BR mousetest "(6), " eventtest (6) ", and " spin (6)
+demos make use of the mouse functions.
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR mousetest (6),
+.BR mouse_close (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_getx (3),
+.BR mouse_init (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,105 @@
+.TH keyboard_translatekeys 3 "29 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+keyboard_translatekeys \- modify scancode mappings in raw keyboard mode
+.SH SYNOPSIS
+
+.B "#include <vgakeyboard.h>"
+
+.BI "void keyboard_translatekeys(int " mask );
+
+.SH DESCRIPTION
+This function sets several flags which control how certain scancodes are mapped. At startup
+a
+.I mask
+value of 0 is active.
+
+.I mask
+must be a logical or of zero or more of the following
+.B #predefined
+integers to turn the features listed on:
+
+.TP
+.B TRANSLATE_CURSORKEYS
+Translate the scancodes of the
+.B SCANCODE_CURSORBLOCK*
+keys to those of the cursor keys on the number pad, s.t.
+.BR keyboard_getstate "(3) and " keyboard_keypressed (3)
+report a keypress of the corresponding number pad cursor key and not the one
+on the cursor block.
+.TP
+.B TRANSLATE_DIAGONAL
+Translates the scancodes of diagonal cursor keys (keypad 7, 9, 1, 3) to presses of two
+of the ordinary up, down, left, right keys. For example, instead of reporting
+a press of
+.B SCANCODE_CURSORUPRIGHT
+.BR keyboard_getstate "(3) and " keyboard_keypressed (3)
+report a simultaneous press of
+.BR SCANCODE_CURSORUP " and " SCANCODE_CURSORRIGHT .
+.TP
+.B TRANSLATE_KEYPADENTER
+The scancode of the keypad enter key is mapped to that of the ordinary enter key, s.t.
+.BR keyboard_getstate "(3) and " keyboard_keypressed (3)
+report a press of
+.B SCANCODE_ENTER
+regardless if keypad enter or ordinary enter is pressed.
+.TP
+.B DONT_CATCH_CTRLC
+Pressing
+.B <Ctrl>-C
+does
+.B not
+raise a
+.BR SIGINT .
+On contrary to the other flags this has also effect when a user defined keyboard event handler
+is used. Svgalib will
+.BR always " process " <Alt>-F1 " - " <Alt>-F10
+and perform console switches accordingly.
+
+.SH BUGS
+The
+.B TRANSLATE_*
+options above do really do simple scancode translations. For example, when
+.B TRANSLATE_KEYPADENTER
+is active and the user presses both enter and keypad enter. Then, if he releases
+one of them (say keypad enter), it's release event will clear the common keyboard state, s.t.
+no keypress is reported even though enter is still pressed.
+
+Similarly, if
+.B TRANSLATE_DIAGONAL
+is active, the user holds cursor upleft (keypad 7) down and then presses and release
+cursor up (keypad 8), svgalib will only report a pressed cursor left but the simulated
+cursor up will be lost. You can easily try this with the
+.BR keytest (6)
+demo to make the effect more clear to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR keytest (6),
+.BR eventtest (6),
+.BR keyboard_seteventhandler (3),
+.BR keyboard_init (3),
+.BR keyboard_init_return_fd (3),
+.BR keyboard_close (3),
+.BR keyboard_update (3),
+.BR keyboard_waitforupdate (3),
+.BR keyboard_setdefaulteventhandler (3),
+.BR keyboard_getstate (3),
+.BR keyboard_clearstate (3),
+.BR keyboard_keypressed (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

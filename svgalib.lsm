@@ -1,0 +1,16 @@
+Begin3
+Title:          svgalib
+Version:        1.4.2
+Entered-date:   99XXX99
+Description:    Low-level graphics library that provides VGA and SVGA
+		modes in a console. It is not intended as an alternative
+                to X for apps, but rather a set of tools for things like
+                VGA games, image viewing in modes that X cannot support, etc.
+Keywords:	graphics, VGA, SVGA, library
+Author:         hhanemaa@cs.ruu.nl (Harm Hanemaayer) et al.
+Maintained-by:  Matan Ziv-Av <matan@svgalib.org>
+Primary-site:   sunsite.unc.edu /pub/Linux/libs/graphics
+Alternate-site: 
+Platform:	Linux/Intel (too many vgacards to list here);
+Copying-policy: Freely distributable.
+End

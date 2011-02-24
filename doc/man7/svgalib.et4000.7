@@ -1,0 +1,312 @@
+.TH svgalib.et4000 7 "31 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+svgalib.et4000, libvga.et4000 \- Information for Tseng ET4000 users
+
+.SH TABLE OF CONTENTS
+.B NOTE: The ET4000 register layout changed stepping from
+.B svgalib 0.98 to 0.99. See 8. Problems  below first
+
+
+.BR 1. " Basics of ET4000 cards"
+.br
+.BR 2. " How to configure " svgalib (7)
+.br
+.BR 3. " Creating card dependent register values"
+.br
+.BR 4. " Defining new modes"
+.br
+.BR 5. " Redefining standard modes"
+.br
+.BR 6. " Available examples"
+.br
+.BR 7. " ET4000/W32 support"
+.br
+.BR 8. " Problems"
+.br
+.BR 9. " Using dynamic loading with other cards"
+
+.SH 1. BASICS OF ET4000 CARDS 
+
+Basicly all ET4000 cards are equal, some are even more equal ...
+
+The Chipset is well documented (by Tseng Labs and eg. the vgadoc2.zip)
+and all graphics functions can be used the same way on different cards
+(including the ET4000/W32 based ones). There are three important points
+to be kept in mind:
+
+.TP
+.B a.)
+amount of available, the organisation and timing of video memory
+.TP
+.B b.)
+type and capabilities of the DAC
+.TP
+.B c.)
+available oscillator frequencies
+.P
+
+.BR svgalib (7)
+will check the available video memory during startup. This
+should work on all DRAM cards. If there are any problems concerning
+VRAM equipped cards, please tell us about.
+
+By now we found is no reliable way to detect the memory organisation/
+timing and the DAC type/capabilities. Most modern card use a frequency
+synthizier and provide the following pixel frequencies (in MHz):
+
+.RS
+.B 50.350 56.644 65.0 72.0 80.0 89.8 63.0 75.0
+.RE
+
+Checking older ET4000 cards we found a wide spread range of available
+frequencies. Since the video timing is based on the pixel frequency,
+the required register values are card dependent.
+
+.SH 2. HOW TO CONFIGURE SVGALIB
+ 
+.BR svgalib (7)
+has a somewhat 'standard' registers set that may work with
+modern ET4000 cards. If
+.BR svgalib (7)
+fails on your machine or you have
+a HiColor dac, you need to configure your
+.BR svgalib (7).
+ 
+The
+.BR svgalib (7)
+may use hard linked or dynamical linked register values.
+If you use hard linked values, the binary will be smaller and start
+up faster but might fail on other machines.
+
+Compiling the
+.BR svgalib (7)
+with DYNAMIC defined (see
+.IR Makefile.cfg )
+will set up dynamic register loading. Otherwise the value from 
+.I svgalib/et4000.regs 
+will be hard linked.
+
+The dynamic configuration will be read from 
+.I /etc/vga/libvga.et4000
+which is an ASCII file (see
+.I Makefile.cfg
+for exact naming). If you have
+a working et4000.regs for your system just copy this file to
+.IR /etc/vga/libvga.et4000 " or link " /etc/vga/libvga.et4000 
+to your
+.I svgalib/et4000.regs
+file.
+
+The actual scanner/parser will handle the following entries:
+
+.TP
+.B #define DAC_TYPE <integer>
+Overwrite the DAC detection
+.TP
+.B #define <MODE1>  <MODE2>
+Enable MODE1 using MODE2 registers, eg. 64K modes like 32K modes
+.TP
+.B #define <MODE>   DISABLE_MODE
+do not use MODE (eg. from vgadrv)
+.TP
+.B char <MODE><strg>[..] = {<integer>, <integer>, ... };
+register definition
+.PP
+with
+
+.B  "<MODE>    ::= 'g'<decimal>x<decimal>x<color><ignored>"
+.br
+.B  "<integer> ::= <decimal>|<hex>"
+.br
+.B  "<hex>     ::= '0x'<hexdigit>{<hexdigit>}"
+.br
+.B  "<decimal> ::= ['+'|'-']<digit>{<digit>}"
+.br
+.B  "<hexdigit>::= <digit>|'a..f'|'A..F'"
+.br
+.B  "<digit>   ::= '0..9'"
+.br
+.B  "<color>   ::= '2'|'16'|'256'|'32k'|'32K'|'64k'|'64K'|'16M'"
+.br
+.B  "<strg>    ::= <empty>|[(<alpha>|'_'){<digit>|<alpha>|'_'}]"
+.br
+.B  "<alpha>   ::= 'a..z'|'A..Z'"
+
+C style comments will be skipped. See the
+.I et4000/
+subdirectory of the svgalib distribution for examples.
+
+.SH 3. CREATING CARD DEPENDENT REGISTER VALUES
+
+You may create a
+.I et4000.regs on your own with the
+.IR tseng3.exe
+program. This DOS program and its source is included in the svgalib
+distribution.
+
+Just boot MS-DOS and start
+
+.B tseng3 et4000.reg
+
+The
+.I tseng3.exe
+will measure the video timing for each available mode.
+Check the
+.I et4000.regs
+file against your monitor documentation and
+disable all non conformant modes, eg.
+
+.B #define g1024x768x256_regs DISABLE_MODE
+.br
+.B /*
+.br
+.B static unsigned char g1024x768x256_regs[71] = {
+.br
+.B      ...
+.br
+.B };
+.br
+.B */
+
+will disable the 1024x768x256 mode. You
+.B mustn't
+disable the 640x480x256 mode!
+
+Your
+.I et4000.regs
+.I must define the following symbols (register values
+or
+.BR "#define ... DISABLE_MODE" )
+for hard linking:
+
+.BR g320x200x32K_regs ", " g640x400x256_regs ", " g640x480x256_regs ", "
+.BR g640x480x32K_regs ", " g640x480x16M_regs ", " g800x600x16_regs ", "
+.BR g800x600x256_regs ", " g800x600x32K_regs ", " g1024x768x16_regs ", "
+.BR g1024x768x256_regs ", and " g1280x1024x16_regs .
+
+and all 64K modes handled like 32K modes by the driver:
+
+.B #define g320x200x64K_regs g320x200x32K_regs
+.br
+.B #define g640x480x64K_regs g640x480x32K_regs
+.br
+.B #define g800x600x64K_regs g800x600x32K_regs
+
+You may omit every unusable mode in 
+.IR /usr/lib/libvga.et4000 .
+
+.SH 4. DEFINING NEW MODES
+
+All standard
+.BR svgalib (7)
+modes may be selected by the mode constants 
+defined in
+.B #include<vga.h>
+(eg.
+.BR G320x200x16 ).
+You may define new modes on
+your own. Just use dynamic register loading and add the register
+definition of the new mode. Your program may determine the related 
+modenumber by checking the vga_getmodeinfo(1..vga_lastmodenumber()).
+
+Most ET4000 cards provide 640x350 and 640x400 graphics modes. The
+.I tseng3.exe
+generates the related register sets. You may also use
+.BR dumpreg (1)
+from an X window to grab you favourite X graphics mode.
+The X mode normaly isn't usable directly. See
+.I cardex.w32
+for an example and
+.I et4000.c
+for a brief description of et4000 registers (both files are included in the
+svgalib distribution).
+  
+.SH 5. REDEFINING STANDARD MODES
+
+Using dynamic register loading you may redefine any standard VGA 
+mode except of TEXT and 640x480x16. Just add the ET4000 specific
+register set to
+.IR /etc/vga/et4000.regs .
+
+.SH 6. AVAILABLE EXAMPLES
+
+In the
+.I et4000/
+subdir of teh svgalib distribution you'll find some sample register sets:
+
+.TP
+.B cardex.w32
+Cardex ET4000/W32 card, Music TrueColor DAC
+.TP
+.B speedstar+
+SpeedSTAR PLUS card, Normal DAC
+.TP
+.B orchid.pdII
+Orchid Prodesigner II
+.PP
+
+.SH 7. ET4000/W32 SUPPORT
+
+The actual driver seems to be ET4000/W32 compatible. Tell us about
+any problems (and solutions). If you've got any information about
+the ET4000/W32 blitter, we would be pleased to receive it.
+
+.SH 8. PROBLEMS
+
+As mentioned before, the DAC detection isn't very reliable.
+.BR vgatest (6)
+should print equal screens in 256 color and HiColor/TrueColor modes.
+You may have to edit your
+.I libvga.et4000
+register file by hand to setup the correct DAC.
+
+The
+.I tseng3.exe
+may fail due to incompatible mode numbering. You might use
+a VESA driver (eg. tlivesa.com from VPIC 6.0) or edit and recompile
+the
+.IR tseng3.exe .
+
+Newer ET4000 chipsets (eg. W32 and W32i) allow up to 32 clock 
+frequencies. Two additional register values were added just before the
+old extened register value. The new registers are CRTC/30h and CRTC/31h.
+The old register set had 71 values, the new growed to 73.
+You may update your old register set by hand:
+
+.IP -
+run the dumpreg program, remember the first two values from last
+data line.
+.IP -
+edit your libvga:
+.RS
+for each mode 
+.RS
+change the number of register values from 71 to 73
+.br
+add the values from dumreg output at front of last data line
+.RE
+.RE
+.IP -
+run .BR vgatest (6)
+to check the new register set
+
+.SH 9. USING DYNAMIC LOADING WITH OTHER CARDS
+
+The dynamical register loading may be used in other drivers.
+Since hard linked register values work fine for Cirrus and Trident
+cards, we didn't include this feature.
+
+
+.SH FILES
+.I /etc/vga/libvga.config
+.br
+.I /etc/vga/libvga.et4000
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR libvga.config (5).
+
+.SH AUTHOR
+This documentation for the ET4000 registers was provided by Hartmut Schirmer.
+However, it was slightly reformatted by Michael Weller
+<eowmob@exp-math.uni-essen.de>.

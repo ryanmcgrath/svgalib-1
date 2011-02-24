@@ -1,0 +1,70 @@
+.TH vga_setpalvec 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setpalvec \- sets colors in the color lookup table
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_setpalvec(int " start ", int " num ", int *" pal );
+
+.SH DESCRIPTION
+Sets the 
+.I num
+colors starting with index
+.I start
+to the RGB values in
+.IR *pal ". " *pal " contains "
+.BI "3 * " num
+integers which are the color values to set from first to last palette entry in
+the order red, green, blue (always three consecutive entries
+in
+.I *pal
+built a palette entry.
+
+Each color entry is in range
+0 - 63. This function is only sensible in 16 or 256 color modes. It selects
+which color all
+.BI vga_setcolor( start )
+(and 
+.IB num " - 1"
+following colors)
+drawn pixels will actually refer to.
+
+Note that setting color 0 will modify the background color and that setting any color
+in range 0 .. 15 will affect the operation of
+.BR vga_setegacolor (3) .
+
+If the
+.B VGA_CLUT8
+feature is set for the current mode with
+.BR vga_ext_set (3)
+the red, green, and blue values are in the range 0 - 255.
+
+The function returns the value of
+.IR num .
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vgatest (6),
+.BR vga_ext_set (3),
+.BR vga_setpalette (3),
+.BR vga_getpalette (3),
+.BR vga_getpalvec (3),
+.BR vga_setrgbcolor (3),
+.BR vga_setcolor (3),
+.BR vga_setegacolor (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

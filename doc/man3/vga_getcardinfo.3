@@ -1,0 +1,72 @@
+.TH vga_getcardinfo 3 "23 June 2001" "Svgalib (>= 1.9.10)" "Svgalib User Manual"
+.SH NAME
+vga_getcardinfo \- returns pointer to information about the video card.
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "vga_cardinfo *vga_getcardinfo(void);
+
+.SH DESCRIPTION
+The function returns a pointer to a card information structure which is
+filled out with details about the video card in use.
+
+.B "#include <vga.h>"
+defines
+.B vga_cardinfo
+as
+
+.B typedef struct {
+.br
+.B "    " int version;
+.br
+.B "    " int size;
+.br
+.B "    " int chipset;
+.br
+.B "    " int physmem;
+.br
+.B "    " int physmemsize;
+.br
+.B "    " int linearmem;
+.br
+.B } vga_cardinfo;
+
+The fields meaning in detail:
+
+.SS Basic mode details
+.TP
+.B version
+Version of the information structure. Application can use this field to make
+sure the data it needs is really there.
+.TP
+.B size
+Size of the cardinfo structure. The structure is malloc()ed, and the program should free 
+it when no longer needed.
+.TP
+.B chipset
+Number of the chispet driver used to drive the card. Same list as is used in the 
+.B vga_setchipset
+function.
+.TP
+.B physmem
+Physical address of the linear memory aperture of the card. This is needed for example for setting
+the video overlay of v4l devices.
+.TP
+.B physmemsize
+Amount of physical memory in bytes. (Version >= 0x0200)
+.TP
+.B linearmem
+Virtual address of the linear memory aperture. Please note that currently it is
+mapped at vga_init, but in future versions of svgalib this might change.
+(Version >= 0x0200)
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR libvga.config (5),
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.
+

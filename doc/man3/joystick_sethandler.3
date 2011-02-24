@@ -1,0 +1,97 @@
+.TH joystick_sethandler 3 "14 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+joystick_sethandler, joystick_setdefaulthandler \- set the joystick event handler.
+.SH SYNOPSIS
+
+.B "#include <vgajoystick.h>"
+.br
+.BI "typedef void (*" __joystick_handler ") (int " event ", int " number ", char"
+.IB value ", int " joydev );
+
+.BI "void joystick_sethandler(int " joydev ", __joystick_handler " jh );
+.br
+.BI "void joystick_setdefaulthandler(int " joydev );
+
+.SH DESCRIPTION
+By default, each call to
+.BR joystick_init (3)
+enables the default handler for the opened joystick. This handler maintains a state table
+which can be read by the 
+.BR joystick_getaxis (3),
+.BR joystick_getbutton (3),
+.BR joystick_button1|2|3|4 (3),
+.BR joystick_getb1|2|3|4 (3),
+.BR joystick_x|y|z "(3) and "
+.BR joystick_getx|y|z (3)
+functions.
+
+If you define an own handler, the following parameters are passed:
+
+.RS
+.HP
+.I event
+one of the following values:
+.RS
+.HP
+.B JOY_EVENTBUTTONDOWN
+a button was pressed.
+.HP
+.B JOY_EVENTBUTTONUP
+a button was released.
+.HP
+.B JOY_EVENTAXIS
+the joystick position was changed.
+.RE
+
+.IP
+All other values are reserved for future use.
+
+.HP
+.I number
+identifies the button or axis to which this event belongs.
+
+.HP
+.I value
+for axis events the new position in range
+.BR "-128 .. 127" . See
+.BR joystick_getaxis (3)
+for further comments on the range.
+
+.HP
+.I joydev
+identifies the joystick affected (this allows to use one handler for many joysticks).
+.RE
+
+.IB joydev " = -1"
+modifies the event handler of
+all currently open joystick devices.
+
+.SH CAVEATS
+This function is only available in ELF versions of svgalib. Due to backwards
+compatibility issues it cannot be used with shared a.out libs.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR joystick_init (3),
+.BR joystick_close (3),
+.BR joystick_update (3),
+.BR joystick_getnumaxes (3),
+.BR joystick_getnumbuttons (3),
+.BR joystick_getaxis (3),
+.BR joystick_getbutton (3),
+.BR joystick_button1 (3),
+.BR joystick_getb1 (3),
+.BR joystick_x (3),
+.BR joystick_getx (3).
+
+.SH AUTHOR
+
+The svgalib joystick handler was mostly done by Daniel Engstr\\"om <daniel.engstrom@riksnett.no>.
+Multiple joystick, VC switching support and code to glue it into svgalib by Michael Weller
+<eowmob@exp-math.uni-essen.de>. Part of the code is based on code from C. Smith and
+Vojtech Pavlik.

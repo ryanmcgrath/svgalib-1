@@ -1,0 +1,46 @@
+.TH vga_lastmodenumber 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_lastmodenumber \- returns the last video mode number
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_lastmodenumber(void);"
+
+.SH DESCRIPTION
+Returns the last video mode number. As video mode numbers start with 1 (0 is for textmode)
+this allows an application to scan through all possible modes portable with
+.BR vga_modeinfo (3).
+
+For example the
+.BR vgatest (6)
+demo does just that.
+
+.B "#include <vga.h>"
+does include a
+.BR "#define GLASTMODE vga_lastmodenumber()" .
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vgatest (6),
+.BR vga_hasmode (3),
+.BR vga_modeinfo (3),
+.BR vga_setmode (3),
+.BR vga_lastmodenumber (3),
+.BR vga_getmodename (3),
+.BR vga_getmodenumber (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

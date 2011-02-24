@@ -1,0 +1,110 @@
+.TH vga_getmousetype 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_getmousetype \- returns the mouse type configured
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_getmousetype(void);"
+
+.SH DESCRIPTION
+This returns the mouse type configered in
+.IR /etc/vga/libvga.config .
+
+The return value logically anded with
+.B MOUSE_TYPE_MASK
+is one of (defined in
+.RB ( "#include <vgamouse.h>" ):
+
+.PD 0
+.TP
+.B MOUSE_NONE
+There is no mouse installed. It is good style to check if there is no mouse
+available first and then enable mouse support to avoid an svgalib error message if you
+try to initialize a non existing mouse.
+.B MOUSE_MICROSOFT
+A Microsoft compatible mouse (2 buttons) (default).
+.TP
+.B MOUSE_MOUSESYSTEMS
+A MouseSystems compatible mouse (3 buttons).
+.TP
+.B MOUSE_MMSERIES
+A MMSeries compatible mouse.
+.TP
+.B MOUSE_LOGITECH
+An ordinary LogiTech compatible mouse.
+.TP
+.B MOUSE_BUSMOUSE
+A busmouse.
+.TP
+.B MOUSE_PS2
+A PS/2 busmouse.
+.TP
+.B MOUSE_LOGIMAN
+An ordinary LogiTech LogiMan compatible mouse.
+.TP
+.B MOUSE_GPM
+The GPM daemon is used.
+.TP
+.B MOUSE_SPACEBALL
+A 3d SpaceTec Spaceball pointer device.
+.TP
+.B MOUSE_INTELLIMOUSE
+A Microsoft IntelliMouse or Logitech MouseMan+ on serial port.
+.TP
+.B MOUSE_IMPS2
+A Microsoft IntelliMouse or Logitech MouseMan+ on PS/2 port.
+.PD
+.PP
+The return value may be ored with one or more of the following flags
+
+.PD 0
+.TP
+.B MOUSE_CHG_DTR
+change the setting of DTR to force the mouse to a given mode.
+.TP
+.B MOUSE_DTR_HIGH
+set DTR to high instead of setting it to low (default).
+.TP
+.B MOUSE_CHG_RTS
+change the setting of RTS to force the mouse to a given mode.
+.TP
+.B MOUSE_RTS_HIGH
+set RTS to high instead of setting it to low (default).
+.PD
+.PP
+
+Your application may use this info to perform specific actions (go into a 3d pointer
+device mode for example).
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR mousetest (6),
+.BR spin (6),
+.BR mouse_close (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_getx (3),
+.BR mouse_init (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_init (3),
+.BR vga_setmousesupport (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

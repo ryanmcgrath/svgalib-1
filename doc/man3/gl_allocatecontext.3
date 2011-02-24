@@ -1,0 +1,48 @@
+.TH gl_allocatecontext 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_allocatecontext \- allocate a graphics context
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "GraphicsContext *gl_allocatecontext(void);"
+
+.SH DESCRIPTION
+Allocate a graphics context. This is preferred to
+hardcoding a context variable in a program since the
+latter is incompatible with a future vgagl version that
+have additional context fields.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR plane (1),
+.BR wrapdemo (1),
+.BR currentcontext (3),
+.BR gl_allocatecontext (3),
+.BR gl_copyboxfromcontext (3),
+.BR gl_copyboxtocontext (3),
+.BR gl_getcontext (3),
+.BR gl_setcontext (3),
+.BR gl_setcontextheight (3),
+.BR gl_setcontextvga (3),
+.BR gl_setcontextvgavirtual (3),
+.BR gl_setcontextvirtual (3),
+.BR gl_setcontextwidth (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

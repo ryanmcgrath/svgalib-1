@@ -1,0 +1,41 @@
+.TH svgakeymap 1 "3 July 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+svgakeymap \- generates keymaps for svgalib
+
+.SH SYNOPSIS
+.BI "svgakeymap [" "physical_table" " [" program_table "]] > " output.keymap
+
+.SH DESCRIPTION
+Generates a keymap conversion file for
+.BR svgalib (7)
+from two keytable definitions. Keytables are searched for in
+.I /usr/lib/kbd/keytables
+and are automatically filtered through
+.BR gzip (1)
+if necessary.
+
+If only one keytable is specified, a keymap is generated that performs no
+conversion but contains the proper key names for that layout. If no keytables
+are specified, the standard US QWERTY keyboard is used.
+
+The generated keymap is sent to the standard output and may be redirected
+or piped in any creative manner you wish.
+
+.SH FILES
+.I /usr/lib/kbd/keytables/*.map[.gz]
+.RS
+The system keytable files used by
+.BR loadkeys "(1)."
+.RE
+
+.SH BUGS
+Can get confused if there is more than one key with a given name or if names
+do not match properly between keytables. Keymaps may require manual editing.
+
+.SH AUTHOR
+Brion Vibber <brion@pobox.com>
+
+.SH SEE ALSO
+.BR libvga.config (5)
+
+.IR README.keymap " from the svgalib distribution"

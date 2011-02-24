@@ -1,0 +1,289 @@
+--- mtrr.c.org	Fri Apr 21 15:15:24 2000
++++ mtrr.c	Fri Apr 21 15:18:59 2000
+@@ -482,11 +482,113 @@
+     return 0;
+ }   /*  End Function have_wrcomb  */
+ 
++static void intel_get_fixed_mtrr (unsigned int reg, unsigned long *base,
++		      unsigned long *size, mtrr_type *type)
++{
++    unsigned long lo, hi, calc_base, calc_size;
++    unsigned long msr_num;
++
++    reg-=get_num_var_ranges();
++
++    if (reg>=NUM_FIXED_RANGES) {
++	/* Invalid num. */
++	*base = 0;
++	*size = 0;
++	*type = 0;
++	return;
++    }
++
++    switch(reg>>3){
++       case 0:
++          msr_num=MTRRfix64K_00000_MSR;
++          calc_base=0;
++          calc_size=65536;
++          break;
++       case 1:
++          msr_num=MTRRfix16K_80000_MSR;
++          calc_base=0x80000;
++          calc_size=16384;
++          break;
++       case 2:
++          msr_num=MTRRfix16K_A0000_MSR;
++          calc_base=0xA0000;
++          calc_size=16384;
++          break;
++       case 3:
++          msr_num=MTRRfix4K_C0000_MSR;
++          calc_base=0xC0000;
++          calc_size=4096;
++          break;
++       case 4:
++          msr_num=MTRRfix4K_C8000_MSR;
++          calc_base=0xC8000;
++          calc_size=4096;
++          break;
++       case 5:
++          msr_num=MTRRfix4K_D0000_MSR;
++          calc_base=0xD0000;
++          calc_size=4096;
++          break;
++       case 6:
++          msr_num=MTRRfix4K_D8000_MSR;
++          calc_base=0xD8000;
++          calc_size=4096;
++          break;
++       case 7:
++          msr_num=MTRRfix4K_E0000_MSR;
++          calc_base=0xE0000;
++          calc_size=4096;
++          break;
++       case 8:
++          msr_num=MTRRfix4K_E8000_MSR;
++          calc_base=0xE8000;
++          calc_size=4096;
++          break;
++       case 9:
++          msr_num=MTRRfix4K_F0000_MSR;
++          calc_base=0xF0000;
++          calc_size=4096;
++          break;
++       case 10:
++          msr_num=MTRRfix4K_F8000_MSR;
++          calc_base=0xF8000;
++          calc_size=4096;
++          break;
++       default:
++          msr_num=0;
++          calc_base=0;
++          calc_size=0;
++          break;
++    };
++
++    if (msr_num==0) {
++	/* Invalid num. */
++	*base = 0;
++	*size = 0;
++	*type = 0;
++	return;
++    }
++
++    rdmsr(msr_num, lo, hi);
++
++    if(reg&4)lo=hi;
++    lo>>=8*(reg&3);
++
++    *type = (lo & 0xff);
++    *size=calc_size;
++    *base=calc_base+(reg&7)*calc_size;
++}   
++
+ static void intel_get_mtrr (unsigned int reg, unsigned long *base,
+ 			    unsigned long *size, mtrr_type *type)
+ {
+     unsigned long dummy, mask_lo, base_lo;
+ 
++    if(reg>=get_num_var_ranges()){
++        intel_get_fixed_mtrr(reg,base,size,type);
++        return;
++    };
++
+     rdmsr (MTRRphysMask_MSR(reg), mask_lo, dummy);
+     if ( (mask_lo & 0x800) == 0 )
+     {
+@@ -624,6 +726,71 @@
+ static void (*get_mtrr) (unsigned int reg, unsigned long *base,
+ 			 unsigned long *size, mtrr_type *type) = NULL;
+ 
++static int intel_set_fixed_mtrr (unsigned int reg, unsigned long base,
++		      unsigned long size, mtrr_type type)
++/* currently, ignore size, only set the fixed mtrr that includes base */ 
++{
++    unsigned long lo, hi, mask, calc_size;
++    unsigned long msr_num, tmp_base;
++    int place;
++
++    if((size==0)&&(base==0)&&(type==0)) {
++        int max=get_num_var_ranges ();
++        intel_get_fixed_mtrr(reg,&base,&size,&type);
++        if(reg<max+16)type=6;
++        if(reg>=max+16)type=0;
++    };
++
++    if(size==0) {
++          size=0x1000;
++          type=0;
++    };
++
++    while(size>0)
++    {
++        if (base>=0x100000) return -EFAULT;
++        tmp_base = base >> 12 ;
++    
++        if(tmp_base<128) {
++              msr_num=MTRRfix64K_00000_MSR;
++              place=tmp_base>>4;
++              calc_size=65536;
++        } else
++        if(tmp_base<192) {
++              msr_num=MTRRfix16K_80000_MSR+(tmp_base>=160);
++              place=(tmp_base>>2)&7l;
++              calc_size=16384;
++        } else {
++              msr_num=MTRRfix4K_C0000_MSR+((tmp_base&0x3f)>>3);
++              place=tmp_base&7;
++              calc_size=4096;
++        };
++    
++        rdmsr(msr_num, lo, hi);
++    
++        mask=0xff<<((place&3)<<3);
++    
++        if(place&4) {
++           hi&=~mask;
++           hi|=type<<((place&3)<<3);
++        } else {
++           lo &=~mask;
++           lo|=type<<(place<<3);
++        };
++        
++        wrmsr(msr_num, lo, hi);
++        
++        if(size<calc_size)size=0; 
++        else 
++        {
++           size -= calc_size;
++           base += calc_size;
++        };
++    };
++    
++    return 0;
++}   
++
+ static void intel_set_mtrr_up (unsigned int reg, unsigned long base,
+ 			       unsigned long size, mtrr_type type, int do_safe)
+ /*  [SUMMARY] Set variable MTRR register on the local CPU.
+@@ -637,15 +804,21 @@
+ */
+ {
+     struct set_mtrr_context ctxt;
++    int max=get_num_var_ranges ();
+ 
+     if (do_safe) set_mtrr_prepare (&ctxt);
+-    if (size == 0)
++    if ((size == 0) && (reg<=max))
+     {
+ 	/* The invalid bit is kept in the mask, so we simply clear the
+ 	   relevant mask register to disable a range. */
+ 	wrmsr (MTRRphysMask_MSR (reg), 0, 0);
+     }
+     else
++    if(base<0x100000)
++    {
++        intel_set_fixed_mtrr(reg,base,size,type);
++    }
++    else
+     {
+ 	wrmsr (MTRRphysBase_MSR (reg), base | type, 0);
+ 	wrmsr (MTRRphysMask_MSR (reg), ~(size - 1) | 0x800, 0);
+@@ -1052,7 +1225,7 @@
+     [RETURNS] The index of the region on success, else -1 on error.
+ */
+ {
+-    int i, max;
++    int i=0, max, fixed=0;
+     mtrr_type ltype;
+     unsigned long lbase, lsize;
+ 
+@@ -1177,6 +1350,12 @@
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
+ 	{
+ 	    /*  For Intel PPro stepping <= 7, must be 4 MiB aligned  */
++            if (base + size < 0x100000)
++            {
++                fixed=1;
++                i=get_num_var_ranges ();
++            }
++            else
+ 	    if ( (boot_cpu_data.x86 == 6) && (boot_cpu_data.x86_model == 1) &&
+ 		 (boot_cpu_data.x86_mask <= 7) && ( base & ( (1 << 22) -1 ) ) )
+ 	    {
+@@ -1201,7 +1380,7 @@
+ 		return -EINVAL;
+ 	    }
+ 	}
+-	else if (base + size < 0x100000)
++	else if (!fixed && (base + size < 0x100000))
+ 	{
+ 	    printk (KERN_WARNING "mtrr: cannot set region below 1 MiB (0x%lx,0x%lx)\n",
+ 		    base, size);
+@@ -1238,6 +1417,8 @@
+     max = get_num_var_ranges ();
+     /*  Search for existing MTRR  */
+     down(&main_lock);
++    if(!fixed) 
++    {
+     for (i = 0; i < max; ++i)
+     {
+ 	(*get_mtrr) (i, &lbase, &lsize, &ltype);
+@@ -1273,6 +1454,7 @@
+ 	printk ("mtrr: no more MTRRs available\n");
+ 	return i;
+     }
++    }
+     set_mtrr (i, base, size, type);
+     usage_table[i] = 1;
+     compute_ascii ();
+@@ -1516,7 +1698,9 @@
+       case MTRRIOC_GET_ENTRY:
+ 	if ( copy_from_user (&gentry, (void *) arg, sizeof gentry) )
+ 	    return -EFAULT;
++/* This check should be done by get_mtrr.
+ 	if ( gentry.regnum >= get_num_var_ranges () ) return -EINVAL;
++*/ 
+ 	(*get_mtrr) (gentry.regnum, &gentry.base, &gentry.size, &type);
+ 	gentry.type = type;
+ 	if ( copy_to_user ( (void *) arg, &gentry, sizeof gentry) )
+@@ -1597,6 +1781,19 @@
+ 	    ascii_buf_bytes += strlen (ascii_buffer + ascii_buf_bytes);
+ 	}
+     }
++    if(boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
++        for (i = max; i < max+NUM_FIXED_RANGES; i++)
++        {
++	    (*get_mtrr) (i, &base, &size, &type);
++	    if(((i<max+16)&&(type!=6))||((i>=max+16)&&(type!=0)))
++            {
++	        sprintf
++		    (ascii_buffer + ascii_buf_bytes,
++		     "reg%02i: base=0x%08lx (%4likB), size=%4likB: %s, count=%d\n",
++		     i, base, base>>10, size>>10, attrib_to_str (type), 1);
++	        ascii_buf_bytes += strlen (ascii_buffer + ascii_buf_bytes);
++	    }
++        }
+     devfs_set_file_size (devfs_handle, ascii_buf_bytes);
+ #  ifdef CONFIG_PROC_FS
+     proc_root_mtrr->size = ascii_buf_bytes;

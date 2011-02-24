@@ -1,0 +1,45 @@
+.TH mouse_waitforupdate 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mouse_waitforupdate \- wait for an mouse update
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "void mouse_waitforupdate(void);"
+
+.SH DESCRIPTION
+This reads in mouse events from the mouse buffer and updates
+the internal svgalib variables which store the current mouse
+position and button states. If there are no events the function does
+not return until one occurs.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_close (3),
+.BR mouse_init (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_getx (3),
+.BR mouse_waitforupdate (3),
+.BR vga_setmousesupport (3),
+.BR mouse_seteventhandler (3),
+.BR vga_waitevent (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

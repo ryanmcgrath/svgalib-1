@@ -1,0 +1,54 @@
+.TH dumpreg 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+dumpreg \- dump the state of the card as the svgalib chipset driver sees it.
+.SH SYNOPSIS
+
+.BI dumpreg
+.br
+.BI "dumpreg < /dev/tty" N
+
+.SH DESCRIPTION
+The chipset drivers of svgalib inquire the mode of the graphic card when the application
+is started and restore it when the svgalib application quits.
+.B dumpreg
+prints this information to stdout.
+
+This is useful for debugging or adding modes to a device driver. For example you can
+use Xfree86 to setup a given mode timing, then run
+.B dumpreg
+and use it's stdout to make your chipset driver use exactly this timing.
+
+However, the recent change of svgalib to hunt an own free virtual console does not allow
+this, because it will make Xfree86 return to textmode first. You can avoid this by using
+the second form where
+.I N
+is the number of the virtual console on which Xfree86 runs (usually 7) as root.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_dumpregs (3),
+.BR convfont (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restorepalette (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

@@ -1,0 +1,145 @@
+.TH keyboard_seteventhandler 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+keyboard_seteventhandler, keyboard_setdefaulteventhandler \- define an event handler for keyboard events in raw mode
+.SH SYNOPSIS
+
+.B "#include <vgakeyboard.h>"
+
+.BI "typedef void (*" __keyboard_handler ") (int " scancode ", int " press ");"
+
+.BI "void keyboard_seteventhandler(__keyboard_handler " handler ");"
+.br
+.BI "void keyboard_setdefaulteventhandler(void);"
+
+.SH DESCRIPTION
+These functions allow to define a keyboard event handler which is called by
+.BR keyboard_update "(3) and "
+.BR keyboard_waitforupdate (3)
+when a keyboard event occured.
+
+.I press
+is
+.BR KEY_EVENTRELEASE " or " KEY_EVENTPRESS
+if key
+.I scancode 
+was released or pressed. Actually the first value is 0 and the second is 1 which are
+so intuitive s.t. you may use them in your program.
+
+Even you specify an own handler, svgalib will check for
+.BR "<Alt>-F*" " or " "<Ctrl>-C"
+for console switches or generation of
+.BR SIGINT
+if allowed by
+.BR keyboard_translatekeys (3).
+
+Calling
+.B keyboard_setdefaulteventhandler()
+reinstates the default handler which maintains the tables used by
+.BR keyboard_getstate "(3) and "
+.BR keyboard_keypressed (3).
+It is probably a good idea to call
+.BR keyboard_clearstate (3)
+after reenabling the default handler.
+
+Here are the supported scancodes. The names of the
+.B #defines
+originate from the US keyboard layout, for other countries, they'll refer to the key
+in the same physical location, but the keycap will have a different inscription. For
+the list below, add
+.BR SCANCODE_
+in front of the names to get the right name for your C source. That means, if it lists
+.BR BACKSLASH
+below, you shall use
+.BR SCANCODE_BACKSLASH
+as symbol in your program. In addition to the names below we also have
+.BR SCANCODE_0 " - " SCANCODE_9 ", "
+.BR SCANCODE_KEYPAD0 " - " SCANCODE_KEYPAD9 ", "
+.BR SCANCODE_A " - " SCANCODE_Z ", and "
+.BR SCANCODE_F1 " - " SCANCODE_F12 "."
+
+The other key names are
+.BR ESCAPE ", "
+.BR MINUS ", "
+.BR EQUAL ", "
+.BR BACKSPACE ", "
+.BR TAB ", "
+.BR BRACKET_LEFT ", "
+.BR BRACKET_RIGHT ", "
+.BR ENTER ", "
+.BR LEFTCONTROL ", "
+.BR SEMICOLON ", "
+.BR APOSTROPHE ", "
+.BR GRAVE ", "
+.BR LEFTSHIFT ", "
+.BR BACKSLASH ", "
+.BR COMMA ", "
+.BR PERIOD ", "
+.BR SLASH ", "
+.BR RIGHTSHIFT ", "
+.BR KEYPADMULTIPLY ", "
+.BR LEFTALT ", "
+.BR SPACE ", "
+.BR CAPSLOCK ", "
+.BR NUMLOCK ", "
+.BR SCROLLLOCK ", "
+.BR CURSORUPLEFT ", "
+.BR CURSORUP ", "
+.BR CURSORUPRIGHT ", "
+.BR KEYPADMINUS ", "
+.BR CURSORLEFT ", "
+.BR CURSORRIGHT ", "
+.BR KEYPADPLUS ", "
+.BR CURSORDOWNLEFT ", "
+.BR CURSORDOWN ", "
+.BR CURSORDOWNRIGHT ", "
+.BR KEYPADPERIOD ", "
+.BR LESS ", "
+.BR KEYPADENTER ", "
+.BR RIGHTCONTROL ", "
+.BR CONTROL ", "
+.BR KEYPADDIVIDE ", "
+.BR PRINTSCREEN ", "
+.BR RIGHTALT ", "
+.BR BREAK ", "
+.BR BREAK_ALTERNATIVE ", "
+.BR HOME ", "
+.BR CURSORBLOCKUP ", "
+.BR PAGEUP ", "
+.BR CURSORBLOCKLEFT ", "
+.BR CURSORBLOCKRIGHT ", "
+.BR END ", "
+.BR CURSORBLOCKDOWN ", "
+.BR PAGEDOWN ", "
+.BR INSERT ", and "
+.BR REMOVE "."
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR keytest (6),
+.BR eventtest (6),
+.BR keyboard_init (3),
+.BR keyboard_init_return_fd (3),
+.BR keyboard_close (3),
+.BR keyboard_getstate (3),
+.BR keyboard_keypressed (3),
+.BR keyboard_clearstate (3),
+.BR keyboard_translatekeys (3),
+.BR keyboard_update (3),
+.BR keyboard_waitforupdate (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

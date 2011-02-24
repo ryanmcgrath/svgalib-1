@@ -1,0 +1,86 @@
+.TH vga_fillblt 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_fillblt \- file rectangular area in video memory with a single color
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_fillblt(int " destaddr ", int " w ", int " h ", int " pitch ", int " color );
+
+.SH DESCRIPTION
+Fill a rectangular area in video memory with a single color
+.IR color .
+.I destaddr
+is an offset into video memory (up to 2M). The
+.I pitch
+is the logical width of the screen. Height
+.I h
+is in Pixels, Width
+.I w
+is in
+.BR BYTES !
+
+This is an old style function to access the accelerator of an SVGA card. Before calling
+it you should check for availability of the function in the mode you use with
+.BR vga_getmodeinfo (3).
+
+For new applications you might be better of trying to use
+.BR vga_accel (3)
+instead.
+
+The old
+.BR vga_bitblt (3),
+.BR vga_blitwait (3),
+.BR vga_fillblt (3),
+.BR vga_hlinelistblt "(3), and "
+.BR vga_imageblt (3)
+interface was originally designed for the Cirrus chipsets. Then Mach32 added support too
+but has problems to resemble the unintuitive Cirrus interface. Then these new ideas
+were reinjected and
+.BR vga_accel (3)
+was designed. Now Cirrus and Chips & Technologies chipset give limited 
+.BR vga_accel (3)
+support but no longer this old style support.
+Mach32 is left to use the unintuitive Cirrus interface. At some future point the
+functions might be added for Mach32 too (which should be rather simple), so new
+applications should use the newer and probably more efficient interface.
+
+It would be fatal if the accelerator would be used while the console is switched away.
+You should use
+.BR vga_lockvc (3)
+and
+.BR vga_unlockvc (3)
+to avoid this, although good implementations of the accelerator functions (like Mach32)
+will already ensure that.
+
+The
+.BR testaccel (6)
+demo utilizes the old style accelerator functions.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR testaccel (6),
+.BR vga_accel (3),
+.BR vga_bitblt (3),
+.BR vga_blitwait (3),
+.BR vga_hlinelistblt (3),
+.BR vga_imageblt (3),
+.BR vga_getmodeinfo (3),
+.BR vga_lockvc (3),
+.BR vga_unlockvc (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

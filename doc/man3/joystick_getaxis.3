@@ -1,0 +1,139 @@
+.TH joystick_getaxis 3 "14 April 1998" "Svgalib 1.3.0" "Svgalib User Manual"
+.SH NAME
+joystick_getaxis, joystick_getbutton \- query the current state of a joystick.
+.SH SYNOPSIS
+
+.B "#include <vgajoystick.h>"
+
+.BI "char joystick_getaxis(int " joydev ", int " a );
+.br
+.BI "char joystick_getbutton(int " joydev ", int " b );
+
+.SH DESCRIPTION
+These functions query the current state of the joystick
+.IR joydev .
+Actually this is the state found during the last call
+to
+.BR joystick_update (3)
+with the default joystick event handler active.
+
+.BI "joystick_getaxis(" joydev ", " a )
+return the current state of the given axis (usually it is
+.BR "x - 0" ", " "y - 1" ", " "z - 1" ", ...)"
+in range
+.BR "-128 .. 127" .
+Some effort is made such that the center position is close to
+.BR 0 .
+
+Note that especially the version 0.* protocol joystick calibration is very bad. You won't usually
+see the extrem values on the extreme position. Also, the center position will be close to zero but
+often not be exactly zero and return values will also vary slightly from call to call even when
+the user did not move the joystick.
+
+.BI "joystick_getbutton(" joydev ", " b )
+returns the state of a button. It returns 1 for pressed button and 0 else. Note that no hardware
+checks for button clicks. The button press is only detected during a call to
+.BR joystick_update (3)
+(at least in the 0.* protocol).
+
+.B NOTE:
+The functions simply return the data passed to the default joystick event handler!
+
+For your convenience, the following stortcuts have been established by use of the preprocessor:
+
+.RS
+.BI joystick_button1( i )
+for
+.BI joystick_getbutton( i ,
+.BR 0) .
+.br
+.BI joystick_button2( i )
+for
+.BI joystick_getbutton( i ,
+.BR 1) .
+.br
+.BI joystick_button3( i )
+for
+.BI joystick_getbutton( i ,
+.BR 2) .
+.br
+.BI joystick_button4( i )
+for
+.BI joystick_getbutton( i ,
+.BR 3) .
+.RE
+
+.RS
+.BI joystick_x( i )
+for
+.BI joystick_getaxis( i ,
+.BR 0) .
+.br
+.BI joystick_y( i )
+for
+.BI joystick_getaxis( i ,
+.BR 1) .
+.br
+.BI joystick_z( i )
+for
+.BI joystick_getaxis( i ,
+.BR 2) .
+.RE
+
+.RS
+.B joystick_getb1()
+for
+.BR "joystick_getbutton(0, 0)" .
+.br
+.B joystick_getb2()
+for
+.BR "joystick_getbutton(0, 1)" .
+.br
+.B joystick_getb3()
+for
+.BR "joystick_getbutton(0, 2)" .
+.br
+.B joystick_getb4()
+for
+.BR "joystick_getbutton(0, 3)" .
+.RE
+
+.RS
+.B joystick_getx()
+for
+.BR "joystick_getaxis(0, 0)" .
+.br
+.B joystick_gety()
+for
+.BR "joystick_getaxis(0, 1)" .
+.br
+.B joystick_getz()
+for
+.BR "joystick_getaxis(0, 2)" .
+.RE
+
+.SH CAVEATS
+This function is only available in ELF versions of svgalib. Due to backwards
+compatibility issues it cannot be used with shared a.out libs.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR joytest (6),
+.BR mjoytest (6),
+.BR joystick_init (3),
+.BR joystick_close (3),
+.BR joystick_update (3),
+.BR joystick_sethandler (3),
+.BR joystick_setdefaulthandler (3),
+.BR joystick_getnumaxes (3),
+.BR joystick_getnumbuttons (3).
+
+.SH AUTHOR
+
+The svgalib joystick handler was mostly done by Daniel Engstr\\"om <daniel.engstrom@riksnett.no>.
+Multiple joystick, VC switching support and code to glue it into svgalib by Michael Weller
+<eowmob@exp-math.uni-essen.de>. Part of the code is based on code from C. Smith and
+Vojtech Pavlik.

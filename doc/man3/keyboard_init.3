@@ -1,0 +1,73 @@
+.TH keyboard_init 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+keyboard_init, keyboard_init_return_fd \- initialize the keyboard to raw mode
+.SH SYNOPSIS
+
+.B "#include <vgakeyboard.h>"
+
+.BI "int keyboard_init(void);
+.br
+.BI "int keyboard_init_return_fd(void);
+
+.SH DESCRIPTION
+These routines initialize the keyboard to raw mode. No ASCII codes are produced, instead
+svgalib keeps track of each single keypress or depress.
+The
+.B return_fd
+version returns the file descriptor of the
+console device to allow you to do further tricks with it (though it is unclear which).
+The other version just returns 0 if successful.
+Both return -1 on error.
+
+.BR keyboard_close (3)
+returns to normal operation.
+
+When in raw keyboard mode you can no longer use
+.BR vga_getch(3)
+or 
+.BR vga_getkey(3)
+but you must use
+.BR keyboard_getstate (3)
+or
+.BR keyboard_keypressed (3).
+
+Depending on the setting of
+.BR keyboard_translatekeys (3)
+even in raw mode a
+.B <Ctrl>-C
+will cause a
+.BR SIGINT.
+In any case svgalib will check for
+.BR <Alt>-F1 " - " <Alt>-F10
+and perform console switches accordingly.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR keytest (6),
+.BR eventtest (6),
+.BR keyboard_seteventhandler (3),
+.BR keyboard_close (3),
+.BR keyboard_update (3),
+.BR keyboard_waitforupdate (3),
+.BR keyboard_setdefaulteventhandler (3),
+.BR keyboard_getstate (3),
+.BR keyboard_clearstate (3),
+.BR keyboard_translatekeys (3),
+.BR keyboard_keypressed (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

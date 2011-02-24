@@ -1,0 +1,85 @@
+.TH mouse_setwrap 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mouse_setwrap \- set what happens at the mouse boundaries
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "void mouse_setwrap(int " state );
+
+.SH DESCRIPTION
+This routine determines what to do if the mouse position
+reaches a boundary.
+
+.I state
+should be either
+.BR MOUSE_WRAP ", " MOUSE_NOWRAP ", or a bitwise or of " MOUSE_WRAPX ", "
+.BR MOUSE_WRAPY ", " MOUSE_WRAPZ ", " MOUSE_WRAPRX ", " MOUSE_WRAPRY ", or "
+.BR MOUSE_WRAPRZ .
+These define if all or the respective coordinates wrap or are clipped at the ends.
+
+This variable has been overloaded for the case of
+multi-dimensional mice that support rotations and can be
+used to select the coordinate system used to return the
+current position of the mouse.
+
+If the above value of state is also ored with
+.BR MOUSE_ROT_RX_RY_RZ ,
+rotational information will be returned
+as the angular position as expressed by the total angle wound
+around the X, Y, and Z axes.  This is the simplest coordinate
+system to use, but it's also the least useful, since angular
+rotations about perpendicular axes don't commute.  There are
+situations where this system might be useful, for controlling
+truly independent quantities, such as color, with each axis
+being used to dial a level of red, green, or blue, but
+for modeling the actual orientation of a physical object,
+it's utterly hopeless.
+
+If state is instead ored with
+.BR MOUSE_ROT_INFINITESIMAL ,
+the angular positions returned are expressed as differences
+from the previously reported position.  If the differences
+are sufficiently small, the angular displacements will
+commute with each other and can be used to track the motion
+of a physical object.
+Other coordinate systems, such as yaw, pitch, and roll,
+could be defined, but haven't been done due to lack of
+time.  If you feel you need this feature, send mail
+to Eric Sharkey <sharkey@superk.physics.sunysb.edu>
+and he just might consider coding it up.
+
+.BR MOUSE_WRAP " and " MOUSE_ROT_COORDS
+can be used to mask out the
+bits used for wrap and coordinate states, respectively.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_close (3),
+.BR mouse_init (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_getx (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_setmousesupport (3),
+.BR mouse_seteventhandler (3),
+.BR vga_waitevent (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

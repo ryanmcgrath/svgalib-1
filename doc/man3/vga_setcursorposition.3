@@ -1,0 +1,30 @@
+.TH vga_setcursorposition 3 "23 June 2001" "Svgalib (>= 1.9.6)" "Svgalib User Manual"
+.SH NAME
+vga_setcursorposition \- set the mouse cursor position 
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_initcursor(int x, int y);"
+
+.SH DESCRIPTION
+Sets the position of the top left corner of the mouse square to be at the pixel position
+(
+.B x
+,
+.B y
+). 
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR mouse_init (3),
+.BR vga_selectcursor (3),
+.BR vga_showcursor (3),
+.BR vga_initcursor (3),
+.BR vga_setcursorimage (3),
+
+.SH AUTHOR
+
+This manual page written by Matan Ziv-Av <matan@svgalib.org>.
+

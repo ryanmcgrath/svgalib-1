@@ -1,0 +1,67 @@
+.TH gl_write 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_write, gl_writen \- write a text string
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_write(int " x ", int " y ", char *" s );
+.br
+.BI "void gl_writen(int " x ", int " y ", int " n " ,char *" s );
+
+.SH DESCRIPTION
+.B gl_write
+writes the zero terminated string
+.I s
+to position
+.RI ( x ", " y )
+using the currently selected font.
+
+.B gl_writen
+works similarly, but writes exactly
+.I n
+characters, thus allowing to use the character 0.
+
+The kind of text draw operation is set with
+.BR gl_setwritemode (3).
+
+.B BEWARE!
+Prior to the of use of
+.BR gl_write "(3) and " gl_writen (3)
+you must set a font.
+
+A good default initialization sequence is:
+
+.B    gl_setfont(8, 8, gl_font8x8);
+.br
+.B    gl_setwritemode(FONT_COMPRESSED + WRITEMODE_OVERWRITE);
+.br
+.B    gl_setfontcolors(0, vga_white());
+.br
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR gl_printf (3),
+.BR gl_colorfont (3),
+.BR gl_expandfont (3),
+.BR gl_font8x8 (3),
+.BR gl_setfont (3),
+.BR gl_setfontcolors (3),
+.BR gl_setwritemode (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

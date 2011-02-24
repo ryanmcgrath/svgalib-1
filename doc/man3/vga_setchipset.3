@@ -1,0 +1,99 @@
+.TH vga_setchipset 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setchipset \- force chipset
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setchipset(int " chipset );
+
+.SH DESCRIPTION
+Force detection of a chipset (when chipset detection fails).
+.B vga_setchipset(VGA)
+can be useful if the chipset specific
+stuff or the SVGA detection stuff gives problems.
+
+However, at first the automatic detection should work well, and if not a specific
+chipset can be forced from
+.IR /etc/vga/libvga.config .
+
+Because of that,
+.BI "void vga_setchipset(int " chipset )
+should probably never be used by applications. If used nevertheless, it should be called
+directly before
+.BR vga_init (3).
+
+As of now the following values are defined for
+.IR chipset:
+.TP
+.B UNDEFINED
+This is the default and specifies autodetection.
+.TP
+.B VGA
+A plain VGA card, not that the SVGA must behave like an ordinary SVGA card then which
+will probably mean it is in an ordinary (25x80) textmode.
+.TP
+.B ET4000
+Tseng ET4000/ET4000W32(i/p) cards.
+.TP
+.B CIRRUS
+Cirrus Logic GD542x/3x cards.
+.TP
+.B TVGA8900
+Trident TVGA 8900C/9000 (and possibly also 8800CS/8900A/B) cards.
+.TP
+.B OAK
+Oak Technologies OTI-037/67/77/87 cards.
+.TP
+.B EGA
+An ordinary EGA card. The notes about VGA apply.
+.TP
+.B S3
+An S3 base card.
+.TP
+.B ET3000
+Tseng ET3000 cards.
+.TP
+.B MACH32
+A card (from ATI or not) based on the ATI Mach32 chipset.
+.TP
+.B GVGA6400
+A Genoa(?) GVGA6400 card.
+.TP
+.B ARK
+ARK Logic ARK1000PV/2000PV cards.
+.TP
+.B ATI
+An ATI SVGA (VGA Wonder and friends) card. This does not (necessarily) include
+the newer cards (usually called Mach something).
+.TP
+.B ALI
+An ALI2301 based card.
+.TP
+.B MACH64
+A card using the ATI Mach64 chipset. Support is not complete.
+.TP
+.B CHIPS
+Chips and Technologies chipsets 65525, 65535, 65546, 65548, 65550, and 65554 (usually in laptops).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vgatest (6),
+.BR vga_getcurrentchipset (3),
+.BR vga_setchipsetandfeatures (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

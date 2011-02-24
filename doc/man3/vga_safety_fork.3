@@ -1,0 +1,56 @@
+.TH vga_safety_fork 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_safety_fork \- start a parallel process to restore the console at a crash
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_safety_fork(void (*" shutdown_routine ")(void))"
+
+.SH DESCRIPTION
+Calling this at the start of a program results in a better
+chance of textmode being restored in case of a crash.
+However it has to raise the iopl level to 3 to work. This is
+a small security breach as it is inherited to any programs
+you fork of. However, some SVGA card drivers have to use
+iopl(3) anyway.
+If you use it call that function as the very first
+.B vga_
+function. Call it right before
+.B vga_init (3).
+Note that
+.B vga_safety_fork()
+will already enter a graphicsmode. (For font
+and grafix state saving).
+Don't overestimate the power of this function. Your application will continue to run
+in background while a foreground application will restore a usable screen and graphics
+mode in case of a crash.
+
+The
+.BR forktest (6)
+demo shows the principal operation.
+.BI (* shutdown_routine )()
+is called when the system crashes. However, realize that the call will take in a forked
+copy of your program, you'll not have access to any globals modified after the
+.B vga_safety_fork()
+call!
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR forktest (6),
+.BR vga_init (3),
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

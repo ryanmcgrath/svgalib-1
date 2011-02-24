@@ -1,0 +1,65 @@
+.TH gl_setwritemode 3 "22 Feb 1998" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_setwritemode \- set the font writemode flags
+
+.SH SYNOPSIS
+.B #include <vgagl.h>
+
+.BI "void gl_setwritemode(int " m );
+
+.SH DESCRIPTION
+Sets the writemode flags for the font routines. It must be the sum of exactly
+one choice out of the following two groups:
+
+.PD 0
+.TP
+.B WRITEMODE_MASKED
+.TP
+.BR WRITEMODE_OVERWRITE " (default)"
+.PD
+If
+.B WRITEMODE_MASKED
+is set, only foreground pixels of the font
+are used for write operations; the screen background is not
+erased.
+
+
+.PD 0
+.TP
+.B FONT_COMPRESSED
+.TP
+.BR FONT_EXPANDED " (default)"
+.PD
+If
+.B FONT_COMPRESSED
+is set, text writes will use the compressed
+bit-per-pixel font rather than the expanded font (which would be slightly faster).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR svgalib.conf (5),
+.BR threedkit (7),
+.BR testgl (1),
+.BR gl_colorfont (3),
+.BR gl_expandfont (3),
+.BR gl_font8x8 (3),
+.BR gl_hline (3),
+.BR gl_line (3),
+.BR gl_setfont (3),
+.BR gl_setfontcolors (3),
+.BR gl_write (3),
+.BR gl_writen (3).
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced demo as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

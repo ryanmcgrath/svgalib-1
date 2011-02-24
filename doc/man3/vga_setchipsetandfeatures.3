@@ -1,0 +1,39 @@
+.TH vga_setchipsetandfeatures 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setchipsetandfeatures \- force chipset and optional parameters
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setchipsetandfeatures(int " chipset ", int " par1 ", int " par2 );
+
+.SH DESCRIPTION
+Force chipset, and optional parameters like the exact
+chipset type and the amount of video memory installed. This function works similar to
+.BR vga_setchipset (3)
+and allows the same values for
+.IR chipset .
+In addition you can pass additional parameters to the setup routine whose meaning
+heavily depend on the driver. You should only use this for debugging and if you know
+what you do, which is why we do not document anything more here.
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vgatest (6),
+.BR vga_getcurrentchipset (3),
+.BR vga_setchipset (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

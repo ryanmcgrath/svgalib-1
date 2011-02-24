@@ -1,0 +1,281 @@
+.TH vga_getmodeinfo 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_getmodeinfo \- returns pointer to mode information structure for a mode
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "vga_modeinfo *vga_getmodeinfo(int " mode " );
+
+.SH DESCRIPTION
+The function returns a pointer to a statical allocated mode information structure which is
+filled out with details for a video mode
+.IR mode .
+
+.B "#include <vga.h>"
+defines
+.B vga_modeinfo
+as
+
+.B typedef struct {
+.br
+.B "    " int width;
+.br
+.B "    " int height;
+.br
+.B "    " int bytesperpixel;
+.br
+.B "    " int colors;
+.br
+.B "    " int linewidth;
+.br
+.B "    " int maxlogicalwidth;
+.br
+.B "    " int startaddressrange;
+.br
+.B "    " int maxpixels;
+.br
+.B "    " int haveblit;
+.br
+.B "    " int flags;
+.br
+/* Extended fields, not always available: */
+.br
+.B "    " int chiptype;
+.br
+.B "    " int memory;
+.br
+.B "    " int linewidth_unit;
+.br
+.B "    " char *linear_aperture;
+.br
+.B "    " int aperture_size;
+.br
+.B "    " void (*set_aperture_page) (int page);
+.br
+.B "    " void *extensions;
+.br
+.B } vga_modeinfo;
+
+If the given
+.I mode
+is out of range,
+.B NULL
+is returned.
+.BR Beware ,
+even when
+.B vga_getmodeinfo()
+returns details about a certain mode, you must check if it is currently
+available (may depend on memory size and other details) with
+.B vga_hasmode (3).
+
+The fields meaning in detail:
+
+.SS Basic mode details
+.TP
+.B width
+Width of mode in pixels.
+.TP
+.B height
+Height of mode in pixel lines.
+.TP
+.B bytesperpixel
+Bytes per pixel. This is 1, 2, 3, or 4 (for 256, 32K & 64K, 16M, 16M$ modes) and 0 for planar
+VGA modes.
+.TP
+.B linewidth
+Logical scanline width in bytes. This is the memory offset between two pixels above each other
+in two adjacent screen lines. It is
+.B not
+valid to assume that
+.BR linewidth " == " width " * " bytesperpixel
+in general!
+.TP
+.B colors
+The number of colors which you can display simultaneously 2, 16, 256, 32768, 65536, or 16777216.
+Generally 16 and 256 mean that a color lookup table is used. 2 means that only black/white is
+used and the others use some high/true color mode.
+.SS Possible modifications of the memory layout
+.TP
+.B maxlogicalwidth
+The maximum logical scanline width (in bytes) which you can set for this mode with
+.BR vga_setlogicalwidth (3)
+while still expecting a perfect screen image.
+.TP
+.B startaddressrange
+Mask of changeable bits of start address (in pixels). All bits zero in
+.B startaddressrange
+must also be zero in a call to
+.BR vga_setdisplaystart (3)
+when you want to avoid noisy video signals.
+.SS Memory size
+.TP
+.B maxpixels
+Maximum number of pixels that will fit in a logical screen (depends on video memory).
+.SS Further, advanced capabilities
+.TP
+.B haveblit
+Indicates whether the following bitblit functions are available. It is a logical or
+of the following predefined values (which each have only one bit set).
+.RS
+.TP
+.B HAVE_BITBLIT
+has
+.BR vga_bitblt (3)
+old style accelerator function.
+.TP
+.B HAVE_FILLBLIT
+has
+.BR vga_fillblt (3)
+old style accelerator function.
+.TP
+.B HAVE_IMAGEBLIT
+has
+.BR vga_imageblt (3)
+old style accelerator function.
+.TP
+.B HAVE_HLINELISTBLIT
+has
+.BR vga_hlinelistblt (3)
+old style accelerator function.
+.TP
+.B HAVE_BLITWAIT
+has
+.BR vga_blitwait (3)
+old style accelerator function.
+.RE
+.PP
+.TP
+.B flags
+Miscellaneous flags.  It is a logical or
+of the following predefined values (which each have only one bit set).
+.RS
+.TP
+.B HAVE_RWPAGE
+.BR vga_setreadpage "(3) and " vga_setwritepage (3)
+are available in this mode.
+.TP
+.B IS_INTERLACED
+Mode is interlaced, which means it will tend to flicker and the user might be happier if the
+application chooses another mode.
+.TP
+.B IS_MODEX
+Mode user mode X like memory layout (planar 256 colors VGA mode). See
+.BR vga_setmodeX (3)
+for some explanations.
+.TP
+.B IS_DYNAMICMODE
+Dynamically loaded mode. This mode was defined in
+.I /etc/vga/libvga.conf
+by the user. He will probably prefer its usage. However, usually this should
+be of no interest to the user.
+.TP
+.B CAPABLE_LINEAR
+Mode can be set to linear addressing with
+.BR vga_setlinearaddressing (3).
+.TP
+.B IS_LINEAR
+Linear addressing is already enabled for this mode.
+.TP
+.B EXT_INFO_AVAILABLE
+The extended fields in this information structure are set to sensible information. If
+EXT_INFO_AVAILABLE is not set you should even not access these fields as you might have
+encountered an old version of svgalib and the fields migth actually not have been
+allocated at all.
+.TP
+.B RGB_MISORDERED
+For 16M4 modes it means that the 4 bytes per pixel actually mean 0BGR rather than
+BGR0 as per default. For 16M mode it means that the 3 bytes actually mean
+RGB instead of BGR.
+
+The first is a general limitation of Mach32, the latter one of Mach32 with a ramdac of type
+4. The
+.B vga_
+drawing functions takes this into account.
+.TP
+.B HAVE_EXT_SET
+A
+.BR vga_ext_set (3)
+is available and can be called.
+.RE
+.SS Extended mode information
+You must check for
+.B EXT_INFO_AVAILABLE
+in
+.B flags
+before trying to access these values.
+.TP
+.B chiptype
+the chiptype that was detected/set. This specifies a subtype of the current
+.BR vga_getcurrentchipset (3)
+setting whose value depends on the chipset. It should be only used for
+debugging or internally.
+.TP
+.B memory
+memory available on the SVGA card in KB.
+.TP
+.B linewidth_unit
+use only a multiple of this value for
+.BR set_logicalwidth "(3) or " set_displaystart (3)
+to ensure graceful alignment of lines onto the vga memory in this mode and for noiseless
+video signals.
+.TP
+.B linear_aperture
+ptr to a mmaped secondary linear framebuffer (not related to the use of
+.BR vga_setlinearaddressing (3))
+.RB ( NULL
+if unavailable)
+.TP
+.B aperture_size
+size of the secondary framebuffer in KB. 0 if unavailable.
+.TP
+.B set_aperture_page
+a function taking an int as parameter to select a page in the framebuffer addressed by
+read/writes to this memory arey (if
+.BR aperture_size " < " memory .
+.TP
+.B extensions
+pointer to additional, internal, chipset specific info
+(contents of the EEPROM for Mach32 driver.)
+.PP
+The
+.BR vgatest (6)
+demo displays most of this info for all supported modes.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vgatest (6),
+.BR vga_hasmode (3),
+.BR vga_init (3),
+.BR vga_setmode (3),
+.BR vga_getcurrentmode (3),
+.BR vga_getdefaultmode (3),
+.BR vga_lastmodenumber (3),
+.BR vga_getmodename (3),
+.BR vga_getmodenumber (3),
+.BR vga_setlogicalwidth (3),
+.BR vga_bitblt (3),
+.BR vga_fillblt (3),
+.BR vga_imageblt (3),
+.BR vga_hlinelistblt (3),
+.BR vga_blitwait (3),
+.BR vga_setmodeX (3),
+.BR vga_getcurrentchipset (3),
+.BR vga_ext_set (3),
+.BR vga_setlinearaddressing (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

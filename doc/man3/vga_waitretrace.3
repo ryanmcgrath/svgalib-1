@@ -1,0 +1,37 @@
+.TH vga_waitretrace 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_waitretrace \- wait for vertical retrace.
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_waitretrace(void);"
+
+.SH DESCRIPTION
+Wait for vertical retrace, that is when the video beam goes dark and returns from the
+bottom line to the top line. Useful to synchronize animation with
+monitor refresh.
+
+However, Linux is a multiuser OS, thus some time might have passed already when the
+function returns. Also, not all cards support this in all modes (or with more or
+less good results).
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR scrolltest (6),
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

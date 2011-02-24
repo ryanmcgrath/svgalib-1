@@ -1,0 +1,123 @@
+.TH vga_init 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_init \- initialize svgalib library
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_init(void);"
+
+.SH DESCRIPTION
+It detects the chipset and gives up supervisor
+rights. This is the recommended first line of any program that uses
+svgalib.
+.BR vga_setchipset (3)
+can be called before it to avoid detection.
+
+Svgalib catches a bunch of signals that usually kill your
+program to restore textmode. If you catch signal's before
+calling
+.B vga_init()
+svgalib will restore textmode and prepare
+for shutdown and then call your handler routine. If you don't
+want this, catch the signal
+.B after
+calling vga_init and do not daisychain to svgalib's original handler.
+
+.B WARNING!
+svgalib needs two signals for it's own purposes
+(that is managing console switches). To avoid problems it uses
+the otherwise unused signals
+.B SIGUSR1
+and
+.BR SIGUSR2 .
+However, this means that you cannot use them in your program by any
+means. They are setup by
+.B vga_init()
+as everything else is.
+
+Since version 1.2.11
+.B vga_init()
+includes code to hunt for a free virtual console on its own in
+case you are not starting the program from one (but instead over a network or
+modem login, from within 'screen' or an 'xterm'). Provided there is a free
+console, this succeeds if you are root or if the svgalib calling user own
+the current console. This is to avoid people not using the console being able
+to fiddle with it.
+On graceful exit the program returns to the console from which it was started.
+Otherwise it remains in text mode at the VC which svgalib allocated to allow
+you to see any error messages. In any case, any I/O the svgalib makes in
+text mode (after calling vga_init) will also take place at this new console.
+
+Alas, some games misuse their suid root privilege and run as full root
+process. svgalib cannot detect this and allows Joe Blow User to open a new
+VC on the console. If this annoys you
+.B ROOT_VC_SHORTCUT
+in
+.I Makefile.cfg
+allows
+you to disable allocating a new VC for root (except when he owns the current
+console) when compiling svgalib. This is the default (disabling the allocation for root).
+
+.B vga_init()
+returns a non-zero value in case of errors. As of this writing it will return
+-1 if it is unable to allocate a graphical console. Otherwise, 0 is returned.
+
+.SH BUGS
+Svgalib versions prior to 1.2.11 had a security hole where it would be possible
+to regain root privileges even after a
+.B vga_init()
+call. This is not necessarily a problem, but if your program is vulnerable to
+buffer overflows and other attacks, an attacker may exploit this.
+
+However, prior to your call, your program will need to run setuid root, so you should
+be very careful. The ioperm library by Olaf Titz will allow svgalib programs to run
+not setuid root. However, it gives all programs unlimited access to the hardware. Again,
+a malicious person can exploit this (albeit a bit more difficult) too.
+Thus, in general, make your svgalib programs as secure as any setuid root program. 
+
+Some programs may (accidently) rely on the old behaviour (which was probably due to the
+author not knowing about saved uids (which might actually even not have existed in Linux at that
+time)). A line:
+
+.B "security compat"
+
+in the configuration file
+.I /etc/vga/libvga.conf
+will reinstate the old behaviour whereas
+
+.B "security revoke-all-privs"
+
+enables the (currently default) action.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vga_setmode (3),
+.BR mouse_init (3),
+.BR vga_claimvideomemory (3),
+.BR vga_ext_set (3),
+.BR vga_fillblt (3),
+.BR vga_getcurrentchipset (3),
+.BR vga_getdefaultmode (3),
+.BR vga_getgraphmem (3),
+.BR vga_runinbackground (3),
+.BR vga_runinbackground_version (3),
+.BR vga_safety_fork (3),
+.BR vga_setchipset (3),
+.BR vga_setchipsetandfeatures (3),
+.BR vgagl (7),
+.BR libvga.config (5),
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

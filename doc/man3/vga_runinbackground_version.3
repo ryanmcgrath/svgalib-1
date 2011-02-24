@@ -1,0 +1,30 @@
+.TH vga_runinbackground_version 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_runinbackground_version \- returns the version of the current background support
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_runinbackground_version(void);"
+
+.SH DESCRIPTION
+returns the version of the current background support which is
+1 (uses proc-fs). In case svgalib is compiled without background
+support, 0 is returned. See
+.BR vga_runinbackground (3)
+for more information on background support.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR bg_test (6),
+.BR vga_runinbackground (3)
+
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+function was implemented and documented by Pekka T. Alaruikka <alaruik@cc.hut.fi>
+& Michael Friman <no email>.
+

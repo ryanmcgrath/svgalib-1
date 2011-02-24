@@ -1,0 +1,62 @@
+.TH vga_drawline 3 "21 August 1999" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_drawline \- draw a line on the screen
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_drawline(int " x1 ", int " y1 ", int " x2 ", int " y2 );
+
+.SH DESCRIPTION
+draws a line from
+.BI ( x1 ", " y1 )
+to
+.BI ( x2 ", " y2 )
+on the screen. If you exchange start and end of the line you should not expect the
+exactly identical set of pixel be covered by the line.
+
+This function is very inefficient
+as is does a bunch
+of
+.BR vga_drawpixel (3)
+calls, you should
+consider using 
+.BR gl_line (3)
+which is very efficient,
+or doing direct screen access instead or use
+.BR vga_drawscansegment (3)
+to handle more than one pixel.
+
+The color drawn is set with
+.BR vga_setcolor (3)
+or
+.BR vga_setrgbcolor (3)
+resp.
+
+The function always returns 0 (on which you should probably not really rely).
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR gl_line (3)
+.BR vga_clear (3),
+.BR vga_setcolor (3),
+.BR vga_setrgbcolor (3),
+.BR vga_getpixel (3),
+.BR vga_drawline (3),
+.BR vga_drawscanline (3),
+.BR vga_drawscansegment (3),
+.BR vga_getscansegment (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.  This Page was modified by Don Secrest <secrest@uiuc.edu>
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

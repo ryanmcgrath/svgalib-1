@@ -1,0 +1,131 @@
+.TH gl_wtriangle 3 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+gl_wtriangle \- draw a shadowed pixmap mapped on a triangle
+
+.SH SYNOPSIS
+.B #include <triangle.h>
+
+.B typedef struct {
+.br
+.BI "    unsigned char *" bitmap1 ;
+.br
+.BI "    unsigned char *" bitmap2 ;
+.br
+.BI "    int " bf ;
+.br
+.BI "} " TD_tridata ;
+
+.BI "void gl_wtriangle(int " x0 ", int " y0 ", int " xd0 ", int " yd0 ", int " z0
+.BI ", int " x1 ", int " y1 ", int " xd1 ", int " yd1 ", int " z1
+.BI ", int " x2 ", int " y2 ", int " xd2 ", int " yd2 ", int " z2 ", TD_tridata *" tri );
+
+.SH DESCRIPTION
+Draws a triangle at points 0, 1, 2 by mapping the pixmaps defined
+in the
+.B TD_triangle
+structure into the triangle.
+
+The
+.IR xd " and " yd
+values represent the triangle on the
+bitmap and the
+.IR x " and " y
+values represent the triangle
+on the screen. The
+.I z
+values represent an additional
+value which will be added to the color that is looked
+up from the pixmap data. Once again, if the
+current context is more than 8 bits then the result
+is interpreted as an index to the same lookup table. See
+.BR gl_triangle (3)
+for more details on shadowing.
+
+.B gl_wtriangle
+is used to draw wrapped surfaces
+.B with
+shadowing interpolation. The function
+.BR gl_swtriangle (3)
+does it without shadowing.
+
+.I bitmap1
+defines the back side of the triangle,
+.I bitmap2
+the front.
+
+The
+.I bf
+value is used to tell the routine to draw the backside
+if it is facing the other way.
+.I bf
+tells
+which way the triangle should be facing to show the front,
+since you will more than likely require both
+combinations.
+
+.IB bf " = 2"
+defines the back to be drawn when the points are arranged clockwise,
+.IB bf " = 3"
+defines the back to be drawn when the points are arranged counter clockwise,
+.IB bf " = -1"
+will probably always draw the front.
+
+Beware, these functions are not a direct part of the svgalib library.
+Instead their source is part of svgalib and can be found in the
+.I threeDkit/
+subdirectory of the original svgalib distribution. However, it is not
+installed in the system by default, s.t. it is unclear where you can find it
+if your svgalib was installed by some
+linux distribution.
+
+In case of any such problem, simply get an svgalib distribution from the net. Yo
+don't need to install it. Just
+.B make
+in the
+.I threeDkit/
+subdirectory. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+The functions are defined in the
+.IR tri.o " and " triangl.o
+files (or their resp. sources) which you must link to your program.
+
+.SH SEE ALSO
+.BR vgagl (7),
+.BR svgalib (7),
+.BR threedkit (7),
+.BR gl_striangle (3),
+.BR gl_swtriangle (3),
+.BR gl_triangle (3),
+.BR gl_trigetcolorlookup (3),
+.BR gl_trisetcolorlookup (3),
+.BR gl_trisetdrawpoint (3),
+.BR plane (6),
+.BR wrapdemo (6).
+
+.SH AUTHOR
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+demos, the initial documentation and the whole threedkit stuff was done by
+Paul Sheer <psheer@icon.co.za>.
+
+Paper mail:
+.RS
+Paul Sheer
+.br
+P O BOX 890507
+.br
+Lyndhurst
+.br
+Johannesburg 2106
+.br
+South Africa
+.RE
+
+Donations (by check or postal order) will be appreciated and will encourage
+further development of this software. However this is strictly on a voluntary
+basis where this software falls under the GNU LIBRARY GENERAL PUBLIC LICENSE.

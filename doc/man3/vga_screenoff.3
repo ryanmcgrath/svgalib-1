@@ -1,0 +1,37 @@
+.TH vga_screenoff 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_screenoff, vga_screenon \- turn generation of the video signal on or off
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "int vga_screenoff(void);"
+.br
+.BI "int vga_screenon(void);"
+
+.SH DESCRIPTION
+The functions turn the generation of the video signal on or off. On some video boards,
+SVGA memory access is faster when no video signal is generated. On the other hand, not
+all boards allow to disable it (at least not in all modes).
+
+The functions always return 0 (on which you should probably not really rely).
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_init (3),
+.BR vga_setmode (3),
+.BR vga_clear (3),
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

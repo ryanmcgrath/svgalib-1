@@ -1,0 +1,116 @@
+.TH wrapdemo 6 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+wrapdemo \- demonstrates surface wrapping of pixmaps
+.SH SYNOPSIS
+
+.B wrapdemo
+
+.SH DESCRIPTION
+Demonstrates surface wrapping of pixmaps by wrapping a picture or
+Susanna Rubens around a 3-dimensional ball.
+
+The demo prompts your for a mode to be used and several details. Just
+follow the instructions on the screen and make your selections.
+
+Once the program runs you can use the following keys:
+
+.TP
+.BR <Q> " and " <A> ", " <Z> " and " <X> ", " <O> " and " <P>
+to rotate the plane around the space axes.
+.TP
+.BR <T> " and " <V> ", " <F> " and " <G> ", " <W> " and " <S>
+to move up, down, north, south, east, west. (world view only)
+.TP
+.B
+<Space>
+to toggle rendering vs. wire frame.
+.TP
+.BR <W> " and " <S>
+to scale in non-world view compilation -- see plane.h
+.TP
+.BR <1> " and " <2>
+to change rotation increment.
+.TP
+.BR <3> " through " <9>
+to change surface density.
+.TP
+.BR <R>
+to change shading method.
+.TP
+.BR <C>
+to quit the program.
+.TP
+.BR <I>
+to reset the rotation to the startup values.
+.PP
+This demo is part of svgalib and can be found in the
+.I threeDkit/
+subdirectory of the original svgalib distribution. However, it is not installed in the system
+by default, s.t. it is unclear where you can find it if your svgalib was installed by some
+linux distribution. Even then, when you have the demo on your system, you probably won't have
+the sources s.t. it is only of limited use for you.
+
+In case of any such problem, simply get an svgalib distribution from the net. You even
+don't need to install it. Just
+.B make
+in the
+.I threeDkit/
+subdirectory. As of this writing,
+.I svgalib-1.2.12.tar.gz
+is the latest version and can be retrieved by ftp from
+.IR "sunsite.unc.edu" " at " "/pub/Linux/libs/graphics"
+and
+.IR "tsx-11.mit.edu" " at " "/pub/linux/sources/libs"
+which will most probably be mirrored by a site close to you.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR triangle (3),
+.BR striangle (3),
+.BR wtriangle (3),
+.BR swtriangle (3),
+.BR trisetcolorlookup (3),
+.BR trigetcolorlookup (3),
+.BR trisetdrawpoint (3),
+.BR threedkit (7),
+.BR vgatest (6),
+.BR threed (6),
+.BR accel (6),
+.BR bg_test (6),
+.BR eventtest (6),
+.BR forktest (6),
+.BR fun (6),
+.BR keytest (6),
+.BR mousetest (6),
+.BR scrolltest (6),
+.BR speedtest (6),
+.BR spin (6),
+.BR testaccel (6),
+.BR testgl (6),
+.BR testlinear (6),
+.BR plane (6)
+
+.SH AUTHOR
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+demos, the initial documentation and the whole threedkit stuff was done by
+Paul Sheer <psheer@icon.co.za>.
+
+Paper mail:
+.RS
+Paul Sheer
+.br
+P O BOX 890507
+.br
+Lyndhurst
+.br
+Johannesburg 2106
+.br
+South Africa
+.RE
+
+Donations (by check or postal order) will be appreciated and will encourage
+further development of this software. However this is strictly on a voluntary
+basis where this software falls under the GNU LIBRARY GENERAL PUBLIC LICENSE.

@@ -1,0 +1,107 @@
+.TH restorepalette 1 "2 Aug 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+restorepalette \- set the color palette for textmode.
+.SH SYNOPSIS
+
+.BI "restorepalette [" filename ]
+
+.SH DESCRIPTION
+.B restorepalette
+without arguments sets the standard VGA palette. This can be useful
+if it is somehow messed up.
+
+With a
+.I filename
+argument a custom palette can be loaded (feature added by Charles Blake
+<chuckb@alice.wonderland.caltech.edu>).
+
+This allow a user to set up a file that looks like this one
+(These color map definitions are the same as the default VGA ones.
+Alter to suite personal tastes). The first column contains the number of
+the color to set, then follow three integers in range 0 - 63 (lowest to
+highest intensity) for red, green, blue.
+
+.RS
+.B " 0  0  0  0   # black"
+.br
+.B " 1  0  0 42   # blue"
+.br
+.B " 2  0 42  0   # green"
+.br
+.B " 3  0 42 42   # cyan"
+.br
+.B " 4 42  0  0   # red"
+.br
+.B " 5 42  0 42   # magenta"
+.br
+.B " 6 42 21  0   # brown"
+.br
+.B " 7 42 42 42   # white"
+.br
+.B " 8 21 21 21   # bright black"
+.br
+.B " 9 21 21 63   # bright blue"
+.br
+.B "10 21 63 21   # bright green"
+.br
+.B "11 21 63 63   # bright cyan"
+.br
+.B "12 63 21 21   # bright red"
+.br
+.B "13 63 21 63   # bright magenta"
+.br
+.B "14 63 63 21   # bright brown"
+.br
+.B "15 63 63 63   # bright white"
+.RE
+
+The inline comments are the
+only kind of allowed, as I use a little
+.BR fscanf (3)
+trick to get them. Blank lines
+are ok, but not pure comment lines. See the comments in my code, also.
+
+This allows people to set up custom palettes for use in virtual console text
+modes. I use it all the time. When combined with a color-syntax editor like
+jed-0.97+ or color-ls, etc., being able to choose your own text-mode palette is
+quite a bonus. I set mine up via
+.B restorepalette /etc/palette
+in my
+.IR /etc/rc .
+If the program is given the correct permissions, then individual users can
+have
+.B restorepalette ~/.palette
+or some such thing in their shell startup
+files.
+Of course, it shouldn't be done when starting remote shells or when
+under X, so some kind of test that
+.B TERM
+is a virtual console is needed for that case.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR vga_setpalvec (3),
+.BR dumpreg (1),
+.BR convfont (1),
+.BR fix132x43 (1),
+.BR restorefont (1),
+.BR restoretextmode (1),
+.BR runx (1),
+.BR savetextmode (1),
+.BR setmclk (1),
+.BR textmode (1).
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced utility as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

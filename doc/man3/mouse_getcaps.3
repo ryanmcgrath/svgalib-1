@@ -1,0 +1,91 @@
+.TH vga_getmousetype 3 "5 July 1998" "Svgalib (>= 1.3.0)" "Svgalib User Manual"
+.SH NAME
+mouse_getcaps \- returns the capabilities of the mouse
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "int mouse_getcaps(struct MouseCaps *" caps ");"
+
+.SH DESCRIPTION
+This fills a structure with information about the capabilities of the mouse
+as configured in
+.IR /etc/vga/libvga.config .
+
+The return value is 0 on success, -1 on failure. Failure indicates that an
+older version of the svgalib library is being used that does not support this
+function, and the capabilities should be inferred from the mouse type as
+retrieved by the function
+.BR vga_getmousetype (3).
+
+.RI "The " MouseCaps " structure contains the following members:"
+
+.PD 0
+.TP
+.B int key;
+.RB "After a successful call of " mouse_getcaps " this should be set to " MOUSE_GOTCAPS "."
+The values of this and the other members are undefined in the case of failure.
+.TP
+.B int buttons;
+A bitmask indicating which buttons are supported by the device, composed of
+.RB "the constants " MOUSE_LEFTBUTTON ", " MOUSE_MIDDLEBUTTON ", "
+.BR MOUSE_RIGHTBUTTON ", " MOUSE_FOURTHBUTTON ", " MOUSE_FIFTHBUTTON ", "
+.BR MOUSE_SIXTHBUTTON ", and " MOUSE_RESETBUTTON ". Note that " MOUSE_MIDDLEBUTTON
+may be set when using mouse protocols that support a middle button even if there
+is no button physically present on the mouse.
+.TP
+.B int axes;
+A bitmask indicating which axes are supported by the device, composed of
+.RB "the constants " MOUSE_XDIM ", " MOUSE_YDIM ", " MOUSE_ZDIM ", "
+.BR MOUSE_RXDIM ", " MOUSE_RYDIM ", and " MOUSE_RZDIM "."
+.TP
+.B int info;
+A bitmask indicating other information about the mouse. Currently the only
+.RB "field defined is " MOUSE_INFO_WHEEL ", which indicates that the mouse"
+is a wheel mouse.
+.TP
+.B int reserved0;
+Reserved for future use.
+.TP
+.B int reserved1;
+Reserved for future use.
+.PD
+.PP
+
+Your application may use this info to perform specific actions (go into a 3d pointer
+device mode or make use of a wheel for scrolling for example).
+
+.SH SEE ALSO
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR mousetest (6),
+.BR spin (6),
+.BR mouse_close (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_getx (3),
+.BR mouse_init (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_getmousetype (3)
+.BR vga_init (3),
+.BR vga_setmousesupport (3),
+.BR vga_waitevent (3)
+
+.SH AUTHOR
+
+This manual page was heavily edited by Brion Vibber <brion@pobox.com>
+from material on another function edited by Michael Weller
+<eowmob@exp-math.uni-essen.de>. The exact source of the original
+documentation is unknown.
+
+It is very likely that it is at least to some extent due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+ask to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

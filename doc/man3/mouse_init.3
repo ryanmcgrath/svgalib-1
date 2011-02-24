@@ -1,0 +1,71 @@
+.TH mouse_init 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+mouse_init, mouse_init_return_fd \- specifically initialize a mouse
+.SH SYNOPSIS
+
+.B "#include <vgamouse.h>"
+
+.BI "int mouse_init(char *" dev ", int " type ", int " samplerate );
+.br
+.BI "int mouse_init_return_fd(char *" dev ", int " type ", int " samplerate );
+
+.SH DESCRIPTION
+These routines can be used to open the mouse manually,
+ignoring the mouse types or devices specified in the
+config file.
+
+.I dev
+is the name of the mouse device
+.RI "(defaults to " /dev_mouse ).
+
+.I samplerate
+may be one
+.BR MOUSE_DEFAULTSAMPLERATE (150)
+or any other value. Probably it is in Hz.
+
+.I type
+is one of the types which are listed already in
+.BR vga_getmousetype (3).
+
+If these routines are used it is not necessary to call
+.BR vga_setmousesupport (3),
+but it's probably better to not use these and use
+.BR vga_setmousesupport (3)
+instead.
+
+The
+.B return_fd
+version returns the file descriptor of the
+mouse device to allow you to do further tricks with the mouse (but the filehandle may change
+during a VC switch). The other version just returns 0 if successful.
+Both return -1 on error.
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR eventtest (6),
+.BR mouse_close (3),
+.BR mouse_getposition_6d (3),
+.BR mouse_getx (3),
+.BR mouse_setposition (3),
+.BR mouse_setscale (3),
+.BR mouse_setwrap (3),
+.BR mouse_setxrange (3),
+.BR mouse_update (3),
+.BR mouse_waitforupdate (3),
+.BR vga_setmousesupport (3),
+.BR mouse_seteventhandler (3),
+.BR vga_waitevent (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.

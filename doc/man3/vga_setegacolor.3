@@ -1,0 +1,101 @@
+.TH vga_setegacolor 3 "27 July 1997" "Svgalib (>= 1.2.11)" "Svgalib User Manual"
+.SH NAME
+vga_setegacolor \- set the current color
+.SH SYNOPSIS
+
+.B "#include <vga.h>"
+
+.BI "void vga_setegacolor(int " color );
+
+.SH DESCRIPTION
+Set the current color to be a color resembling the
+.IR color -th
+EGA coler. This works regardless of the depth of the current video mode.
+
+The color is used by
+.BR vga_drawpixel (3)
+and
+.BR vga_drawline (3).
+
+Valid values for
+.I color
+are:
+.PP
+.PD 0
+.TP
+.B 0
+- black.
+.TP
+.B 1
+- blue.
+.TP
+.B 2
+- green.
+.TP
+.B 3
+- cyan.
+.TP
+.B 4
+- red.
+.TP
+.B 5
+- magenta.
+.TP
+.B 6
+- brown.
+.TP
+.B 7
+- grey.
+.TP
+.B 8
+- dark grey (light black).
+.TP
+.B 9
+- light blue.
+.TP
+.B 10
+- light green.
+.TP
+.B 11
+- light cyan.
+.TP
+.B 12
+- light red.
+.TP
+.B 13
+- light magenta.
+.TP
+.B 14
+- yellow (light brown).
+.TP
+.B 15
+- white (light grey).
+.PD
+.PP
+The
+.BR fun "(6) and " vgatest (6)
+demos show the basic use of this function.
+
+.SH SEE ALSO
+
+.BR svgalib (7),
+.BR vgagl (7),
+.BR libvga.config (5),
+.BR fun (6),
+.BR vgatest (6),
+.BR vga_setcolor (3),
+.BR vga_setrgbcolor (3),
+.BR vga_drawpixel (3),
+.BR vga_drawline (3)
+.SH AUTHOR
+
+This manual page was edited by Michael Weller <eowmob@exp-math.uni-essen.de>. The
+exact source of the referenced function as well as of the original documentation is
+unknown.
+
+It is very likely that both are at least to some extent are due to
+Harm Hanemaayer <H.Hanemaayer@inter.nl.net>.
+
+Occasionally this might be wrong. I hereby
+asked to be excused by the original author and will happily accept any additions or corrections
+to this first version of the svgalib manual.
