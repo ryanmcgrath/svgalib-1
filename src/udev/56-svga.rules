@@ -1,0 +1,6 @@
+# /etc/udev/rules.d/56-svga.rules
+#
+# When the svgalib_helper.ko module is loaded, it creates file in /dev
+# This rule sets the proper group and permissions
+#
+KERNEL=="svga*", MODE="0660", GROUP="video"

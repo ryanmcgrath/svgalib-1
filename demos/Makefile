@@ -36,29 +36,38 @@ ifndef LIBS
   LVGADEP = $(LIBS)
 endif
 
-all:	$(PROGS)
+all:	$(PROGS) graphics
 
 .PHONY: all clean cleanbin dep
 
 $(PROGS): $(LVGADEP)
 
 .c:
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $* $*.c $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $* $*.c $(LIBS) -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) $* $(docdir)/demos/svgalib
 
 rwpage: rwpage.pp
 	$(PC) -Rintel rwpage.pp
 
 testaccel: testaccel.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o testaccel testaccel.c $(LIBS) -lm
+	$(CC) $(CFLAGS) $(LDFLAGS) -o testaccel testaccel.c $(LIBS) -lm -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) testaccel $(docdir)/demos/svgalib
 
 accel: accel.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o accel accel.c $(LIBS) -lm
+	$(CC) $(CFLAGS) $(LDFLAGS) -o accel accel.c $(LIBS) -lm -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) accel $(docdir)/demos/svgalib
 
 linearspeed: linearspeed.c memset.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o linearspeed linearspeed.c memset.o $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o linearspeed linearspeed.c memset.o $(LIBS) -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) linearspeed $(docdir)/demos/svgalib
 
 buildcsr: mkcur.o
-	$(CC) -o buildcsr $(LDFLAGS) mkcur.o -lvgagl -lvga
+	$(CC) -o buildcsr $(LDFLAGS) mkcur.o -lvgagl -lvga -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) buildcsr $(docdir)/demos/svgalib
+
+graphics:
+	$(INSTALL_DATA) linuxlogo.bitmap eightbpp.xbm clut.xbm sixbpp.xbm \
+	wizard.xbm wizardmsk.xbm rwpage.pp $(docdir)/demos/svgalib
 
 clean:	cleanbin
 	rm -f .depend *.o *~ *.bak core

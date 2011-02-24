@@ -1,5 +1,3 @@
-#include <linux/config.h>
-
 #if defined (CONFIG_MODVERSIONS) && !defined (MODVERSIONS)
 # define MODVERSIONS
 #endif
@@ -17,15 +15,22 @@
 #include <linux/ioport.h>
 #include <linux/interrupt.h>
 #include <linux/pci.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
 #include <linux/devfs_fs_kernel.h>
+#endif
 #include <linux/mm.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #include <linux/thread_info.h>
+#endif
 #include <linux/smp.h>
 #include <linux/smp_lock.h>
 
 #include <linux/sched.h>
 #include <linux/wait.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
 #include <linux/syscalls.h>
+#endif
 
 #define __KERNEL_SYSCALLS__
 #include <linux/unistd.h>
@@ -50,7 +55,7 @@ asmlinkage long (*s_ioperm)(unsigned long from, unsigned long num, int turn_on);
 #include "displaystart.h"
 
 int debug=0;
-static int all_devices=0;
+int all_devices=0;
 int num_devices=0;
 
 static char *sdev_id="svgalib_helper";
@@ -98,7 +103,11 @@ static int get_dev(int pcipos, int minor) {
 static volatile int vsync=0;
 static wait_queue_head_t vsync_wait;
 
-static irqreturn_t vsync_interrupt(int irq, void *dev_id, struct pt_regs *regs)
+static irqreturn_t vsync_interrupt(int irq, void *dev_id
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
+, struct pt_regs *regs
+#endif
+)
 {
     struct sh_pci_device *dev = (struct sh_pci_device *)dev_id;
 
@@ -153,9 +162,15 @@ static void task_startad(void *data) {
 	get_user(pciv.address, &user_pciv->address); \
 	get_user(pciv.val, &user_pciv->val); 
 #define PUT_PCIV \
-	put_user(pciv.val, &user_pciv->val); 
+	put_user(pciv.val, &user_pciv->val);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36) 
 static int svgalib_helper_ioctl( struct inode *inode, struct file *filp, 
                           unsigned int cmd, unsigned long arg) {
+#else
+static int svgalib_helper_ioctl(struct file *filp, 
+                          unsigned int cmd, unsigned long arg) {
+    struct inode *inode=filp->f_dentry->d_inode;
+#endif
 
     io_t iov, *user_iov=(io_t *)arg;
     pcic_t pciv, *user_pciv=(pcic_t *)arg;
@@ -355,7 +370,7 @@ static int svgalib_helper_ioctl( struct inode *inode, struct file *filp,
                 vsync=1;
                 i=0;
                 while(irqs[i]!=-1)
-                    request_irq(irqs[i++], vsync_interrupt, SA_SHIRQ, "svgalib_helper", sdev_id);
+                    request_irq(irqs[i++], vsync_interrupt, IRQF_SHARED, "svgalib_helper", sdev_id);
                 vga_enable_vsync((void *)sdev_id);
 				wait_event_interruptible(vsync_wait, !vsync);
                 i=0;
@@ -443,7 +458,7 @@ static int svgalib_helper_open( struct inode *inode, struct file * filp) {
 		int i=sh_pci_devs[minor]->dev->irq;
 		sh_pci_devs[minor]->opencount++;
 		if(sh_pci_devs[minor]->opencount==1 && i!=0 && i!=-1 && i!=255)
-			request_irq(i, vsync_interrupt, SA_SHIRQ, "svgalib_helper", sh_pci_devs[minor]);
+			request_irq(i, vsync_interrupt, IRQF_SHARED, "svgalib_helper", sh_pci_devs[minor]);
 	}
 
 #ifndef KERNEL_2_6
@@ -586,7 +601,11 @@ struct file_operations svgalib_helper_fops = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,3,0)
    .owner	= THIS_MODULE,
 #endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
    .ioctl	= svgalib_helper_ioctl,
+#else
+   .unlocked_ioctl	= svgalib_helper_ioctl,
+#endif
    .mmap	= svgalib_helper_mmap,
    .open	= svgalib_helper_open,
    .release	= svgalib_helper_release,
@@ -763,10 +782,15 @@ void cleanup_module(void)
 
 }
 
+#ifdef KERNEL_2_6
+module_param(debug, int, 0);
+module_param(all_devices, int, 0);
+#else
 MODULE_PARM(debug, "i");
-MODULE_PARM_DESC(debug, "Debug output level.");
-
 MODULE_PARM(all_devices, "i");
+#endif
+
+MODULE_PARM_DESC(debug, "Debug output level.");
 MODULE_PARM_DESC(all_devices, "Give access to all PCI devices, regardless of class.");
 
 

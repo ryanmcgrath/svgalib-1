@@ -26,7 +26,7 @@ THREED1=man7/threedkit.7 man3/gl_*tri* man6/plane.6 man6/wrapdemo.6
 SVGALIB=$(subst man,$(srcdir)/doc/man,$(SVGALIB1))
 VGAGL=$(subst man,$(srcdir)/doc/man,$(VGAGL1))
 THREED=$(subst man,$(srcdir)/doc/man,$(THREED1))
-COMPMANPAGES=$(shell cd $(srcdir)/doc; find man? -name "*.gz" -type f -print)
+COMPMANPAGES=$(shell cd $(srcdir)/doc; find man? -type f -print)
 
 .PHONY: clean ascii dvi ps install gunzip gzip
 
@@ -63,13 +63,12 @@ ps dvi:
 	cat $(VGAGL) | grep -v '^\.so ' | troff -man -T$@ > vgagl.$@
 	cat $(THREED) | grep -v '^\.so ' | troff -man -T$@ > 3d.$@
 
-install: gzip
+install:
 	mkdir -p $(mandir)/man1 $(mandir)/man3 $(mandir)/man5 \
 		 $(mandir)/man6 $(mandir)/man7 $(mandir)/man8
 	for i in $(COMPMANPAGES); do\
 		$(INSTALL_DATA) $(srcdir)/doc/$$i $(mandir)/$$i; \
 	done
-	make gunzip
 ifdef MAKEWHATIS
 	@echo "Rebuilding the whatis database (this is slow!)"
 	@echo "You can comment this out in Makefile.cfg!"

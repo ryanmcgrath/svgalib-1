@@ -25,7 +25,7 @@ else
 endif
 
 
-CLASS_SIMPLE := $(shell grep class_simple_create $(KDIR)/include/linux/device.h)
+CLASS_SIMPLE := $(shell grep -s class_simple_create $(KDIR)/include/linux/device.h)
 
 ifneq ($(CLASS_SIMPLE),)
   CLASS_CFLAGS = -DCLASS_SIMPLE=1
@@ -49,18 +49,9 @@ clean:
 svgalib_helper.o: $(svgalib_helper-objs)
 	$(LD) -r -o $@ $(svgalib_helper-objs)
 
-device:
-	rm -f /dev/svga /dev/svga?
-	mknod -m 666 /dev/svga c $(SVGALIB_HELPER_MAJOR) 0
-	mknod -m 666 /dev/svga1 c $(SVGALIB_HELPER_MAJOR) 1
-	mknod -m 666 /dev/svga2 c $(SVGALIB_HELPER_MAJOR) 2
-	mknod -m 666 /dev/svga3 c $(SVGALIB_HELPER_MAJOR) 3
-	mknod -m 666 /dev/svga4 c $(SVGALIB_HELPER_MAJOR) 4
-
-install: device modules_install
+install: modules_install
 
 modules_install: $(MODNAME)
-	mkdir -p /lib/modules/$(VER)/kernel/misc
-	install -m 0644 -c $(TARGET).ko /lib/modules/$(VER)/kernel/misc ||	install -m 0644 -c $(TARGET).o /lib/modules/$(VER)/kernel/misc
-	depmod -a $(VER)
+	mkdir -p $(TOPDIR)/lib/modules/$(VER)/kernel/misc
+	install -m 0644 -c $(TARGET).ko $(TOPDIR)/lib/modules/$(VER)/kernel/misc ||	install -m 0644 -c $(TARGET).o $(TOPDIR)/lib/modules/$(VER)/kernel/misc
 

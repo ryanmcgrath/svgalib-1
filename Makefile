@@ -97,9 +97,9 @@ installsharedlib: $(SHAREDLIBS) $(SVGALIBSHAREDSTUBS)
 	@for foo in $(notdir $(SHAREDLIBS)); do \
 		$(INSTALL_SHLIB) sharedlib/$$foo $(sharedlibdir)/$$foo; \
 		(cd $(sharedlibdir); \
-		 ln -sf $$foo `echo $$foo | sed 's/\.so\..*/.so/'` ); \
+		 ln -sf $$foo `echo $$foo | sed 's/\.so\..*/.so/'` ; \
+		 ln -sf $$foo `echo $$foo | sed 's/\.so\..*/.so.1/'` ); \
 	done
-	@./fixldsoconf
 	-ldconfig
 
 installstaticlib: static
@@ -180,15 +180,26 @@ installmodule:
 installmodule.alt:
 	(cd kernel/svgalib_helper ; $(MAKE) -f Makefile.alt modules_install )
 
-installdev:
-	(cd kernel/svgalib_helper ; $(MAKE) device )
-
 lib3dkit-install:
 	(cd threeDKit/; $(MAKE) install)
-	 
+
+udev-rules-install:
+	@echo "Installing Udev rules..."
+	@$(INSTALL_DIR) $(rulesdir)
+	@$(INSTALL_DATA) src/udev/56-svga.rules $(rulesdir)
+ 
+docs-install:
+	@echo "Installing documentation..."
+	@$(INSTALL_DIR) $(docdir)
+	@$(INSTALL_DATA) 0-README README doc/0-INSTALL doc/CHANGES doc/DESIGN \
+	doc/Driver-programming-HOWTO doc/README.joystick doc/README.keymap \
+	doc/README.multi-monitor doc/README.patching doc/README.vesa doc/TODO \
+	doc/add_driver doc/dual-head-howto $(docdir)
+	@$(INSTALL_DATA) lrmi-0.6m/README $(docdir)/README.lrmi
+ 
 install: installheaders $(INSTALLSHAREDLIB) installconfig \
-	$(INSTALLSTATICLIB) $(INSTALLUTILS) $(INSTALLMAN) $(INSTALLMODULE) $(INSTALLDEV) \
-	lib3dkit-install
+	$(INSTALLSTATICLIB) $(INSTALLUTILS) $(INSTALLMAN) $(INSTALLMODULE) \
+	lib3dkit-install udev-rules-install docs-install
 	@echo
 	@echo
 	@echo Now run "'make demoprogs'" to make the test and demo programs in
@@ -282,6 +293,8 @@ sharedlib/libvgagl.so.$(VERSION): $(SHAREDDIRS)
 	)
 
 demoprogs: $(PREDEMO) $(DEMODIRS)
+	@$(INSTALL_DIR) $(docdir)/demos/svgalib
+	@$(INSTALL_DIR) $(docdir)/demos/threeDKit
 	@for dir in $(DEMODIRS); do \
 		if [ -d $(SRCDIR)/$$dir ]; then \
 			(cd $$dir; \

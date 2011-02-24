@@ -203,6 +203,13 @@ LRMI_free_real(void *m)
 
 
 #if defined(__linux__)
+#ifndef TF_MASK
+#define TF_MASK X86_EFLAGS_TF
+#define IF_MASK X86_EFLAGS_IF
+#define IOPL_MASK X86_EFLAGS_IOPL
+#define VIF_MASK X86_EFLAGS_VIF
+#define VIP_MASK X86_EFLAGS_VIP
+#endif
 #define DEFAULT_VM86_FLAGS 	(IF_MASK | IOPL_MASK)
 #elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #define DEFAULT_VM86_FLAGS  (PSL_I | PSL_IOPL)

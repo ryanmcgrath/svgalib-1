@@ -14,7 +14,7 @@ VPATH     = $(srcdir)/src
 # Compiler Section (overrides Makefile.cfg)
 #----------------------------------------------------------------------
 
-INCLUDES += -I$(srcdir)/src
+INCLUDES += -I$(srcdir)/src -I$(srcdir)/gl
 
 #----------------------------------------------------------------------
 # Rules Section
@@ -48,7 +48,7 @@ all:	lib3dkit.a plane wrapdemo
 
 else                                                               
 
-all:	lib3dkit.so.$(VERSION) plane wrapdemo
+all:	lib3dkit.so.$(VERSION) plane wrapdemo otherfiles
 
 # These rules are for ELF only.
 lib3dkit.so.$(VERSION): $(OBJECTS)
@@ -57,7 +57,7 @@ lib3dkit.so.$(VERSION): $(OBJECTS)
 
 $(sharedlibdir)/lib3dkit.so.$(VERSION): lib3dkit.so.$(VERSION)
 	$(INSTALL_SHLIB) $< $(sharedlibdir)/$<
-	(cd $(sharedlibdir); ln -sf lib3dkit.so.$(VERSION) `echo lib3dkit.so.$(VERSION) | sed 's/\.so\..*/.so/'` )
+	(cd $(sharedlibdir); ln -sf lib3dkit.so.$(VERSION) `echo lib3dkit.so.$(VERSION) | sed 's/\.so\..*/.so/'`; ln -sf lib3dkit.so.$(VERSION) `echo lib3dkit.so.$(VERSION) | sed 's/\.so\..*/.so.1/'` )
 	-ldconfig
 
 install: $(sharedlibdir)/lib3dkit.so.$(VERSION) installheaders
@@ -76,14 +76,19 @@ lib3dkit.a: $(ALLOBJS)
 	$(AR) rcs lib3dkit.a $(ALLOBJS)
 
 plane: planukit.o planinit.o $(OBJECTS) $(LVGADEP)
-	$(CC) $(LDFLAGS) -o plane planukit.o planinit.o $(OBJECTS) $(LIBS)
+	$(CC) $(LDFLAGS) -o plane planukit.o planinit.o $(OBJECTS) $(LIBS) -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) plane $(docdir)/demos/threeDKit
 	# chown root plane
 	# chmod u+s plane
 
 wrapdemo: wrapdemo.o $(OBJECTS) $(LVGADEP)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o wrapdemo wrapdemo.c $(OBJECTS) $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o wrapdemo wrapdemo.c $(OBJECTS) $(LIBS) -L$(srcdir)/sharedlib
+	$(INSTALL_PROGRAM) wrapdemo $(docdir)/demos/threeDKit
 	# chown root wrapdemo
 	# chmod u+s wrapdemo
+
+otherfiles:
+	$(INSTALL_DATA) susannaRUBENS.bmp 0-README $(docdir)/demos/threeDKit
 
 clean:
 	rm -f *.o core lib3dkit.a lib3dkit.so.* plane wrapdemo *.bak
