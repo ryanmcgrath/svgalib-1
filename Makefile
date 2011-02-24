@@ -191,7 +191,7 @@ udev-rules-install:
 docs-install:
 	@echo "Installing documentation..."
 	@$(INSTALL_DIR) $(docdir)
-	@$(INSTALL_DATA) 0-README README doc/0-INSTALL doc/CHANGES doc/DESIGN \
+	@$(INSTALL_DATA) 0-README README.md doc/0-INSTALL doc/CHANGES doc/DESIGN \
 	doc/Driver-programming-HOWTO doc/README.joystick doc/README.keymap \
 	doc/README.multi-monitor doc/README.patching doc/README.vesa doc/TODO \
 	doc/add_driver doc/dual-head-howto $(docdir)
