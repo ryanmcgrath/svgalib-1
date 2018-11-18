@@ -1,0 +1,1 @@
+../kernel/svgalib_helper/svgalib_helper.h
