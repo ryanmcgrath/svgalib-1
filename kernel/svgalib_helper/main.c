@@ -24,7 +24,10 @@
 #include <linux/thread_info.h>
 #endif
 #include <linux/smp.h>
-#include <linux/smp_lock.h>
+
+
+
+/* #include <linux/smp_lock.h> */
 
 #include <linux/sched.h>
 #include <linux/wait.h>
@@ -38,7 +41,7 @@ asmlinkage long (*s_ioperm)(unsigned long from, unsigned long num, int turn_on);
 
 #include <asm/processor.h>
 #include <asm/uaccess.h>
-#include <asm/system.h>   /* cli(), *_flags */
+/* #include <asm/system.h> */   /* cli(), *_flags */
 #include <asm/segment.h>  /* memcpy and such */
 #include <asm/io.h>
 #include <asm/pgtable.h>
